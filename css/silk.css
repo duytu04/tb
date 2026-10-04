@@ -68,10 +68,35 @@ html[data-cinematic-scroll="true"] .wish-item {
   transform-style: preserve-3d;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 767px) {
   #silk-stage {
-    inset: -15% -12%;
-    opacity: 0.5;
+    inset: -16% -12%;
+    opacity: 0.88;
+  }
+
+  html[data-cinematic-scroll="true"] .cinematic-scene,
+  html[data-cinematic-scroll="true"] .cinematic-scene .container,
+  html[data-cinematic-scroll="true"] .families-grid,
+  html[data-cinematic-scroll="true"] .events-grid,
+  html[data-cinematic-scroll="true"] .timeline-container,
+  html[data-cinematic-scroll="true"] .gallery-slider-wrapper {
+    perspective: 1100px;
+    -webkit-perspective: 1100px;
+    perspective-origin: 50% 40%;
+  }
+
+  .hero-photo-wrapper,
+  .family-card,
+  .event-card,
+  .timeline-item,
+  .memory-film-player,
+  .gallery-slide-card,
+  .rsvp-wrapper {
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    will-change: transform, opacity;
   }
 }
 
