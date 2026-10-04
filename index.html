@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="vi" class="invitation-locked">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <meta name="theme-color" content="#FAF7F2">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="format-detection" content="telephone=no">
+  <title>Thiệp Cưới Tuấn Anh & Hoàng Thúy | 20.10.2026</title>
+  <meta name="description"
+    content="Thiệp cưới điện tử Tuấn Anh & Hoàng Thúy - Lễ Thành Hôn diễn ra vào Thứ Ba, ngày 20/10/2026 tại Hoài Đức, Hà Nội.">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="assets/icons/monogram.svg">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&display=swap"
+    rel="stylesheet">
+
+  <!-- Open Graph / Facebook / Zalo preview -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Thiệp Cưới Tuấn Anh & Hoàng Thúy | 20.10.2026">
+  <meta property="og:description"
+    content="Thiệp cưới điện tử Tuấn Anh & Hoàng Thúy - Lễ Thành Hôn diễn ra vào Thứ Ba, ngày 20/10/2026 tại Hoài Đức, Hà Nội.">
+  <meta property="og:image" content="assets/images/hero.jpg">
+
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="css/style.css?v=25">
+
+  <!-- Dynamic Wedding Config Store -->
+  <script src="js/config.js?v=25"></script>
+  <script>
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+    window.scrollTo(0, 0);
+  </script>
+</head>
+
+<body class="invitation-locked">
+
+  <!-- Canvas for Falling Golden Blossom Petals -->
+  <canvas id="petals-canvas"></canvas>
+
+  <!-- =======================================================================
+       1. REALISTIC 3D ENVELOPE / CARD OPENING OVERLAY
+       ======================================================================= -->
+  <div id="envelope-overlay" role="dialog" aria-modal="true" aria-labelledby="opening-title"
+    aria-describedby="opening-instruction" aria-hidden="false">
+    <div class="opening-paper-grain" aria-hidden="true"></div>
+    <div class="opening-frame opening-frame-left" aria-hidden="true"></div>
+    <div class="opening-frame opening-frame-right" aria-hidden="true"></div>
+    <div class="opening-floral opening-floral-left" aria-hidden="true">
+      <img src="assets/icons/floral-art.svg" alt="">
+    </div>
+    <div class="opening-floral opening-floral-right" aria-hidden="true">
+      <img src="assets/icons/floral-art.svg" alt="">
+    </div>
+    <div class="opening-light-sweep" aria-hidden="true"></div>
+
+    <!-- Ambient depth layer -->
+    <div class="envelope-ambient-bg">
+      <div class="ambient-glow glow-1"></div>
+      <div class="ambient-glow glow-2"></div>
+    </div>
+
+    <!-- 3D Envelope Scene -->
+    <div class="envelope-scene">
+      <header class="opening-copy">
+        <p class="opening-kicker">LỄ THÀNH HÔN</p>
+        <h1 id="opening-title" class="opening-couple-names">
+          <span>Tuấn Anh</span>
+          <span class="opening-ampersand" aria-hidden="true">&amp;</span>
+          <span>Hoàng Thúy</span>
+        </h1>
+        <div class="opening-date-line" aria-label="Thứ Ba, ngày 20 tháng 10 năm 2026">
+          <span>THỨ BA</span>
+          <strong>20</strong>
+          <span>10 . 2026</span>
+        </div>
+      </header>
+
+      <div class="envelope-stage">
+        <div class="envelope-3d-box" id="envelope-3d-box">
+
+          <!-- 1. Inside Backing of the Envelope -->
+          <div class="envelope-back-inside">
+            <div class="inside-gold-pattern"></div>
+            <div class="envelope-inner-glow" aria-hidden="true"></div>
+          </div>
+
+          <!-- 2. The Letter / Card Inside that slides out -->
+          <div class="envelope-letter" id="envelope-letter">
+            <div class="letter-shimmer"></div>
+            <div class="letter-inner">
+              <img src="assets/icons/corner-ornament.svg" alt="" class="letter-corner lt">
+              <img src="assets/icons/corner-ornament.svg" alt="" class="letter-corner rt">
+              <img src="assets/icons/corner-ornament.svg" alt="" class="letter-corner lb">
+              <img src="assets/icons/corner-ornament.svg" alt="" class="letter-corner rb">
+
+              <img src="assets/icons/monogram.svg" alt="AT Monogram" class="letter-monogram">
+              <div class="letter-save-date">Save the Date</div>
+              <img src="assets/icons/ornament.svg" alt="" class="letter-ornament">
+
+              <div class="letter-names">Tuấn Anh <span class="letter-amp">&amp;</span> Hoàng Thúy</div>
+
+              <div class="letter-date-badge">
+                <span class="letter-date-day">THỨ BA</span>
+                <span class="letter-date-num">20</span>
+                <span class="letter-date-month">10 . 2026</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Envelope Front Pocket (Pouch) -->
+          <div class="envelope-front-pocket">
+            <!-- Metallic gold V-cut score line -->
+            <svg class="pocket-fold-line" viewBox="0 0 420 180" preserveAspectRatio="none">
+              <path d="M 0,0 L 210,165 L 420,0" fill="none" stroke="rgba(197, 155, 39, 0.55)" stroke-width="1.5"
+                stroke-dasharray="6 3" />
+            </svg>
+            <img src="assets/icons/floral-art.svg" alt="" class="pocket-floral">
+            <div class="pocket-decor-text">
+              <div class="pocket-names">Tuấn Anh &amp; Hoàng Thúy</div>
+              <div class="pocket-guest-box">
+                <span class="pocket-guest-label">Kính mời:</span>
+                <span class="pocket-guest-val">Quý Khách</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Top Triangular Flap with 3D Wax Seal -->
+          <div class="envelope-top-flap" id="envelope-top-flap">
+            <svg class="flap-svg-shape" viewBox="0 0 420 180" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="flapGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#FFFFFF" />
+                  <stop offset="100%" stop-color="#EFE8D8" />
+                </linearGradient>
+                <linearGradient id="flapGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#DFBA5A" />
+                  <stop offset="50%" stop-color="#B8860B" />
+                  <stop offset="100%" stop-color="#D4AF37" />
+                </linearGradient>
+                <filter id="flapShadow" x="-10%" y="0%" width="120%" height="150%">
+                  <feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="rgba(0,0,0,0.18)" />
+                </filter>
+              </defs>
+              <path d="M 0,0 L 420,0 L 214,161 Q 210,165 206,161 L 0,0 Z" fill="url(#flapGrad)" stroke="url(#flapGold)"
+                stroke-width="1.5" filter="url(#flapShadow)" />
+              <path d="M 16,6 L 404,6 L 214,151 Q 210,155 206,151 L 16,6 Z" fill="none"
+                stroke="rgba(197, 155, 39, 0.35)" stroke-width="1" stroke-dasharray="4 3" />
+            </svg>
+
+            <!-- Wax Seal button attached to the tip of flap -->
+            <div class="flap-wax-seal" id="flap-wax-seal" role="button" tabindex="0"
+              aria-label="Mở thiệp bằng con dấu sáp">
+              <div class="wax-seal-wrapper">
+                <div class="wax-ripple ripple-1"></div>
+                <div class="wax-ripple ripple-2"></div>
+                <span class="wax-spark wax-spark-1" aria-hidden="true"></span>
+                <span class="wax-spark wax-spark-2" aria-hidden="true"></span>
+                <span class="wax-spark wax-spark-3" aria-hidden="true"></span>
+                <span class="wax-spark wax-spark-4" aria-hidden="true"></span>
+                <span class="wax-spark wax-spark-5" aria-hidden="true"></span>
+                <img src="assets/icons/wax-seal.svg" alt="" class="wax-seal-3d-img">
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <div class="opening-envelope-shadow" aria-hidden="true"></div>
+      </div>
+
+      <!-- Action Prompt -->
+      <div class="envelope-action-prompt">
+        <p id="opening-instruction" class="opening-instruction">Chạm vào con dấu để mở thiệp</p>
+      </div>
+      <p class="opening-footer">Trân trọng kính mời Quý khách</p>
+    </div>
+    <p id="opening-status" class="sr-only" aria-live="polite"></p>
+  </div>
+
+  <!-- =======================================================================
+       2. FLOATING ACTION BUTTONS (MUSIC & GIFT)
+       ======================================================================= -->
+  <button id="floating-music-btn" class="floating-music-btn" title="Bật/Tắt Nhạc Cưới"
+    aria-label="Bật hoặc tắt nhạc cưới" aria-pressed="false">
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+    </svg>
+  </button>
+
+  <button class="floating-gift-btn btn-open-gift-modal" title="Hộp Mừng Cưới" aria-label="Mở hộp mừng cưới">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <rect x="3" y="8" width="18" height="13" rx="2"></rect>
+      <path d="M12 8v13"></path>
+      <path d="M19 12H5"></path>
+      <path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.5 4.5 0 0 1 12 7.5a4.5 4.5 0 0 1 4.5-4.5 2.5 2.5 0 0 1 0 5"></path>
+    </svg>
+    Mừng Cưới
+  </button>
+
+  <!-- =======================================================================
+       3. NAVIGATION BAR
+       ======================================================================= -->
+  <header class="navbar">
+    <div class="container nav-container">
+      <a href="#hero" class="nav-brand">
+        <img src="assets/icons/monogram.svg" alt="AT Monogram" class="nav-monogram">
+        <span class="nav-brand-text">Tuấn Anh &amp; Hoàng Thúy</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- =======================================================================
+       4. HERO SECTION
+       ======================================================================= -->
+  <section id="hero" class="hero-section">
+    <div class="container hero-layout">
+      <div class="hero-copy">
+        <img src="assets/icons/monogram.svg" alt="Monogram AT" class="hero-monogram-top reveal-on-scroll">
+        <div class="hero-pretitle reveal-on-scroll">SAVE THE DATE</div>
+        <div class="hero-ceremony-type reveal-on-scroll">LỄ THÀNH HÔN</div>
+
+        <img src="assets/icons/ornament.svg" alt="Ornament" class="ornament-divider reveal-on-scroll"
+          style="margin-bottom: 25px;">
+
+        <div class="hero-names-display reveal-on-scroll">
+          <span class="hero-name">Tuấn Anh</span>
+          <div class="hero-heart-badge" aria-hidden="true">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+          </div>
+          <span class="hero-name">Hoàng Thúy</span>
+        </div>
+
+        <p class="hero-time-notice reveal-on-scroll">
+          ĐƯỢC TỔ CHỨC VÀO HỒI 11 GIỜ 00 PHÚT
+        </p>
+
+        <!-- Date display with laurel wreath (exact pattern from card) -->
+        <div class="hero-date-box reveal-on-scroll">
+          <span class="date-day-text">THỨ BA</span>
+          <div class="date-circle-wreath">
+            <img src="assets/icons/wreath.svg" alt="Vòng Nguyệt Quế Ngày Cưới" width="85" height="85">
+            <span class="date-number">20</span>
+          </div>
+          <span class="date-year-text">10 . 2026</span>
+        </div>
+
+        <div class="hero-lunar-date reveal-on-scroll">(Tức ngày 11 tháng 09 năm Bính Ngọ)</div>
+      </div>
+
+      <!-- Couple Arch Frame Photo -->
+      <div class="hero-visual">
+        <div class="hero-photo-wrapper reveal-on-scroll">
+          <div class="hero-photo-ambient-glow" aria-hidden="true"></div>
+          <img src="assets/icons/floral-art.svg" alt="" class="hero-floral-left" aria-hidden="true">
+          <img src="assets/icons/floral-art.svg" alt="" class="hero-floral-right" aria-hidden="true">
+          <div class="hero-photo-frame">
+            <div class="hero-photo-inner">
+              <img src="assets/images/hero.jpg" alt="Ảnh Cưới Tuấn Anh & Hoàng Thúy" decoding="async"
+                fetchpriority="high">
+            </div>
+          </div>
+        </div>
+
+        <!-- Countdown Clock -->
+        <div class="countdown-box reveal-on-scroll">
+          <div class="countdown-title">Đếm ngược đến ngày chung đôi</div>
+          <div class="countdown-grid">
+            <div class="countdown-item">
+              <span id="count-days" class="countdown-num">00</span>
+              <span class="countdown-label">Ngày</span>
+            </div>
+            <div class="countdown-item">
+              <span id="count-hours" class="countdown-num">00</span>
+              <span class="countdown-label">Giờ</span>
+            </div>
+            <div class="countdown-item">
+              <span id="count-mins" class="countdown-num">00</span>
+              <span class="countdown-label">Phút</span>
+            </div>
+            <div class="countdown-item">
+              <span id="count-secs" class="countdown-num">00</span>
+              <span class="countdown-label">Giây</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =======================================================================
+       5. INVITATION & FAMILY SECTION
+       ======================================================================= -->
+  <section id="family" class="section">
+    <div class="container">
+      <div class="invitation-intro-card reveal-on-scroll">
+        <div class="section-subtitle">LỜI NGỎ</div>
+        <h2 class="section-title">Trân Trọng Kính Mời</h2>
+        <img src="assets/icons/ornament.svg" alt="Ornament" class="ornament-divider" style="margin-bottom: 25px;">
+
+        <p class="intro-lead-text">
+          TỚI DỰ BỮA CƠM THÂN MẬT CHUNG VUI CÙNG GIA ĐÌNH CHÚNG TÔI<br>
+          Sự hiện diện của Quý khách là niềm vinh hạnh to lớn cho gia đình và là lời chúc phúc quý báu nhất dành cho
+          chúng tôi!
+        </p>
+
+        <!-- Families grid -->
+        <div class="families-grid">
+          <!-- Nhà Trai -->
+          <div class="family-card reveal-on-scroll stagger-1">
+            <div class="family-badge">Nhà Trai</div>
+            <div class="family-parents">
+              <div>ÔNG: <strong>NGUYỄN VIẾT THẮNG</strong></div>
+              <div>BÀ: <strong>BÙI THỊ XUÂN</strong></div>
+            </div>
+            <div class="family-address">
+              📍 Thôn Ngãi Cầu, xã An Khánh<br>huyện Hoài Đức, TP. Hà Nội
+            </div>
+          </div>
+
+          <!-- Nhà Gái -->
+          <div class="family-card reveal-on-scroll stagger-2">
+            <div class="family-badge">Nhà Gái</div>
+            <div class="family-parents">
+              <div>ÔNG: <strong>HOÀNG VĂN HÒA</strong></div>
+              <div>BÀ: <strong>NGUYỄN THỊ LAI</strong></div>
+            </div>
+            <div class="family-address">
+              📍 TDP Hải Châu, phường Ngọc Sơn<br>thị xã Nghi Sơn, tỉnh Thanh Hóa
+            </div>
+          </div>
+        </div>
+
+        <div class="honored-quote">
+          “Rất hân hạnh được đón tiếp Quý khách!”
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =======================================================================
+       6. WEDDING EVENTS SECTION
+       ======================================================================= -->
+  <section id="events" class="section" style="background-color: var(--color-bg-alt);">
+    <div class="container">
+      <div class="section-title-wrap reveal-on-scroll">
+        <div class="section-subtitle">THỜI GIAN &amp; ĐỊA ĐIỂM</div>
+        <h2 class="section-title">Lịch Trình Sự Kiện</h2>
+        <img src="assets/icons/ornament.svg" alt="Ornament" class="ornament-divider">
+      </div>
+
+      <div class="events-grid">
+        <!-- Event 1: Lễ Nạp Tài (Nhà Gái) -->
+        <div class="event-card reveal-on-scroll stagger-1">
+          <span class="event-highlight-tag">TẠI TƯ GIA NHÀ GÁI</span>
+
+          <div class="event-icon-wrap">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path
+                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z">
+              </path>
+            </svg>
+          </div>
+
+          <h3 class="event-title">LỄ NẠP TÀI</h3>
+          <div class="event-host">Gia Đình Nhà Gái</div>
+
+          <div class="event-datetime-box">
+            <span class="event-time">08:00 SÁNG</span>
+            <div class="event-date">Chủ Nhật, ngày 18 - 10 - 2026</div>
+            <div class="event-lunar">(Tức ngày 09 tháng 09 năm Bính Ngọ)</div>
+          </div>
+
+          <div class="event-location">
+            <div class="location-name">🏛 Tại Tư Gia Nhà Gái</div>
+            <div class="location-address">TDP Hải Châu, phường Ngọc Sơn, thị xã Nghi Sơn, tỉnh Thanh Hóa</div>
+          </div>
+
+          <div class="event-actions">
+            <button type="button" class="btn-event btn-event-primary btn-open-map-modal"
+              data-tab-target="modal-tab-bride" aria-label="Xem bản đồ chỉ đường Nhà Gái">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              Xem Bản Đồ
+            </button>
+            <button
+              onclick="addToCalendar('Lễ Nạp Tài - Tuấn Anh & Hoàng Thúy', 'TDP Hải Châu, phường Ngọc Sơn, TX Nghi Sơn, Thanh Hóa', '20261018T080000', '20261018T120000', 'Lễ Nạp Tài tại gia đình nhà gái')"
+              class="btn-event btn-event-outline">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              Lưu Lịch
+            </button>
+          </div>
+        </div>
+
+        <!-- Event 2: Lễ Thành Hôn & Tiệc Cưới (Nhà Trai) -->
+        <div class="event-card reveal-on-scroll stagger-2">
+          <span class="event-highlight-tag">TẠI GIA ĐÌNH NHÀ TRAI</span>
+
+          <div class="event-icon-wrap">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="8" r="7"></circle>
+              <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+            </svg>
+          </div>
+
+          <h3 class="event-title">LỄ THÀNH HÔN &amp; TIỆC CƯỚI</h3>
+          <div class="event-host">Gia Đình Nhà Trai</div>
+
+          <div class="event-datetime-box">
+            <span class="event-time">11:00 TRƯA</span>
+            <div class="event-date">Thứ Ba, ngày 20 - 10 - 2026</div>
+            <div class="event-lunar">(Tức ngày 11 tháng 09 năm Bính Ngọ)</div>
+          </div>
+
+          <div class="event-location">
+            <div class="location-name">🏛 Nhà Văn Hóa Thôn Ngãi Cầu</div>
+            <div class="location-address">Thôn Ngãi Cầu, xã An Khánh, huyện Hoài Đức, TP. Hà Nội</div>
+          </div>
+
+          <div class="event-actions">
+            <button type="button" class="btn-event btn-event-primary btn-open-map-modal"
+              data-tab-target="modal-tab-groom" aria-label="Xem bản đồ chỉ đường Nhà Trai">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+              Xem Bản Đồ
+            </button>
+            <button
+              onclick="addToCalendar('Lễ Thành Hôn - Tuấn Anh & Hoàng Thúy', 'Nhà văn hóa thôn Ngãi Cầu, xã An Khánh, Hoài Đức, Hà Nội', '20261020T110000', '20261020T150000', 'Lễ Thành Hôn và tiệc cưới tại gia đình nhà trai')"
+              class="btn-event btn-event-outline">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              Lưu Lịch
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =======================================================================
+       7. LOVE STORY TIMELINE
+       ======================================================================= -->
+  <section id="story" class="section">
+    <div class="container">
+      <div class="section-title-wrap reveal-on-scroll">
+        <div class="section-subtitle">KỶ NIỆM ĐẸP</div>
+        <h2 class="section-title">Câu Chuyện Tình Yêu</h2>
+        <img src="assets/icons/ornament.svg" alt="Ornament" class="ornament-divider">
+      </div>
+
+      <div class="timeline-container">
+        <div class="timeline-line"></div>
+
+        <!-- Story 1 -->
+        <div class="timeline-item reveal-on-scroll">
+          <div class="timeline-node">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="12" r="8" />
+            </svg>
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-date">Mùa Thu 2022</div>
+            <div class="timeline-title">Lần Đầu Gặp Gỡ</div>
+            <div class="timeline-desc">Một buổi chiều Hà Nội se lạnh, ánh mắt chạm nhau giữa quán cafe quen thuộc đã mở
+              đầu cho hành trình ngọt ngào của chúng mình.</div>
+          </div>
+        </div>
+
+        <!-- Story 2 -->
+        <div class="timeline-item reveal-on-scroll">
+          <div class="timeline-node">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+            </svg>
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-date">Tháng 02 / 2023</div>
+            <div class="timeline-title">Lời Tỏ Tình Ngọt Ngào</div>
+            <div class="timeline-desc">“Từ nay về sau, mọi buồn vui của em đều có anh chia sẻ.” Một cái gật đầu e ấp
+              đánh dấu ngày hai trái tim cùng chung nhịp đập.</div>
+          </div>
+        </div>
+
+        <!-- Story 3 -->
+        <div class="timeline-item reveal-on-scroll">
+          <div class="timeline-node">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+            </svg>
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-date">Mùa Hè 2025</div>
+            <div class="timeline-title">Khoảnh Khắc Cầu Hôn</div>
+            <div class="timeline-desc">Dưới ánh hoàng hôn bên bờ biển lộng gió, chiếc nhẫn lấp lánh được trao cùng lời
+              hẹn ước: “Làm vợ anh nhé!” – “Em đồng ý!”</div>
+          </div>
+        </div>
+
+        <!-- Story 4 -->
+        <div class="timeline-item reveal-on-scroll">
+          <div class="timeline-node">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" />
+            </svg>
+          </div>
+          <div class="timeline-content">
+            <div class="timeline-date">20 / 10 / 2026</div>
+            <div class="timeline-title">Ngày Chung Đôi</div>
+            <div class="timeline-desc">Chính thức nắm tay nhau bước vào lễ đường, cùng nhau xây dựng tổ ấm hạnh phúc
+              dưới sự chứng kiến của hai gia đình và bạn bè thân thương.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- =======================================================================
+       8. MEMORY FILM / LOVE JOURNEY
+       ======================================================================= -->
+  <section id="memory-film" class="memory-film-section" aria-labelledby="memory-film-title">
+    <div class="memory-film-background" aria-hidden="true"></div>
+    <div class="container">
+      <div class="memory-film-layout">
+        <div class="memory-film-copy reveal-on-scroll">
+          <div class="memory-film-kicker">NHỮNG MÙA TA ĐÃ ĐI QUA</div>
+          <h2 id="memory-film-title" class="memory-film-title">Hành Trình<br><em>Đến Ngày Hôm Nay</em></h2>
+          <p class="memory-film-description">Từ những ngày đầu gặp gỡ đến lời hẹn ước cho một mái nhà chung - những khoảnh khắc đẹp nhất của chúng mình trong một thước phim.</p>
+          <div class="memory-film-years" aria-label="Hành trình từ năm 2022 đến năm 2026">
+            <span>2022</span>
+            <i aria-hidden="true"></i>
+            <span>2026</span>
+          </div>
+        </div>
+
+        <div class="memory-film-player reveal-on-scroll stagger-1" id="memory-film-player" data-state="loading">
+          <video id="memory-film-video" class="memory-film-video" controls playsinline preload="none"
+            poster="assets/images/hero.jpg" data-src="assets/video/hanh-trinh.mp4"
+            aria-label="Thước phim hành trình của Tuấn Anh và Hoàng Thúy"></video>
+          <div class="memory-film-placeholder" id="memory-film-placeholder" aria-live="polite">
+            <img src="assets/images/hero.jpg" alt="" loading="lazy" decoding="async">
+            <span class="memory-film-placeholder-shade" aria-hidden="true"></span>
+            <span class="memory-film-placeholder-text" id="memory-film-placeholder-text">Đang tải thước phim...</span>
+          </div>
+          <button id="memory-film-unmute" class="memory-film-unmute" type="button" hidden
+            aria-label="Bật tiếng thước phim" title="Bật tiếng thước phim">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M11 5 6 9H3v6h3l5 4V5Z"></path>
+              <path d="M16 9a5 5 0 0 1 0 6M19 6a9 9 0 0 1 0 12"></path>
+            </svg>
+            <span>Bật tiếng</span>
+          </button>
+          <button id="memory-film-retry" class="memory-film-retry" type="button" hidden
+            aria-label="Phát thước phim" title="Phát thước phim">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+              <path d="M8 5.8v12.4L18.2 12 8 5.8Z" fill="currentColor" stroke-linejoin="round"></path>
+            </svg>
+            <span>Phát phim</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =======================================================================
+       9. PHOTO GALLERY SECTION
+       ======================================================================= -->
+  <section id="gallery" class="section" style="background-color: var(--color-bg-alt);">
+    <div class="container">
+      <div class="section-title-wrap reveal-on-scroll">
+        <div class="section-subtitle">KHOẢNH KHẮC YÊU THƯƠNG</div>
+        <h2 class="section-title">Album Ảnh Cưới</h2>
+        <img src="assets/icons/ornament.svg" alt="Ornament" class="ornament-divider">
+      </div>
+
+      <!-- Horizontal Card Slider -->
+      <div class="gallery-slider-wrapper reveal-on-scroll">
+        <!-- Prev Button -->
+        <button id="gallery-prev" class="slider-nav-btn prev" aria-label="Xem ảnh trước">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+
+        <!-- Slider Track -->
+        <div id="gallery-slider" class="gallery-slider-track">
+          <!-- Slide 1 -->
+          <div class="gallery-slide-card" data-index="0">
+            <img src="assets/images/hero.jpg" alt="Ảnh cưới Tuấn Anh & Hoàng Thúy" loading="lazy" decoding="async">
+            <div class="gallery-overlay">
+              <span class="gallery-caption">Trọn vẹn tình yêu • Lễ Thành Hôn</span>
+            </div>
+          </div>
+
+          <!-- Slide 2 -->
+          <div class="gallery-slide-card" data-index="1">
+            <img src="assets/images/gallery-1.jpg" alt="Khoảnh khắc hoàng hôn lãng mạn" loading="lazy" decoding="async">
+            <div class="gallery-overlay">
+              <span class="gallery-caption">Ánh hoàng hôn bên em</span>
+            </div>
+          </div>
+
+          <!-- Slide 3 -->
+          <div class="gallery-slide-card" data-index="2">
+            <img src="assets/images/gallery-2.jpg" alt="Lễ Nạp Tài trang phục áo dài truyền thống" loading="lazy"
+              decoding="async">
+            <div class="gallery-overlay">
+              <span class="gallery-caption">Duyên nợ trăm năm • Áo dài truyền thống</span>
+            </div>
+          </div>
+
+          <!-- Slide 4 -->
+          <div class="gallery-slide-card" data-index="3">
+            <img src="assets/images/hero.jpg" alt="Khoảnh khắc rạng ngời hạnh phúc" loading="lazy" decoding="async">
+            <div class="gallery-overlay">
+              <span class="gallery-caption">Nụ cười hạnh phúc ngày trọng đại</span>
+            </div>
+          </div>
+
+          <!-- Slide 5 -->
+          <div class="gallery-slide-card" data-index="4">
+            <img src="assets/images/gallery-1.jpg" alt="Tình yêu vĩnh cửu" loading="lazy" decoding="async">
+            <div class="gallery-overlay">
+              <span class="gallery-caption">Tay trong tay trọn đời bình yên</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Next Button -->
+        <button id="gallery-next" class="slider-nav-btn next" aria-label="Xem ảnh kế tiếp">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Slider Dots Pagination -->
+      <div id="gallery-dots" class="slider-dots-container"></div>
+    </div>
+  </section>
+
+  <!-- =======================================================================
+       9. RSVP CONFIRMATION FORM
+       ======================================================================= -->
+  <section id="rsvp" class="section">
+    <div class="container">
+      <div class="section-title-wrap reveal-on-scroll">
+        <div class="section-subtitle">PHÚC ĐÁP</div>
+        <h2 class="section-title">Xác Nhận Tham Dự</h2>
+        <img src="assets/icons/ornament.svg" alt="Ornament" class="ornament-divider">
+        <p style="margin-top: 10px; color: var(--color-text-muted);">
+          Để gia đình có thể chuẩn bị chu đáo và tiếp đón trọn vẹn nhất, xin Quý khách vui lòng xác nhận tham dự trước
+          ngày <strong>15/10/2026</strong>.
+        </p>
+      </div>
+
+      <div class="rsvp-wrapper reveal-on-scroll">
+        <form id="rsvp-form">
+          <div class="form-group">
+            <label class="form-label" for="rsvp-name">Họ và tên của Quý khách *</label>
+            <input type="text" id="rsvp-name" class="form-control" placeholder="Ví dụ: Nguyễn Văn A" required
+              autocomplete="name">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="rsvp-phone">Số điện thoại liên hệ</label>
+            <input type="tel" id="rsvp-phone" class="form-control" placeholder="Ví dụ: 0912 345 678" autocomplete="tel"
+              inputmode="tel">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Quý khách là khách của?</label>
+            <div class="radio-group">
+              <label class="radio-item">
+                <input type="radio" name="guest-side" value="Khách Nhà Trai" checked>
+                <span>Nhà Trai (Tuấn Anh)</span>
+              </label>
+              <label class="radio-item">
+                <input type="radio" name="guest-side" value="Khách Nhà Gái">
+                <span>Nhà Gái (Hoàng Thúy)</span>
+              </label>
+              <label class="radio-item">
+                <input type="radio" name="guest-side" value="Bạn Cả Hai">
+                <span>Bạn của Cả Hai</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="rsvp-guests">Số người cùng tham dự</label>
+            <select id="rsvp-guests" class="form-control">
+              <option value="1 người">Đi 1 mình tôi</option>
+              <option value="2 người" selected>Đi cùng 1 người thân (2 người)</option>
+              <option value="3 người">Gia đình 3 người</option>
+              <option value="4+ người">Cả gia đình (4 người trở lên)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Quý khách có tham dự không?</label>
+            <div class="radio-group">
+              <label class="radio-item">
+                <input type="radio" name="guest-attending" value="Chắc chắn tham dự" checked>
+                <span>Chắc chắn sẽ tới chung vui 🎉</span>
+              </label>
+              <label class="radio-item">
+                <input type="radio" name="guest-attending" value="Rất tiếc không thể đến">
+                <span>Rất tiếc không thể tham dự 💌</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="rsvp-wish">Lời chúc gửi đến Cô dâu &amp; Chú rể</label>
+            <textarea id="rsvp-wish" class="form-control" rows="3"
+              placeholder="Gửi lời chúc phúc trăm năm đến Tuấn Anh & Hoàng Thúy..."></textarea>
+          </div>
+
+          <button type="submit" class="btn-submit-rsvp">
+            GỬI XÁC NHẬN THAM DỰ
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- =======================================================================
+       10. GUESTBOOK / WISHES SECTION
+       ======================================================================= -->
+  <section id="guestbook" class="section" style="background-color: var(--color-bg-alt);">
+    <div class="container">
+      <div class="section-title-wrap reveal-on-scroll">
+        <div class="section-subtitle">LỜI CHÚC TỪ QUÝ KHÁCH</div>
+        <h2 class="section-title">Sổ Lưu Bút Mừng Cưới</h2>
+        <img src="assets/icons/ornament.svg" alt="Ornament" class="ornament-divider">
+      </div>
+
+      <div id="wishes-container" class="wishes-list reveal-on-scroll">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </div>
+  </section>
+
+  <!-- =======================================================================
+       11. DIGITAL GIFT / QR CODE MODAL
+       ======================================================================= -->
+  <div id="gift-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="gift-modal-title"
+    aria-hidden="true">
+    <div class="gift-modal-card" tabindex="-1">
+      <button id="btn-close-gift" class="btn-close-modal" aria-label="Đóng hộp mừng cưới">&times;</button>
+
+      <div style="text-align: center;">
+        <div class="section-subtitle">HỘP MỪNG CƯỚI</div>
+        <h3 id="gift-modal-title" class="section-title" style="font-size: 1.8rem; margin-bottom: 5px;">Gửi Quà Chúc Phúc
+        </h3>
+        <img src="assets/icons/ornament.svg" alt="" class="ornament-divider"
+          style="width: 120px; height: 16px; margin: 4px auto 14px;" aria-hidden="true">
+        <p style="font-size: 0.9rem; color: var(--color-text-muted);">
+          Sự hiện diện của bạn là món quà lớn nhất! Nếu bạn ở xa không thể đến dự, bạn có thể gửi quà mừng chúc phúc qua
+          tài khoản ngân hàng dưới đây:
+        </p>
+      </div>
+
+      <!-- Tab Buttons -->
+      <div class="gift-tabs" role="tablist">
+        <button class="gift-tab-btn active" role="tab" data-tab="tab-groom" aria-controls="tab-groom"
+          aria-selected="true">Mừng Chú Rể (Tuấn Anh)</button>
+        <button class="gift-tab-btn" role="tab" data-tab="tab-bride" aria-controls="tab-bride"
+          aria-selected="false">Mừng Cô Dâu (Hoàng Thúy)</button>
+      </div>
+
+      <!-- Tab 1: Groom -->
+      <div id="tab-groom" class="gift-tab-content active" role="tabpanel">
+        <img src="assets/images/qr-groom.svg" alt="QR Mừng Chú Rể Tuấn Anh" class="qr-image-display">
+        <div class="bank-info-box">
+          <div style="font-size: 0.85rem; color: var(--color-text-muted);">Ngân hàng Vietcombank (CN Thăng Long)</div>
+          <div class="bank-account-num">1023 888 999</div>
+          <div style="font-weight: 600; color: var(--color-text-main);">NGUYỄN TUẤN ANH</div>
+        </div>
+        <button class="btn-copy-account" data-account="1023888999">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          Sao Chép Số Tài Khoản
+        </button>
+      </div>
+
+      <!-- Tab 2: Bride -->
+      <div id="tab-bride" class="gift-tab-content" role="tabpanel">
+        <img src="assets/images/qr-bride.svg" alt="QR Mừng Cô Dâu Hoàng Thúy" class="qr-image-display">
+        <div class="bank-info-box">
+          <div style="font-size: 0.85rem; color: var(--color-text-muted);">Ngân hàng Techcombank (CN Hà Nội)</div>
+          <div class="bank-account-num">1903 666 888</div>
+          <div style="font-weight: 600; color: var(--color-text-main);">HOÀNG THỊ THÚY</div>
+        </div>
+        <button class="btn-copy-account" data-account="1903666888">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+          Sao Chép Số Tài Khoản
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =======================================================================
+       11B. MAP LOCATION SELECTOR MODAL (NHÀ TRAI & NHÀ GÁI)
+       ======================================================================= -->
+  <div id="map-modal" class="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="map-modal-title"
+    aria-hidden="true">
+    <div class="map-modal-card" tabindex="-1">
+      <button id="btn-close-map" class="btn-close-modal" aria-label="Đóng bản đồ">&times;</button>
+
+      <div style="text-align: center;">
+        <div class="section-subtitle">CHỈ ĐƯỜNG &amp; VỊ TRÍ</div>
+        <h3 id="map-modal-title" class="section-title" style="font-size: 1.8rem; margin-bottom: 5px;">Chọn Bản Đồ Sự
+          Kiện</h3>
+        <img src="assets/icons/ornament.svg" alt="" class="ornament-divider"
+          style="width: 120px; height: 16px; margin: 4px auto 14px;" aria-hidden="true">
+        <p style="font-size: 0.9rem; color: var(--color-text-muted);">
+          Vui lòng chọn địa điểm gia đình bạn muốn tới để xem bản đồ và nhận chỉ đường:
+        </p>
+      </div>
+
+      <!-- Map Modal Tab Buttons -->
+      <div class="map-modal-tabs" role="tablist">
+        <button class="map-modal-tab-btn active" role="tab" data-target="modal-tab-groom"
+          aria-controls="modal-tab-groom" aria-selected="true">
+          🏛 Nhà Trai (Hà Nội)
+        </button>
+        <button class="map-modal-tab-btn" role="tab" data-target="modal-tab-bride" aria-controls="modal-tab-bride"
+          aria-selected="false">
+          🏛 Nhà Gái (Thanh Hóa)
+        </button>
+      </div>
+
+      <!-- Tab 1: Groom -->
+      <div id="modal-tab-groom" class="map-modal-tab-content active" role="tabpanel">
+        <div class="map-modal-info-box">
+          <div class="map-modal-event">LỄ THÀNH HÔN &amp; TIỆC CƯỚI</div>
+          <div class="map-modal-venue">Nhà Văn Hóa Thôn Ngãi Cầu</div>
+          <div class="map-modal-addr">📍 Thôn Ngãi Cầu, xã An Khánh, huyện Hoài Đức, TP. Hà Nội</div>
+          <div class="map-modal-time">⏰ 11:00 Trưa • Thứ Ba, 20/10/2026</div>
+        </div>
+
+        <div class="map-modal-iframe-wrap">
+          <iframe
+            src="https://maps.google.com/maps?q=Nh%C3%A0+v%C4%83n+h%C3%B3a+th%C3%B4n+Ng%C3%A3i+C%E1%BA%A7u+An+Kh%C3%A1nh+Ho%C3%A0i+%C4%90%E1%BB%A9c+H%C3%A0+N%E1%BB%99i&t=&z=15&ie=UTF8&iwloc=&output=embed"
+            title="Bản đồ Nhà Trai" loading="lazy" allowfullscreen>
+          </iframe>
+        </div>
+
+        <a href="https://www.google.com/maps/search/?api=1&query=Nh%C3%A0+v%C4%83n+h%C3%B3a+th%C3%B4n+Ng%C3%A3i+C%E1%BA%A7u+An+Kh%C3%A1nh+Ho%C3%A0i+%C4%90%E1%BB%A9c+H%C3%A0+N%E1%BB%99i"
+          target="_blank" rel="noopener noreferrer" class="btn-modal-maps">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+          </svg>
+          Mở Google Maps Chỉ Đường Nhà Trai
+        </a>
+      </div>
+
+      <!-- Tab 2: Bride -->
+      <div id="modal-tab-bride" class="map-modal-tab-content" role="tabpanel">
+        <div class="map-modal-info-box">
+          <div class="map-modal-event">LỄ NẠP TÀI</div>
+          <div class="map-modal-venue">Tại Tư Gia Nhà Gái</div>
+          <div class="map-modal-addr">📍 TDP Hải Châu, phường Ngọc Sơn, thị xã Nghi Sơn, tỉnh Thanh Hóa</div>
+          <div class="map-modal-time">⏰ 08:00 Sáng • Chủ Nhật, 18/10/2026</div>
+        </div>
+
+        <div class="map-modal-iframe-wrap">
+          <iframe
+            src="https://maps.google.com/maps?q=TDP+H%E1%BA%A3i+Ch%C3%A2u+Ng%E1%BB%8Dc+S%C6%A1n+Nghi+S%C6%A1n+Thanh+H%C3%B3a&t=&z=15&ie=UTF8&iwloc=&output=embed"
+            title="Bản đồ Nhà Gái" loading="lazy" allowfullscreen>
+          </iframe>
+        </div>
+
+        <a href="https://www.google.com/maps/search/?api=1&query=TDP+H%E1%BA%A3i+Ch%C3%A2u+Ng%E1%BB%8Dc+S%C6%A1n+Nghi+S%C6%A1n+Thanh+H%C3%B3a"
+          target="_blank" rel="noopener noreferrer" class="btn-modal-maps">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="3 11 22 2 13 21 11 13 3 11"></polygon>
+          </svg>
+          Mở Google Maps Chỉ Đường Nhà Gái
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- =======================================================================
+       12. LIGHTBOX MODAL
+       ======================================================================= -->
+  <div id="lightbox-modal" role="dialog" aria-modal="true" aria-label="Ảnh cưới phóng to" aria-hidden="true">
+    <button id="btn-close-lightbox" class="btn-close-lightbox" aria-label="Đóng ảnh phóng to">&times;</button>
+    <img id="lightbox-img" src="" alt="Ảnh Cưới Phóng To">
+  </div>
+
+  <!-- =======================================================================
+       13. FOOTER
+       ======================================================================= -->
+  <footer class="footer">
+    <div class="container">
+      <img src="assets/icons/monogram.svg" alt="Monogram AT" class="footer-monogram">
+
+      <div class="footer-names">Tuấn Anh &amp; Hoàng Thúy</div>
+
+      <div class="footer-thank-you">Thank You!</div>
+
+      <img src="assets/icons/ornament.svg" alt="Ornament" class="ornament-divider"
+        style="filter: brightness(1.5); margin-bottom: 20px;">
+
+      <p class="footer-quote">
+        “Cảm ơn tình cảm và sự hiện diện của bạn trong ngày hạnh phúc nhất của chúng tôi!”
+      </p>
+
+      <div class="footer-credit">
+        Wedding Invitation • 20.10.2026 • Thiết kế độc quyền theo phong cách thiệp cưới Tuấn Anh &amp; Hoàng Thúy
+      </div>
+
+      <div class="footer-admin-link" style="margin-top: 18px;">
+        <a href="admin.html" target="_blank" rel="noopener noreferrer" style="color: var(--color-gold); font-size: 0.82rem; text-decoration: none; opacity: 0.75; display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; border: 1px solid rgba(197, 160, 89, 0.3); transition: all 0.3s ease;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>Quản trị nội dung thiệp</span>
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Mobile Bottom Quick Action Navigation Dock -->
+  <nav class="mobile-bottom-dock" id="mobile-bottom-dock" aria-label="Thanh tác vụ nhanh cho điện thoại">
+    <a href="#events" class="dock-item" aria-label="Lịch trình sự kiện">
+      <div class="dock-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+          <line x1="16" y1="2" x2="16" y2="6"></line>
+          <line x1="8" y1="2" x2="8" y2="6"></line>
+          <line x1="3" y1="10" x2="21" y2="10"></line>
+        </svg>
+      </div>
+      <span class="dock-text">Sự Kiện</span>
+    </a>
+
+    <button type="button" class="dock-item btn-open-map-modal" aria-label="Xem bản đồ chọn Nhà Trai hoặc Nhà Gái">
+      <div class="dock-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+          <circle cx="12" cy="10" r="3"></circle>
+        </svg>
+      </div>
+      <span class="dock-text">Bản Đồ</span>
+    </button>
+
+    <button type="button" class="dock-item dock-item-highlight btn-open-gift-modal" aria-label="Mở hộp mừng cưới QR">
+      <div class="dock-highlight-circle">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="8" width="18" height="13" rx="2"></rect>
+          <path d="M12 8v13"></path>
+          <path d="M19 12H5"></path>
+          <path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.5 4.5 0 0 1 12 7.5a4.5 4.5 0 0 1 4.5-4.5 2.5 2.5 0 0 1 0 5"></path>
+        </svg>
+      </div>
+      <span class="dock-text">Mừng Cưới</span>
+    </button>
+
+    <a href="#rsvp" class="dock-item" aria-label="Xác nhận tham dự">
+      <div class="dock-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+          <polyline points="22,6 12,13 2,6"></polyline>
+        </svg>
+      </div>
+      <span class="dock-text">Xác Nhận</span>
+    </a>
+
+    <button type="button" class="dock-item" id="dock-music-btn" aria-label="Bật hoặc tắt nhạc nền" aria-pressed="false">
+      <div class="dock-icon dock-music-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
+        </svg>
+      </div>
+      <span class="dock-text dock-music-text">Nhạc</span>
+    </button>
+  </nav>
+
+  <!-- Scripts -->
+  <script src="js/music.js?v=4"></script>
+  <script src="js/app.js?v=22"></script>
+</body>
+
+</html>

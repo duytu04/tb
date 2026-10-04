@@ -1,0 +1,1562 @@
+/**
+ * Wedding Website Application Logic
+ * Couple: Tuấn Anh & Hoàng Thúy
+ * Date: 20/10/2026
+ */
+
+// Ensure page always starts at top and ignores browser automatic scroll restoration
+if ('scrollRestoration' in history) {
+  history.scrollRestoration = 'manual';
+}
+
+function forceScrollToTop() {
+  const root = document.documentElement;
+  const prevBehavior = root.style.scrollBehavior;
+  root.style.scrollBehavior = 'auto';
+  window.scrollTo(0, 0);
+  root.scrollTop = 0;
+  document.body.scrollTop = 0;
+  requestAnimationFrame(() => {
+    root.style.scrollBehavior = prevBehavior;
+  });
+}
+
+// Reset immediately on script load
+forceScrollToTop();
+
+if (window.location.hash) {
+  history.replaceState(null, '', window.location.pathname + window.location.search);
+}
+
+window.addEventListener('beforeunload', () => {
+  forceScrollToTop();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  forceScrollToTop();
+  if (typeof window.getActiveWeddingConfig === 'function') {
+    window.WEDDING_CONFIG = window.getActiveWeddingConfig();
+  }
+  applyDynamicContent(window.WEDDING_CONFIG);
+  initEnvelope();
+  initPetalsCanvas();
+  initCountdown();
+  initMusicController();
+  initScrollReveal();
+  initCardTilt3D();
+  initMapModal();
+  initMemoryFilm();
+  initGallerySlider();
+  initRSVPForm();
+  initGuestbook();
+  initGiftModal();
+  initLightbox();
+});
+
+const appConfig = window.WEDDING_CONFIG || {};
+let RSVP_ENDPOINT = (appConfig.rsvpEndpoint || appConfig.RSVP_ENDPOINT || '').trim();
+
+/* ==========================================================================
+   0. DYNAMIC CONTENT BINDING & PERSONALIZATION
+   ========================================================================== */
+function applyDynamicContent(config) {
+  if (!config) return;
+
+  // 0. Cá nhân hóa theo URL Parameter (?to=Anh+Nam hoặc ?guest=Bạn+Lan)
+  const urlParams = new URLSearchParams(window.location.search);
+  const rawGuestParam = urlParams.get('to') || urlParams.get('guest') || urlParams.get('name');
+  if (rawGuestParam) {
+    const guestName = decodeURIComponent(rawGuestParam).replace(/\+/g, ' ').trim();
+    const pocketGuest = document.querySelector('.pocket-guest-val');
+    if (pocketGuest) pocketGuest.textContent = guestName;
+    const rsvpName = document.getElementById('rsvp-name');
+    if (rsvpName && !rsvpName.value) rsvpName.value = guestName;
+  }
+
+  // 1. Tiêu đề trang & Thẻ Meta SEO/Social
+  if (config.couple?.pageTitle) {
+    document.title = config.couple.pageTitle;
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.content = config.couple.pageTitle;
+  }
+  if (config.couple?.metaDescription) {
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.content = config.couple.metaDescription;
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.content = config.couple.metaDescription;
+  }
+  if (config.couple?.ogImage) {
+    const ogImg = document.querySelector('meta[property="og:image"]');
+    if (ogImg) ogImg.content = config.couple.ogImage;
+  }
+
+  // 2. Màn hình mở phong bì 3D
+  const openingKicker = document.querySelector('.opening-kicker');
+  if (openingKicker && config.couple?.ceremonyType) openingKicker.textContent = config.couple.ceremonyType;
+
+  const openingTitle = document.getElementById('opening-title');
+  if (openingTitle && config.groom?.name && config.bride?.name) {
+    openingTitle.innerHTML = `<span>${escapeHtml(config.groom.name)}</span> <span class="opening-ampersand" aria-hidden="true">&amp;</span> <span>${escapeHtml(config.bride.name)}</span>`;
+  }
+
+  const openingDateLine = document.querySelector('.opening-date-line');
+  if (openingDateLine && config.weddingDate) {
+    if (config.weddingDate.fullDateText) openingDateLine.setAttribute('aria-label', config.weddingDate.fullDateText);
+    openingDateLine.innerHTML = `<span>${escapeHtml(config.weddingDate.dayOfWeek)}</span> <strong>${escapeHtml(config.weddingDate.day)}</strong> <span>${escapeHtml(config.weddingDate.monthYear)}</span>`;
+  }
+
+  // Thiệp nhỏ bên trong phong bì
+  const letterNames = document.querySelector('.letter-names');
+  if (letterNames && config.groom?.name && config.bride?.name) {
+    letterNames.innerHTML = `${escapeHtml(config.groom.name)} <span class="letter-amp">&amp;</span> ${escapeHtml(config.bride.name)}`;
+  }
+  const letterDateBadge = document.querySelector('.letter-date-badge');
+  if (letterDateBadge && config.weddingDate) {
+    letterDateBadge.innerHTML = `
+      <span class="letter-date-day">${escapeHtml(config.weddingDate.dayOfWeek)}</span>
+      <span class="letter-date-num">${escapeHtml(config.weddingDate.day)}</span>
+      <span class="letter-date-month">${escapeHtml(config.weddingDate.monthYear)}</span>
+    `;
+  }
+
+  // Mặt trước túi phong bì
+  const pocketNames = document.querySelector('.pocket-names');
+  if (pocketNames && config.groom?.name && config.bride?.name) {
+    pocketNames.innerHTML = `${escapeHtml(config.groom.name)} &amp; ${escapeHtml(config.bride.name)}`;
+  }
+
+  // 3. Thanh điều hướng Navbar
+  const navBrandText = document.querySelector('.nav-brand-text');
+  if (navBrandText && config.groom?.name && config.bride?.name) {
+    navBrandText.innerHTML = `${escapeHtml(config.groom.name)} &amp; ${escapeHtml(config.bride.name)}`;
+  }
+
+  // 4. Hero Section
+  const heroCeremonyType = document.querySelector('.hero-ceremony-type');
+  if (heroCeremonyType && config.couple?.ceremonyType) heroCeremonyType.textContent = config.couple.ceremonyType;
+
+  const heroNamesDisplay = document.querySelector('.hero-names-display');
+  if (heroNamesDisplay && config.groom?.name && config.bride?.name) {
+    heroNamesDisplay.innerHTML = `
+      <span class="hero-name">${escapeHtml(config.groom.name)}</span>
+      <div class="hero-heart-badge" aria-hidden="true">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </div>
+      <span class="hero-name">${escapeHtml(config.bride.name)}</span>
+    `;
+  }
+
+  const heroTimeNotice = document.querySelector('.hero-time-notice');
+  if (heroTimeNotice && config.weddingDate?.timeText) heroTimeNotice.textContent = config.weddingDate.timeText;
+
+  const dateDayText = document.querySelector('.date-day-text');
+  if (dateDayText && config.weddingDate?.dayOfWeek) dateDayText.textContent = config.weddingDate.dayOfWeek;
+
+  const dateNumber = document.querySelector('.date-number');
+  if (dateNumber && config.weddingDate?.day) dateNumber.textContent = config.weddingDate.day;
+
+  const dateYearText = document.querySelector('.date-year-text');
+  if (dateYearText && config.weddingDate?.monthYear) dateYearText.textContent = config.weddingDate.monthYear;
+
+  const heroLunarDate = document.querySelector('.hero-lunar-date');
+  if (heroLunarDate && config.weddingDate?.lunarText) heroLunarDate.textContent = config.weddingDate.lunarText;
+
+  if (config.gallery?.[0]?.src) {
+    const heroImg = document.querySelector('.hero-photo-inner img');
+    if (heroImg) heroImg.src = config.gallery[0].src;
+  }
+
+  // 5. Phần Gia đình 2 bên
+  const introLead = document.querySelector('.intro-lead-text');
+  if (introLead && config.family?.introLead) {
+    introLead.innerHTML = config.family.introLead.replace(/\n/g, '<br>');
+  }
+
+  const familyCards = document.querySelectorAll('.family-card');
+  if (familyCards.length >= 2 && config.family) {
+    // Card 0: Nhà Trai
+    if (config.family.groom) {
+      const gBadge = familyCards[0].querySelector('.family-badge');
+      if (gBadge && config.family.groom.label) gBadge.textContent = config.family.groom.label;
+      const gParents = familyCards[0].querySelector('.family-parents');
+      if (gParents) {
+        gParents.innerHTML = `<div>${escapeHtml(config.family.groom.father)}</div><div>${escapeHtml(config.family.groom.mother)}</div>`;
+      }
+      const gAddr = familyCards[0].querySelector('.family-address');
+      if (gAddr) gAddr.innerHTML = config.family.groom.address;
+    }
+    // Card 1: Nhà Gái
+    if (config.family.bride) {
+      const bBadge = familyCards[1].querySelector('.family-badge');
+      if (bBadge && config.family.bride.label) bBadge.textContent = config.family.bride.label;
+      const bParents = familyCards[1].querySelector('.family-parents');
+      if (bParents) {
+        bParents.innerHTML = `<div>${escapeHtml(config.family.bride.father)}</div><div>${escapeHtml(config.family.bride.mother)}</div>`;
+      }
+      const bAddr = familyCards[1].querySelector('.family-address');
+      if (bAddr) bAddr.innerHTML = config.family.bride.address;
+    }
+  }
+
+  // 6. Lịch trình sự kiện
+  const eventCards = document.querySelectorAll('.event-card');
+  if (config.events && eventCards.length) {
+    config.events.forEach((ev, idx) => {
+      const card = eventCards[idx];
+      if (!card) return;
+      const tag = card.querySelector('.event-highlight-tag');
+      if (tag && ev.tag) tag.textContent = ev.tag;
+      const title = card.querySelector('.event-title');
+      if (title && ev.title) title.textContent = ev.title;
+      const host = card.querySelector('.event-host');
+      if (host && ev.host) host.textContent = ev.host;
+
+      const time = card.querySelector('.event-time');
+      if (time && ev.time) time.textContent = ev.time;
+      const date = card.querySelector('.event-date');
+      if (date && ev.date) date.textContent = ev.date;
+      const lunar = card.querySelector('.event-lunar');
+      if (lunar && ev.lunarDate) lunar.textContent = ev.lunarDate;
+
+      const locName = card.querySelector('.location-name');
+      if (locName && ev.venueName) locName.textContent = ev.venueName;
+      const locAddr = card.querySelector('.location-address');
+      if (locAddr && ev.address) locAddr.textContent = ev.address;
+
+      const btnCal = card.querySelector('.btn-event-outline');
+      if (btnCal) {
+        btnCal.onclick = () => {
+          addToCalendar(
+            `${ev.title} - ${config.groom.name} & ${config.bride.name}`,
+            ev.address,
+            ev.calendarStart,
+            ev.calendarEnd,
+            `${ev.title} tại ${ev.host}`
+          );
+        };
+      }
+    });
+  }
+
+  // 7. Câu chuyện tình yêu (Love Story Timeline)
+  const timelineContainer = document.querySelector('.timeline-container');
+  if (timelineContainer && Array.isArray(config.loveStory) && config.loveStory.length) {
+    const existingLine = timelineContainer.querySelector('.timeline-line');
+    timelineContainer.innerHTML = '';
+    if (existingLine) {
+      timelineContainer.appendChild(existingLine);
+    } else {
+      const line = document.createElement('div');
+      line.className = 'timeline-line';
+      timelineContainer.appendChild(line);
+    }
+
+    config.loveStory.forEach((item) => {
+      const itemEl = document.createElement('div');
+      itemEl.className = 'timeline-item is-revealed';
+      itemEl.innerHTML = `
+        <div class="timeline-node">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="12" r="8" />
+          </svg>
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-date">${escapeHtml(item.date)}</div>
+          <div class="timeline-title">${escapeHtml(item.title)}</div>
+          <div class="timeline-desc">${escapeHtml(item.desc)}</div>
+        </div>
+      `;
+      timelineContainer.appendChild(itemEl);
+    });
+  }
+
+  // 8. Thước phim kỷ niệm (Memory Film)
+  if (config.memoryFilm) {
+    const mfKicker = document.querySelector('.memory-film-kicker');
+    if (mfKicker && config.memoryFilm.kicker) mfKicker.textContent = config.memoryFilm.kicker;
+    const mfTitle = document.getElementById('memory-film-title');
+    if (mfTitle && config.memoryFilm.title) mfTitle.innerHTML = config.memoryFilm.title;
+    const mfDesc = document.querySelector('.memory-film-description');
+    if (mfDesc && config.memoryFilm.desc) mfDesc.textContent = config.memoryFilm.desc;
+    const mfYears = document.querySelector('.memory-film-years');
+    if (mfYears) {
+      mfYears.innerHTML = `<span>${escapeHtml(config.memoryFilm.startYear || '2022')}</span><i aria-hidden="true"></i><span>${escapeHtml(config.memoryFilm.endYear || '2026')}</span>`;
+    }
+    const mfVideo = document.getElementById('memory-film-video');
+    if (mfVideo) {
+      if (config.memoryFilm.videoSrc) mfVideo.dataset.src = config.memoryFilm.videoSrc;
+      if (config.memoryFilm.posterSrc) mfVideo.poster = config.memoryFilm.posterSrc;
+    }
+  }
+
+  // 9. Album Ảnh Cưới (Gallery Slider)
+  const slider = document.getElementById('gallery-slider');
+  if (slider && Array.isArray(config.gallery) && config.gallery.length) {
+    slider.innerHTML = '';
+    config.gallery.forEach((item, idx) => {
+      const slide = document.createElement('div');
+      slide.className = 'gallery-slide-card';
+      slide.dataset.index = idx;
+      slide.innerHTML = `
+        <img src="${escapeHtml(item.src)}" alt="${escapeHtml(item.caption || 'Ảnh cưới')}" loading="lazy" decoding="async">
+        <div class="gallery-overlay">
+          <span class="gallery-caption">${escapeHtml(item.caption || '')}</span>
+        </div>
+      `;
+      slider.appendChild(slide);
+    });
+  }
+
+  // 10. Hộp mừng cưới & Mã VietQR tự động
+  if (config.banking) {
+    // Chú rể
+    const tabGroom = document.getElementById('tab-groom');
+    if (tabGroom && config.banking.groom) {
+      const g = config.banking.groom;
+      const bankInfo = tabGroom.querySelector('.bank-info-box');
+      if (bankInfo) {
+        bankInfo.innerHTML = `
+          <div style="font-size: 0.85rem; color: var(--color-text-muted);">${escapeHtml(g.bankName)}</div>
+          <div class="bank-account-num">${escapeHtml(g.accountNumberDisplay || g.accountNumber)}</div>
+          <div style="font-weight: 600; color: var(--color-text-main);">${escapeHtml(g.accountHolder)}</div>
+        `;
+      }
+      const copyBtn = tabGroom.querySelector('.btn-copy-account');
+      if (copyBtn) copyBtn.dataset.account = g.accountNumber;
+
+      const qrImg = tabGroom.querySelector('.qr-image-display');
+      if (qrImg && g.bankCode && g.accountNumber) {
+        const qrUrl = window.generateVietQRUrl
+          ? window.generateVietQRUrl(g.bankCode, g.accountNumber, g.accountHolder, g.transferMemo || `Mung cuoi ${config.groom.name}`)
+          : `https://img.vietqr.io/image/${g.bankCode}-${g.accountNumber}-compact2.png?accountName=${encodeURIComponent(g.accountHolder)}&addInfo=${encodeURIComponent(g.transferMemo || `Mung cuoi ${config.groom.name}`)}`;
+        qrImg.src = qrUrl;
+        qrImg.alt = `VietQR Mừng Chú Rể ${g.accountHolder}`;
+      }
+    }
+
+    // Cô dâu
+    const tabBride = document.getElementById('tab-bride');
+    if (tabBride && config.banking.bride) {
+      const b = config.banking.bride;
+      const bankInfo = tabBride.querySelector('.bank-info-box');
+      if (bankInfo) {
+        bankInfo.innerHTML = `
+          <div style="font-size: 0.85rem; color: var(--color-text-muted);">${escapeHtml(b.bankName)}</div>
+          <div class="bank-account-num">${escapeHtml(b.accountNumberDisplay || b.accountNumber)}</div>
+          <div style="font-weight: 600; color: var(--color-text-main);">${escapeHtml(b.accountHolder)}</div>
+        `;
+      }
+      const copyBtn = tabBride.querySelector('.btn-copy-account');
+      if (copyBtn) copyBtn.dataset.account = b.accountNumber;
+
+      const qrImg = tabBride.querySelector('.qr-image-display');
+      if (qrImg && b.bankCode && b.accountNumber) {
+        const qrUrl = window.generateVietQRUrl
+          ? window.generateVietQRUrl(b.bankCode, b.accountNumber, b.accountHolder, b.transferMemo || `Mung cuoi ${config.bride.name}`)
+          : `https://img.vietqr.io/image/${b.bankCode}-${b.accountNumber}-compact2.png?accountName=${encodeURIComponent(b.accountHolder)}&addInfo=${encodeURIComponent(b.transferMemo || `Mung cuoi ${config.bride.name}`)}`;
+        qrImg.src = qrUrl;
+        qrImg.alt = `VietQR Mừng Cô Dâu ${b.accountHolder}`;
+      }
+    }
+  }
+
+  // 11. Modal Bản Đồ Chỉ Đường
+  if (config.events && config.events.length) {
+    const groomEv = config.events.find(e => e.mapTabTarget === 'modal-tab-groom') || config.events[1];
+    const brideEv = config.events.find(e => e.mapTabTarget === 'modal-tab-bride') || config.events[0];
+
+    const modalGroom = document.getElementById('modal-tab-groom');
+    if (modalGroom && groomEv) {
+      const info = modalGroom.querySelector('.map-modal-info-box');
+      if (info) {
+        info.innerHTML = `
+          <div class="map-modal-event">${escapeHtml(groomEv.title)}</div>
+          <div class="map-modal-venue">${escapeHtml(groomEv.venueName)}</div>
+          <div class="map-modal-addr">📍 ${escapeHtml(groomEv.address)}</div>
+          <div class="map-modal-time">⏰ ${escapeHtml(groomEv.time)} • ${escapeHtml(groomEv.date)}</div>
+        `;
+      }
+      const iframe = modalGroom.querySelector('iframe');
+      if (iframe && groomEv.mapIframeSrc) iframe.src = groomEv.mapIframeSrc;
+      const appLink = modalGroom.querySelector('.btn-modal-maps');
+      if (appLink && groomEv.mapAppUrl) appLink.href = groomEv.mapAppUrl;
+    }
+
+    const modalBride = document.getElementById('modal-tab-bride');
+    if (modalBride && brideEv) {
+      const info = modalBride.querySelector('.map-modal-info-box');
+      if (info) {
+        info.innerHTML = `
+          <div class="map-modal-event">${escapeHtml(brideEv.title)}</div>
+          <div class="map-modal-venue">${escapeHtml(brideEv.venueName)}</div>
+          <div class="map-modal-addr">📍 ${escapeHtml(brideEv.address)}</div>
+          <div class="map-modal-time">⏰ ${escapeHtml(brideEv.time)} • ${escapeHtml(brideEv.date)}</div>
+        `;
+      }
+      const iframe = modalBride.querySelector('iframe');
+      if (iframe && brideEv.mapIframeSrc) iframe.src = brideEv.mapIframeSrc;
+      const appLink = modalBride.querySelector('.btn-modal-maps');
+      if (appLink && brideEv.mapAppUrl) appLink.href = brideEv.mapAppUrl;
+    }
+  }
+
+  // 12. Form RSVP
+  const rsvpRadioGroom = document.querySelector('input[name="guest-side"][value="Khách Nhà Trai"]');
+  if (rsvpRadioGroom && config.groom?.name) {
+    const span = rsvpRadioGroom.parentElement?.querySelector('span');
+    if (span) span.textContent = `Nhà Trai (${config.groom.name})`;
+  }
+  const rsvpRadioBride = document.querySelector('input[name="guest-side"][value="Khách Nhà Gái"]');
+  if (rsvpRadioBride && config.bride?.name) {
+    const span = rsvpRadioBride.parentElement?.querySelector('span');
+    if (span) span.textContent = `Nhà Gái (${config.bride.name})`;
+  }
+
+  // 13. Chân trang Footer
+  const footerNames = document.querySelector('.footer-names');
+  if (footerNames && config.groom?.name && config.bride?.name) {
+    footerNames.innerHTML = `${escapeHtml(config.groom.name)} &amp; ${escapeHtml(config.bride.name)}`;
+  }
+  const footerThankYou = document.querySelector('.footer-thank-you');
+  if (footerThankYou && config.footer?.thankYou) footerThankYou.textContent = config.footer.thankYou;
+  const footerQuote = document.querySelector('.footer-quote');
+  if (footerQuote && config.footer?.quote) footerQuote.textContent = config.footer.quote;
+  const footerCredit = document.querySelector('.footer-credit');
+  if (footerCredit && config.footer?.credit) footerCredit.textContent = config.footer.credit;
+}
+
+/* ==========================================================================
+   1. REALISTIC 3D ENVELOPE OPENING & INTERACTIVE UNBOXING
+   ========================================================================== */
+function initEnvelope() {
+  forceScrollToTop();
+  const overlay = document.getElementById('envelope-overlay');
+  const envelopeBox = document.getElementById('envelope-3d-box');
+  const openBtn = document.getElementById('btn-open-envelope');
+  const waxSeal = document.getElementById('flap-wax-seal');
+  const scene = document.querySelector('.envelope-scene');
+  const hero = document.getElementById('hero');
+  const status = document.getElementById('opening-status');
+
+  if (!overlay || !envelopeBox) return;
+
+  let isOpening = false;
+  let tiltFrame = null;
+  let tiltX = 0;
+  let tiltY = 0;
+  const reducedMotion = prefersReducedMotion();
+  const canTilt = window.matchMedia('(hover: hover) and (pointer: fine)').matches && !reducedMotion;
+  const timing = reducedMotion
+    ? { unseal: 0, flap: 0, rise: 0, portal: 0 }
+    : { unseal: 360, flap: 680, rise: 960, portal: 920 };
+
+  const wait = (duration) => new Promise(resolve => window.setTimeout(resolve, duration));
+
+  function announce(message) {
+    if (status) status.textContent = message;
+  }
+
+  function resetTilt() {
+    if (tiltFrame) {
+      cancelAnimationFrame(tiltFrame);
+      tiltFrame = null;
+    }
+    envelopeBox.style.setProperty('--tilt-x', '0deg');
+    envelopeBox.style.setProperty('--tilt-y', '0deg');
+  }
+
+  // A requestAnimationFrame buffer keeps the parallax responsive without repainting on every pointer event.
+  if (canTilt) {
+    overlay.addEventListener('pointermove', (event) => {
+      if (isOpening) return;
+
+      const bounds = envelopeBox.getBoundingClientRect();
+      const normalizedX = Math.max(-1, Math.min(1, (event.clientX - (bounds.left + bounds.width / 2)) / (bounds.width / 2)));
+      const normalizedY = Math.max(-1, Math.min(1, (event.clientY - (bounds.top + bounds.height / 2)) / (bounds.height / 2)));
+
+      tiltX = -normalizedY * 5.5;
+      tiltY = normalizedX * 6.5;
+
+      if (!tiltFrame) {
+        tiltFrame = requestAnimationFrame(() => {
+          envelopeBox.style.setProperty('--tilt-x', `${tiltX.toFixed(2)}deg`);
+          envelopeBox.style.setProperty('--tilt-y', `${tiltY.toFixed(2)}deg`);
+          tiltFrame = null;
+        });
+      }
+    });
+
+    overlay.addEventListener('pointerleave', () => {
+      if (!isOpening) resetTilt();
+    });
+  }
+
+  async function triggerOpening() {
+    if (isOpening) return;
+    isOpening = true;
+
+    forceScrollToTop();
+    resetTilt();
+    document.body.classList.add('invitation-opening');
+    document.documentElement.classList.add('invitation-opening');
+    if (openBtn) {
+      openBtn.setAttribute('aria-disabled', 'true');
+      openBtn.disabled = true;
+    }
+    waxSeal?.setAttribute('aria-disabled', 'true');
+    waxSeal?.setAttribute('tabindex', '-1');
+    overlay.setAttribute('aria-busy', 'true');
+    announce('Đang mở con dấu thiệp cưới.');
+
+    // The audio controller keeps its own rejected-playback fallback for browsers that deny autoplay.
+    window.weddingMusic?.play();
+    scene?.classList.add('is-opening', 'is-unsealing');
+
+    await wait(timing.unseal);
+    scene?.classList.add('is-flap-open');
+    announce('Đang mở phong bì.');
+
+    await wait(timing.flap);
+    scene?.classList.add('is-letter-rising');
+
+    await wait(timing.rise);
+    hero?.classList.add('hero-opening');
+    scene?.classList.add('is-portal');
+    overlay.classList.add('is-transitioning');
+    announce('Thiệp đã mở.');
+
+    await wait(timing.portal);
+    overlay.classList.add('opened');
+    overlay.setAttribute('aria-hidden', 'true');
+    overlay.removeAttribute('aria-busy');
+    document.body.classList.remove('invitation-locked', 'invitation-opening');
+    document.documentElement.classList.remove('invitation-locked', 'invitation-opening');
+    forceScrollToTop();
+    hero?.setAttribute('tabindex', '-1');
+    hero?.focus({ preventScroll: true });
+    forceScrollToTop();
+
+    window.setTimeout(() => hero?.classList.remove('hero-opening'), reducedMotion ? 0 : 1250);
+  }
+
+  if (openBtn) {
+    openBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      triggerOpening();
+    });
+  }
+
+  if (waxSeal) {
+    waxSeal.addEventListener('click', (e) => {
+      e.stopPropagation();
+      triggerOpening();
+    });
+
+    waxSeal.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        triggerOpening();
+      }
+    });
+  }
+
+  envelopeBox.addEventListener('click', () => {
+    triggerOpening();
+  });
+}
+
+/* ==========================================================================
+   2. FALLING GOLDEN PETALS ANIMATION (3D ORGANIC FLUTTER)
+   ========================================================================== */
+function initPetalsCanvas() {
+  const canvas = document.getElementById('petals-canvas');
+  if (!canvas) return;
+  if (prefersReducedMotion()) {
+    canvas.style.display = 'none';
+    return;
+  }
+  const ctx = canvas.getContext('2d');
+
+  let width = (canvas.width = window.innerWidth);
+  let height = (canvas.height = window.innerHeight);
+
+  window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+
+  const petals = [];
+  const maxPetals = window.innerWidth <= 768 ? 16 : 26;
+
+  class Petal {
+    constructor() {
+      this.reset(true);
+    }
+
+    reset(initial = false) {
+      this.x = Math.random() * width;
+      this.y = initial ? Math.random() * height : -25;
+      this.size = Math.random() * 9 + 7;
+      this.speedY = Math.random() * 0.85 + 0.55;
+      this.speedX = Math.random() * 0.7 - 0.35;
+      this.rotation = Math.random() * 360;
+      this.rotSpeed = Math.random() * 0.8 - 0.4;
+      this.flip = Math.random() * Math.PI * 2;
+      this.flipSpeed = Math.random() * 0.024 + 0.012;
+      this.opacity = Math.random() * 0.32 + 0.22;
+      this.sway = Math.random() * Math.PI * 2;
+      this.swaySpeed = Math.random() * 0.016 + 0.008;
+      this.colorType = Math.random() > 0.35 ? 'gold' : 'ivory';
+    }
+
+    update() {
+      this.y += this.speedY;
+      this.sway += this.swaySpeed;
+      this.flip += this.flipSpeed;
+      this.x += Math.sin(this.sway) * 0.65 + this.speedX;
+      this.rotation += this.rotSpeed;
+
+      if (this.y > height + 25 || this.x < -35 || this.x > width + 35) {
+        this.reset();
+      }
+    }
+
+    draw() {
+      ctx.save();
+      ctx.translate(this.x, this.y);
+      ctx.rotate((this.rotation * Math.PI) / 180);
+      
+      // 3D tumble flip along vertical axis
+      const scaleX = Math.cos(this.flip);
+      ctx.scale(scaleX, 1);
+      ctx.globalAlpha = this.opacity;
+
+      // Soft metallic champagne & ivory tones
+      const grad = ctx.createLinearGradient(-this.size, -this.size, this.size, this.size);
+      if (this.colorType === 'gold') {
+        grad.addColorStop(0, '#F5E4B8');
+        grad.addColorStop(0.5, '#D4B06A');
+        grad.addColorStop(1, '#A98338');
+      } else {
+        grad.addColorStop(0, '#FFFDF8');
+        grad.addColorStop(0.6, '#F8EBD4');
+        grad.addColorStop(1, '#E6D3B1');
+      }
+      ctx.fillStyle = grad;
+
+      // Delicate blossom petal curve
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.bezierCurveTo(this.size * 0.6, -this.size * 0.5, this.size * 1.1, 0, 0, this.size * 1.1);
+      ctx.bezierCurveTo(-this.size * 1.1, 0, -this.size * 0.6, -this.size * 0.5, 0, 0);
+      ctx.fill();
+
+      // Specular spine highlight
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(0, 1);
+      ctx.quadraticCurveTo(this.size * 0.08, this.size * 0.5, 0, this.size * 0.9);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+  }
+
+  for (let i = 0; i < maxPetals; i++) {
+    petals.push(new Petal());
+  }
+
+  let animationFrameId = null;
+
+  function render() {
+    ctx.clearRect(0, 0, width, height);
+    for (let p of petals) {
+      p.update();
+      p.draw();
+    }
+    animationFrameId = requestAnimationFrame(render);
+  }
+
+  render();
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden && animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+      animationFrameId = null;
+    } else if (!document.hidden && !animationFrameId) {
+      render();
+    }
+  });
+}
+
+/* ==========================================================================
+   3. COUNTDOWN TIMER
+   ========================================================================== */
+function initCountdown() {
+  // Wedding Date: Đọc từ cấu hình động
+  const targetIso = window.WEDDING_CONFIG?.weddingDate?.targetIso || '2026-10-20T11:00:00+07:00';
+  const targetDate = new Date(targetIso).getTime();
+
+  const daysEl = document.getElementById('count-days');
+  const hoursEl = document.getElementById('count-hours');
+  const minsEl = document.getElementById('count-mins');
+  const secsEl = document.getElementById('count-secs');
+
+  if (!daysEl || !hoursEl || !minsEl || !secsEl) return;
+
+  function update() {
+    const now = new Date().getTime();
+    const diff = targetDate - now;
+
+    if (diff <= 0) {
+      daysEl.innerText = '00';
+      hoursEl.innerText = '00';
+      minsEl.innerText = '00';
+      secsEl.innerText = '00';
+      return;
+    }
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    const secs = Math.floor((diff % (1000 * 60)) / 1000);
+
+    daysEl.innerText = String(days).padStart(2, '0');
+    hoursEl.innerText = String(hours).padStart(2, '0');
+    minsEl.innerText = String(mins).padStart(2, '0');
+    secsEl.innerText = String(secs).padStart(2, '0');
+  }
+
+  update();
+  setInterval(update, 1000);
+}
+
+/* ==========================================================================
+   4. FLOATING MUSIC TOGGLE & MOBILE CONTROLS
+   ========================================================================== */
+function initMusicController() {
+  const musicBtn = document.getElementById('floating-music-btn');
+  const dockMusicBtn = document.getElementById('dock-music-btn');
+
+  function handleToggleMusic() {
+    if (!window.weddingMusic) return;
+    if (document.getElementById('memory-film')?.classList.contains('is-video-active')) {
+      showToast('Nhạc nền tạm dừng trong lúc xem thước phim.');
+      return;
+    }
+    const isPlaying = window.weddingMusic.toggle();
+    if (isPlaying) {
+      showToast('Đang phát: "I Do" - 911 x Đức Phúc 🎵');
+    } else {
+      showToast('Đã tạm dừng nhạc ⏸');
+    }
+  }
+
+  if (musicBtn) {
+    musicBtn.addEventListener('click', handleToggleMusic);
+  }
+
+  if (dockMusicBtn) {
+    dockMusicBtn.addEventListener('click', handleToggleMusic);
+  }
+}
+
+/* ==========================================================================
+   4A. SCROLL REVEAL & 3D INTERACTIVE TILT
+   ========================================================================== */
+function initScrollReveal() {
+  const elements = document.querySelectorAll('.reveal-on-scroll');
+  if (!elements.length) return;
+
+  if (prefersReducedMotion() || !('IntersectionObserver' in window)) {
+    elements.forEach(el => el.classList.add('is-revealed'));
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries, obs) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-revealed');
+        obs.unobserve(entry.target);
+      }
+    });
+  }, {
+    rootMargin: '0px 0px -50px 0px',
+    threshold: 0.08
+  });
+
+  elements.forEach(el => observer.observe(el));
+}
+
+function initCardTilt3D() {
+  // Only enable on desktop with fine mouse pointer
+  const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  if (!canHover || prefersReducedMotion()) return;
+
+  const tiltCards = document.querySelectorAll('.event-card, .family-card, .invitation-intro-card');
+  tiltCards.forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      const centerX = rect.width / 2;
+      const centerY = rect.height / 2;
+      const normX = (x - centerX) / centerX;
+      const normY = (y - centerY) / centerY;
+
+      const tiltX = -normY * 3.5;
+      const tiltY = normX * 3.5;
+
+      card.style.transform = `perspective(1000px) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg) translateY(-4px)`;
+    });
+
+    card.addEventListener('mouseleave', () => {
+      card.style.transform = '';
+      card.style.transition = 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+      setTimeout(() => {
+        card.style.transition = '';
+      }, 600);
+    });
+  });
+}
+
+/* ==========================================================================
+   4B. MAP MODAL & INTERACTIVE MAP TABS (NHÀ TRAI & NHÀ GÁI)
+   ========================================================================== */
+function initMapModal() {
+  const modal = document.getElementById('map-modal');
+  const openBtns = document.querySelectorAll('.btn-open-map-modal');
+  const closeBtn = document.getElementById('btn-close-map');
+  const modalCard = modal?.querySelector('.map-modal-card');
+
+  if (!modal) return;
+
+  function setMapTab(targetId) {
+    const tabBtns = modal.querySelectorAll('.map-modal-tab-btn');
+    const tabContents = modal.querySelectorAll('.map-modal-tab-content');
+    tabBtns.forEach(b => {
+      const match = b.dataset.target === targetId;
+      b.classList.toggle('active', match);
+      b.setAttribute('aria-selected', match ? 'true' : 'false');
+    });
+    tabContents.forEach(c => {
+      c.classList.toggle('active', c.id === targetId);
+    });
+  }
+
+  openBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (btn.dataset.tabTarget) {
+        setMapTab(btn.dataset.tabTarget);
+      }
+      openModal(modal, modalCard);
+    });
+  });
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      closeModal(modal);
+    });
+  }
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal(modal);
+    }
+  });
+
+  // Switch tabs in Map Modal (Groom vs Bride)
+  const tabBtns = modal.querySelectorAll('.map-modal-tab-btn');
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.target;
+      if (target) {
+        setMapTab(target);
+      }
+    });
+  });
+}
+
+/* ==========================================================================
+   5. RSVP FORM & STORAGE
+   ========================================================================== */
+function initRSVPForm() {
+  const form = document.getElementById('rsvp-form');
+  if (!form) return;
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const submitBtn = form.querySelector('button[type="submit"]');
+
+    const name = document.getElementById('rsvp-name').value.trim();
+    const phone = document.getElementById('rsvp-phone').value.trim();
+    const side = form.elements['guest-side'].value;
+    const guests = document.getElementById('rsvp-guests').value;
+    const attending = form.elements['guest-attending'].value;
+    const wish = document.getElementById('rsvp-wish').value.trim();
+
+    if (!name) {
+      showToast('Vui lòng nhập họ và tên của bạn!');
+      return;
+    }
+
+    const rsvpData = {
+      name,
+      phone,
+      side,
+      guests,
+      attending,
+      wish,
+      date: new Date().toLocaleString('vi-VN')
+    };
+
+    setSubmitState(submitBtn, true);
+
+    const result = await submitRSVP(rsvpData);
+
+    // If wish exists, append to Guestbook
+    if (wish) {
+      addWishToGuestbook(name, side, wish);
+    }
+
+    form.reset();
+    setSubmitState(submitBtn, false);
+
+    if (result.sent) {
+      showToast(`Cảm ơn ${name}! Xác nhận tham dự đã được gửi.`);
+    } else {
+      showToast(`Đã lưu xác nhận trên thiết bị này. Vui lòng cấu hình RSVP_ENDPOINT để nhận dữ liệu thật.`);
+    }
+
+    // Scroll gently to guestbook if wish was entered
+    if (wish) {
+      setTimeout(() => {
+        document.getElementById('guestbook')?.scrollIntoView({ behavior: 'smooth' });
+      }, 1000);
+    }
+  });
+}
+
+function setSubmitState(button, isSubmitting) {
+  if (!button) return;
+  button.disabled = isSubmitting;
+  button.dataset.originalText = button.dataset.originalText || button.textContent.trim();
+  button.textContent = isSubmitting ? 'ĐANG GỬI...' : button.dataset.originalText;
+}
+
+async function submitRSVP(data) {
+  saveLocalItem('wedding_rsvps', data);
+
+  const endpoint = (window.WEDDING_CONFIG?.rsvpEndpoint || window.WEDDING_CONFIG?.RSVP_ENDPOINT || RSVP_ENDPOINT || '').trim();
+  if (!endpoint) {
+    return { sent: false, localOnly: true };
+  }
+
+  try {
+    const isGoogleScript = endpoint.includes('script.google.com');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      mode: isGoogleScript ? 'no-cors' : 'cors',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8'
+      },
+      body: JSON.stringify(data),
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    if (!isGoogleScript && !response.ok) {
+      throw new Error(`RSVP endpoint returned ${response.status}`);
+    }
+    return { sent: true };
+  } catch (error) {
+    console.warn('Không gửi được RSVP:', error);
+    return { sent: false, error };
+  }
+}
+
+/* ==========================================================================
+   6. GUESTBOOK & WISHES
+   ========================================================================== */
+const defaultWishes = [
+  {
+    name: 'Gia đình Bác Hùng (Hà Nội)',
+    side: 'Khách Nhà Trai',
+    text: 'Chúc mừng hai cháu Tuấn Anh và Hoàng Thúy trăm năm hạnh phúc, răng long đầu bạc, sớm sinh quý tử nhé!'
+  },
+  {
+    name: 'Cô Lan & Chú Tuấn (Thanh Hóa)',
+    side: 'Khách Nhà Gái',
+    text: 'Mừng hạnh phúc đôi bạn trẻ! Chúc hai con luôn yêu thương, nhường nhịn và đồng hành cùng nhau xây đắp tổ ấm vững bền.'
+  },
+  {
+    name: 'Minh Trí & Hội Bạn Cấp 3',
+    side: 'Bạn Cả Hai',
+    text: 'Cuối cùng ngày này cũng tới! Chúc bạn thân của tao lấy được vợ hiền, chúc cô dâu luôn xinh đẹp rạng ngời!'
+  }
+];
+
+function initGuestbook() {
+  const container = document.getElementById('wishes-container');
+  if (!container) return;
+
+  const userWishes = getLocalArray('wedding_wishes');
+  const allWishes = [...userWishes, ...defaultWishes];
+
+  container.innerHTML = '';
+  allWishes.forEach(item => {
+    container.appendChild(createWishElement(item.name, item.side, item.text));
+  });
+}
+
+function createWishElement(name, side, text) {
+  const div = document.createElement('div');
+  div.className = 'wish-item';
+  div.innerHTML = `
+    <div class="wish-header">
+      <span class="wish-author">${escapeHtml(name)}</span>
+      <span class="wish-tag">${escapeHtml(side || 'Khách Mời')}</span>
+    </div>
+    <p class="wish-text">“${escapeHtml(text)}”</p>
+  `;
+  return div;
+}
+
+function addWishToGuestbook(name, side, text) {
+  const newWish = { name, side, text, time: Date.now() };
+  saveLocalItem('wedding_wishes', newWish, true);
+
+  const container = document.getElementById('wishes-container');
+  if (container) {
+    const el = createWishElement(name, side, text);
+    container.insertBefore(el, container.firstChild);
+  }
+}
+
+/* ==========================================================================
+   7. DIGITAL GIFT / QR MODAL
+   ========================================================================== */
+function initGiftModal() {
+  const modal = document.getElementById('gift-modal');
+  const openBtns = document.querySelectorAll('.btn-open-gift-modal');
+  const closeBtn = document.getElementById('btn-close-gift');
+  const modalCard = modal?.querySelector('.gift-modal-card');
+
+  if (!modal) return;
+
+  openBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      openModal(modal, modalCard);
+    });
+  });
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      closeModal(modal);
+    });
+  }
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      closeModal(modal);
+    }
+  });
+
+  // Switch Tabs (Groom vs Bride)
+  const tabBtns = modal.querySelectorAll('.gift-tab-btn');
+  const tabContents = modal.querySelectorAll('.gift-tab-content');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.tab;
+      tabBtns.forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-selected', 'false');
+      });
+      tabContents.forEach(c => c.classList.remove('active'));
+
+      btn.classList.add('active');
+      btn.setAttribute('aria-selected', 'true');
+      document.getElementById(target)?.classList.add('active');
+    });
+  });
+
+  // Copy Account Number
+  const copyBtns = modal.querySelectorAll('.btn-copy-account');
+  copyBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const acc = btn.dataset.account;
+      if (acc) {
+        navigator.clipboard.writeText(acc).then(() => {
+          showToast(`Đã sao chép STK: ${acc}`);
+        }).catch(() => {
+          showToast(`STK: ${acc}`);
+        });
+      }
+    });
+  });
+}
+
+/* ==========================================================================
+   8. PHOTO GALLERY (HORIZONTAL SLIDER & LIGHTBOX)
+   ========================================================================== */
+function initGallerySlider() {
+  const slider = document.getElementById('gallery-slider');
+  const prevBtn = document.getElementById('gallery-prev');
+  const nextBtn = document.getElementById('gallery-next');
+  const dotsContainer = document.getElementById('gallery-dots');
+
+  if (!slider) return;
+
+  const slides = Array.from(slider.querySelectorAll('.gallery-slide-card'));
+  if (!slides.length) return;
+
+  let currentIndex = 0;
+  let autoplayTimer = null;
+  const AUTOPLAY_INTERVAL = 3200; // 3.2 seconds smooth, comfortable interval
+
+  // Render dots indicator
+  if (dotsContainer) {
+    dotsContainer.innerHTML = '';
+    slides.forEach((_, idx) => {
+      const dot = document.createElement('div');
+      dot.className = `slider-dot ${idx === 0 ? 'active' : ''}`;
+      dot.addEventListener('click', () => {
+        goToSlide(idx);
+        restartAutoplay();
+      });
+      dotsContainer.appendChild(dot);
+    });
+  }
+
+  function goToSlide(index) {
+    if (index < 0) index = slides.length - 1;
+    if (index >= slides.length) index = 0;
+    currentIndex = index;
+
+    const targetCard = slides[currentIndex];
+    if (targetCard) {
+      // ONLY scroll horizontally inside the slider container!
+      // This strictly moves slider.scrollLeft and NEVER scrolls the window or webpage!
+      const targetScrollLeft = targetCard.offsetLeft - (slider.clientWidth - targetCard.clientWidth) / 2;
+      slider.scrollTo({
+        left: Math.max(0, targetScrollLeft),
+        behavior: 'smooth'
+      });
+    }
+
+    updateDots(currentIndex);
+  }
+
+  function nextSlide() {
+    const nextIdx = (currentIndex + 1) % slides.length;
+    goToSlide(nextIdx);
+  }
+
+  function prevSlide() {
+    const prevIdx = (currentIndex - 1 + slides.length) % slides.length;
+    goToSlide(prevIdx);
+  }
+
+  function updateDots(activeIdx) {
+    if (!dotsContainer) return;
+    const dots = dotsContainer.querySelectorAll('.slider-dot');
+    dots.forEach((d, idx) => {
+      d.classList.toggle('active', idx === activeIdx);
+    });
+  }
+
+  function startAutoplay() {
+    stopAutoplay();
+    autoplayTimer = setInterval(nextSlide, AUTOPLAY_INTERVAL);
+  }
+
+  function stopAutoplay() {
+    if (autoplayTimer) {
+      clearInterval(autoplayTimer);
+      autoplayTimer = null;
+    }
+  }
+
+  function restartAutoplay() {
+    stopAutoplay();
+    startAutoplay();
+  }
+
+  // Next / Prev button navigation
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      prevSlide();
+      restartAutoplay();
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      nextSlide();
+      restartAutoplay();
+    });
+  }
+
+  // Pause on hover (desktop) and touch (mobile)
+  slider.addEventListener('mouseenter', stopAutoplay);
+  slider.addEventListener('mouseleave', () => {
+    startAutoplay();
+  });
+  slider.addEventListener('touchstart', stopAutoplay, { passive: true });
+  slider.addEventListener('touchend', () => {
+    setTimeout(startAutoplay, 2500);
+  }, { passive: true });
+
+  // Update dots indicator when manually scrolled
+  slider.addEventListener('scroll', () => {
+    const scrollPos = slider.scrollLeft + slider.offsetWidth / 2;
+    let closestIndex = 0;
+    let minDistance = Infinity;
+
+    slides.forEach((slide, idx) => {
+      const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
+      const dist = Math.abs(scrollPos - slideCenter);
+      if (dist < minDistance) {
+        minDistance = dist;
+        closestIndex = idx;
+      }
+    });
+
+    currentIndex = closestIndex;
+    updateDots(currentIndex);
+  }, { passive: true });
+
+  // Only auto-slide when the gallery section is currently visible on the user's screen
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          startAutoplay();
+        } else {
+          stopAutoplay();
+        }
+      });
+    }, { threshold: 0.15 });
+
+    observer.observe(slider);
+  } else {
+    startAutoplay();
+  }
+}
+
+/* ===========================================================================
+   8A. MEMORY FILM / LOVE JOURNEY PLAYER
+   =========================================================================== */
+function initMemoryFilm() {
+  const section = document.getElementById('memory-film');
+  const player = document.getElementById('memory-film-player');
+  const video = document.getElementById('memory-film-video');
+  const placeholderText = document.getElementById('memory-film-placeholder-text');
+  const unmuteBtn = document.getElementById('memory-film-unmute');
+  const retryBtn = document.getElementById('memory-film-retry');
+
+  if (!section || !player || !video || !video.dataset.src) return;
+
+  let inView = false;
+  let unavailable = false;
+  let musicWasPlaying = false;
+  let musicPausedForVideo = false;
+  let playbackRequest = 0;
+
+  function pauseBackgroundMusic() {
+    if (musicPausedForVideo) return;
+    const music = window.weddingMusic;
+    musicWasPlaying = Boolean(music && !music.audio.paused);
+    musicPausedForVideo = true;
+    section.classList.add('is-video-active');
+    if (musicWasPlaying) music.pause();
+  }
+
+  function restoreBackgroundMusic() {
+    section.classList.remove('is-video-active');
+    if (musicPausedForVideo && musicWasPlaying) window.weddingMusic?.play();
+    musicPausedForVideo = false;
+    musicWasPlaying = false;
+  }
+
+  function showPlaybackFallback() {
+    if (!inView || unavailable) return;
+    player.dataset.state = 'ready';
+    if (retryBtn) retryBtn.hidden = false;
+  }
+
+  async function startVideo(withSound = false) {
+    if (!inView || unavailable || document.hidden) return;
+    const request = ++playbackRequest;
+
+    if (!video.src) {
+      video.src = video.dataset.src;
+      video.load();
+    }
+
+    if (video.ended) video.currentTime = 0;
+    if (withSound) video.muted = false;
+    pauseBackgroundMusic();
+
+    try {
+      await video.play();
+    } catch (error) {
+      if (request !== playbackRequest || !inView || unavailable) return;
+
+      if (error.name === 'NotAllowedError' && !video.muted) {
+        video.muted = true;
+        try {
+          await video.play();
+        } catch (mutedError) {
+          if (request === playbackRequest) showPlaybackFallback();
+          return;
+        }
+      } else {
+        showPlaybackFallback();
+        return;
+      }
+    }
+
+    if (request !== playbackRequest || !inView) {
+      video.pause();
+      return;
+    }
+
+    player.dataset.state = 'playing';
+    if (retryBtn) retryBtn.hidden = true;
+    if (unmuteBtn) unmuteBtn.hidden = !video.muted;
+  }
+
+  function stopVideo() {
+    playbackRequest++;
+    video.pause();
+    if (!unavailable) player.dataset.state = 'ready';
+    if (retryBtn) retryBtn.hidden = true;
+    if (unmuteBtn) unmuteBtn.hidden = true;
+    restoreBackgroundMusic();
+  }
+
+  video.addEventListener('playing', () => {
+    if (!inView) return;
+    pauseBackgroundMusic();
+    player.dataset.state = 'playing';
+    if (unmuteBtn) unmuteBtn.hidden = !video.muted;
+    if (retryBtn) retryBtn.hidden = true;
+  });
+
+  video.addEventListener('loadedmetadata', () => {
+    player.classList.toggle('is-portrait', video.videoHeight > video.videoWidth);
+  });
+
+  video.addEventListener('volumechange', () => {
+    if (unmuteBtn) unmuteBtn.hidden = !inView || !video.muted;
+  });
+
+  video.addEventListener('error', () => {
+    unavailable = true;
+    playbackRequest++;
+    video.pause();
+    player.dataset.state = 'missing';
+    if (placeholderText) placeholderText.textContent = 'Thước phim đang được chuẩn bị';
+    if (retryBtn) retryBtn.hidden = true;
+    if (unmuteBtn) unmuteBtn.hidden = true;
+    restoreBackgroundMusic();
+  });
+
+  video.addEventListener('ended', () => {
+    player.dataset.state = 'ready';
+    if (unmuteBtn) unmuteBtn.hidden = true;
+    restoreBackgroundMusic();
+  });
+
+  retryBtn?.addEventListener('click', () => startVideo(true));
+  unmuteBtn?.addEventListener('click', () => {
+    video.muted = false;
+    unmuteBtn.hidden = true;
+    if (video.paused) startVideo(true);
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    const visible = entries[0]?.intersectionRatio >= 0.4;
+    if (visible === inView) return;
+    inView = visible;
+    if (inView) {
+      startVideo();
+    } else {
+      stopVideo();
+    }
+  }, { threshold: [0, 0.4, 1] });
+
+  observer.observe(player);
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      playbackRequest++;
+      video.pause();
+    } else if (inView && !unavailable) {
+      startVideo();
+    }
+  });
+}
+
+function initLightbox() {
+  const modal = document.getElementById('lightbox-modal');
+  const lightboxImg = document.getElementById('lightbox-img');
+  const closeBtn = document.getElementById('btn-close-lightbox');
+  const galleryCards = document.querySelectorAll('.gallery-slide-card');
+
+  if (!modal || !lightboxImg) return;
+
+  galleryCards.forEach(card => {
+    card.addEventListener('click', () => {
+      const img = card.querySelector('img');
+      if (img) {
+        lightboxImg.src = img.src;
+        openModal(modal, closeBtn || modal);
+      }
+    });
+  });
+
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => closeModal(modal));
+  }
+
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeModal(modal);
+  });
+}
+
+/* ==========================================================================
+   9. HELPER UTILITIES
+   ========================================================================== */
+function showToast(message) {
+  let toast = document.getElementById('toast-notification');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast-notification';
+    toast.className = 'toast-msg';
+    document.body.appendChild(toast);
+  }
+  toast.innerText = message;
+  toast.classList.add('show');
+
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3500);
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>'"]/g, 
+    tag => ({
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      "'": '&#39;',
+      '"': '&quot;'
+    }[tag] || tag)
+  );
+}
+
+function prefersReducedMotion() {
+  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+}
+
+function getLocalArray(key) {
+  try {
+    const value = JSON.parse(localStorage.getItem(key) || '[]');
+    return Array.isArray(value) ? value : [];
+  } catch (error) {
+    console.warn(`Không đọc được ${key} từ localStorage:`, error);
+    return [];
+  }
+}
+
+function saveLocalItem(key, item, prepend = false) {
+  try {
+    const items = getLocalArray(key);
+    if (prepend) {
+      items.unshift(item);
+    } else {
+      items.push(item);
+    }
+    localStorage.setItem(key, JSON.stringify(items));
+  } catch (error) {
+    console.warn(`Không lưu được ${key} vào localStorage:`, error);
+  }
+}
+
+let activeModal = null;
+let previousFocus = null;
+
+function openModal(modal, focusTarget) {
+  if (!modal) return;
+  previousFocus = document.activeElement;
+  activeModal = modal;
+  modal.classList.add('active');
+  modal.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-open');
+
+  const target = focusTarget || getFocusableElements(modal)[0] || modal;
+  setTimeout(() => target.focus?.(), 0);
+}
+
+function closeModal(modal) {
+  if (!modal) return;
+  modal.classList.remove('active');
+  modal.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('modal-open');
+
+  if (activeModal === modal) {
+    activeModal = null;
+  }
+
+  if (previousFocus && document.contains(previousFocus)) {
+    previousFocus.focus?.();
+  }
+  previousFocus = null;
+}
+
+function getFocusableElements(container) {
+  return Array.from(container.querySelectorAll(
+    'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+  )).filter(el => el.offsetParent !== null || el === document.activeElement);
+}
+
+document.addEventListener('keydown', (event) => {
+  if (!activeModal) return;
+
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    closeModal(activeModal);
+    return;
+  }
+
+  if (event.key !== 'Tab') return;
+
+  const focusable = getFocusableElements(activeModal);
+  if (!focusable.length) return;
+
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+});
+
+// Add to Calendar helper
+window.addToCalendar = function(title, location, startDate, endDate, description) {
+  const googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startDate}/${endDate}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}&ctz=Asia/Ho_Chi_Minh`;
+  window.open(googleCalUrl, '_blank');
+};
