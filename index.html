@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
-  <meta name="theme-color" content="#FAF7F2">
+  <meta name="theme-color" content="#f5f5f1">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="format-detection" content="telephone=no">
@@ -31,6 +31,7 @@
 
   <!-- Main Stylesheet -->
   <link rel="stylesheet" href="css/style.css?v=25">
+  <link rel="stylesheet" href="css/silk.css">
 
   <!-- Dynamic Wedding Config Store -->
   <script src="js/config.js?v=25"></script>
@@ -43,6 +44,7 @@
 </head>
 
 <body class="invitation-locked">
+  <noscript><style>html.invitation-locked,body.invitation-locked{overflow:auto!important;height:auto!important}#envelope-overlay{display:none!important}.reveal-on-scroll{opacity:1!important;transform:none!important}</style></noscript>
 
   <!-- Canvas for Falling Golden Blossom Petals -->
   <canvas id="petals-canvas"></canvas>
@@ -52,6 +54,7 @@
        ======================================================================= -->
   <div id="envelope-overlay" role="dialog" aria-modal="true" aria-labelledby="opening-title"
     aria-describedby="opening-instruction" aria-hidden="false">
+    <div class="opening-masthead"><span class="silk-wordmark">Dải lụa duyên</span><button id="skip-opening" type="button" class="text-action">Xem ngay <i data-lucide="arrow-up-right" aria-hidden="true"></i></button></div>
     <div class="opening-paper-grain" aria-hidden="true"></div>
     <div class="opening-frame opening-frame-left" aria-hidden="true"></div>
     <div class="opening-frame opening-frame-right" aria-hidden="true"></div>
@@ -86,6 +89,7 @@
       </header>
 
       <div class="envelope-stage">
+        <div id="silk-stage" aria-hidden="true"></div>
         <div class="envelope-3d-box" id="envelope-3d-box">
 
           <!-- 1. Inside Backing of the Envelope -->
@@ -179,9 +183,11 @@
 
       <!-- Action Prompt -->
       <div class="envelope-action-prompt">
-        <p id="opening-instruction" class="opening-instruction">Chạm vào con dấu để mở thiệp</p>
+        <p class="silk-guest">Trân trọng kính mời <strong id="opening-guest">Quý khách</strong></p>
+        <button id="btn-open-envelope" class="silk-button" type="button">Mở thiệp <i data-lucide="arrow-right" aria-hidden="true"></i></button>
+        <p id="opening-instruction" class="opening-instruction">Một lời hẹn, một đời bên nhau.</p>
       </div>
-      <p class="opening-footer">Trân trọng kính mời Quý khách</p>
+      <p class="opening-footer">TUẤN ANH &amp; HOÀNG THÚY</p>
     </div>
     <p id="opening-status" class="sr-only" aria-live="polite"></p>
   </div>
@@ -215,6 +221,7 @@
         <img src="assets/icons/monogram.svg" alt="AT Monogram" class="nav-monogram">
         <span class="nav-brand-text">Tuấn Anh &amp; Hoàng Thúy</span>
       </a>
+      <nav class="silk-nav" aria-label="Điều hướng thiệp"><a href="#story">Chuyện chúng mình</a><a href="#events">Ngày chung đôi</a><a href="#gallery">Album</a><a class="nav-rsvp" href="#rsvp">Xác nhận tham dự <i data-lucide="arrow-up-right" aria-hidden="true"></i></a></nav>
     </div>
   </header>
 
@@ -257,6 +264,7 @@
         </div>
 
         <div class="hero-lunar-date reveal-on-scroll">(Tức ngày 11 tháng 09 năm Bính Ngọ)</div>
+        <a href="#rsvp" class="silk-button hero-rsvp">Cùng chung vui <i data-lucide="arrow-up-right" aria-hidden="true"></i></a>
       </div>
 
       <!-- Couple Arch Frame Photo -->
@@ -298,6 +306,7 @@
       </div>
 
     </div>
+    <a href="#family" class="hero-next"><span>Một lời hẹn, một đời bên nhau.</span><i data-lucide="arrow-down" aria-hidden="true"></i></a>
   </section>
 
   <!-- =======================================================================
@@ -747,6 +756,7 @@
             GỬI XÁC NHẬN THAM DỰ
           </button>
         </form>
+        <div id="rsvp-result" class="rsvp-result" role="status" aria-live="polite" hidden></div>
       </div>
     </div>
   </section>
@@ -927,6 +937,7 @@
        13. FOOTER
        ======================================================================= -->
   <footer class="footer">
+    <img class="footer-photo" src="assets/images/gallery-1.jpg" alt="" loading="lazy" decoding="async">
     <div class="container">
       <img src="assets/icons/monogram.svg" alt="Monogram AT" class="footer-monogram">
 
@@ -1015,7 +1026,8 @@
 
   <!-- Scripts -->
   <script src="js/music.js?v=4"></script>
-  <script src="js/app.js?v=22"></script>
+  <script src="js/app.js?v=23"></script>
+  <script type="module" src="js/silk.js"></script>
 </body>
 
 </html>
