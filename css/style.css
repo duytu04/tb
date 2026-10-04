@@ -93,17 +93,15 @@ button:disabled {
   z-index: 99;
 }
 
-/* Scroll Reveal Utility Classes (IntersectionObserver) */
+/* Scroll Reveal Utility Classes (Always visible, buttery smooth without flicker) */
 .reveal-on-scroll {
-  opacity: 0;
-  transform: translateY(22px);
-  transition: opacity 0.85s var(--ease-cinematic), transform 0.85s var(--ease-cinematic);
-  will-change: opacity, transform;
+  opacity: 1;
+  transform: none;
 }
 
 .reveal-on-scroll.is-revealed {
   opacity: 1;
-  transform: translateY(0);
+  transform: none;
 }
 
 .reveal-on-scroll.stagger-1 {

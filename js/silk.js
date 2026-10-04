@@ -67,7 +67,7 @@ function startGoldenPetals() {
   }
 
   resize();
-  const count = innerWidth < 768 ? 14 : 22;
+  const count = innerWidth < 768 ? 8 : 14;
   for (let index = 0; index < count; index++) {
     const petal = {};
     reset(petal, true);
@@ -93,6 +93,8 @@ function startGoldenPetals() {
       lastTouchY = event.touches[0].clientY;
     }
   }, { passive: true });
+
+  const PETAL_COLORS = ['#E5C478', '#D4AF37', '#C5A059'];
 
   function draw(now = 0) {
     if (document.hidden || reduced.matches) {
@@ -120,26 +122,10 @@ function startGoldenPetals() {
       context.save();
       context.translate(petal.x, petal.y);
       context.rotate(petal.spin);
-      // Realistic 3D leaf flutter along both X and Y axes
       context.scale(Math.cos(petal.spin), Math.sin(petal.sway) * 0.35 + 0.65);
       context.globalAlpha = petal.opacity;
 
-      // Soft metallic gold gradient
-      const grad = context.createLinearGradient(0, -petal.size, 0, petal.size);
-      if (petal.colorType === 0) {
-        grad.addColorStop(0, '#FFE8B3');
-        grad.addColorStop(0.5, '#D4AF37');
-        grad.addColorStop(1, '#B38B29');
-      } else if (petal.colorType === 1) {
-        grad.addColorStop(0, '#FFFDF5');
-        grad.addColorStop(0.7, '#E5C478');
-        grad.addColorStop(1, '#C5A059');
-      } else {
-        grad.addColorStop(0, '#FFEFCC');
-        grad.addColorStop(1, '#D8A843');
-      }
-
-      context.fillStyle = grad;
+      context.fillStyle = PETAL_COLORS[petal.colorType % 3];
       context.beginPath();
       context.moveTo(0, -petal.size);
       context.bezierCurveTo(petal.size * 0.95, -petal.size * 0.45, petal.size * 0.95, petal.size * 0.5, 0, petal.size);
@@ -219,7 +205,6 @@ function setupCinematicScroll() {
     return gsap.fromTo(targets, {
       transformPerspective: 1400,
       transformOrigin: '50% 50%',
-      opacity: 0.28,
       ...from
     }, {
       x: 0,
@@ -229,14 +214,13 @@ function setupCinematicScroll() {
       rotationY: 0,
       rotationZ: 0,
       scale: 1,
-      opacity: 1,
       stagger: options.stagger || 0,
       ease: 'none',
       scrollTrigger: {
         trigger,
-        start: options.start || 'top 90%',
-        end: options.end || 'top 34%',
-        scrub: options.scrub || 0.65,
+        start: options.start || 'top 95%',
+        end: options.end || 'top 45%',
+        scrub: 0.15,
         invalidateOnRefresh: true
       }
     });
@@ -251,35 +235,34 @@ function setupCinematicScroll() {
         trigger: '#hero',
         start: 'top top',
         end: 'bottom top',
-        scrub: 0.8,
+        scrub: 0.2,
         invalidateOnRefresh: true
       }
     });
     heroTimeline
-      .to('.hero-copy', { y: -54, z: -100, opacity: 0.36, ease: 'none' }, 0)
-      .to('.hero-photo-wrapper', { y: 34, z: 110, rotationY: -3.8, rotationX: 1.8, scale: 1.038, ease: 'none' }, 0)
-      .to('.countdown-box', { y: 64, z: 75, rotationX: -2.4, ease: 'none' }, 0);
+      .to('.hero-copy', { y: -36, z: -80, ease: 'none' }, 0)
+      .to('.hero-photo-wrapper', { y: 28, z: 90, rotationY: -3, rotationX: 1.5, scale: 1.03, ease: 'none' }, 0)
+      .to('.countdown-box', { y: 48, z: 60, rotationX: -1.8, ease: 'none' }, 0);
 
     // 2. FAMILY SECTION - 3D GATEWAY
     reveal('#family .invitation-intro-card > .section-subtitle, #family .invitation-intro-card > .section-title, #family .invitation-intro-card > .ornament-divider, #family .intro-lead-text', '#family',
-      { y: 62, z: -115, rotationX: 7 }, { stagger: 0.035, start: 'top 92%', end: 'top 42%' });
+      { y: 62, z: -115, rotationX: 7 }, { stagger: 0.035, start: 'top 95%', end: 'top 45%' });
     reveal('#family .family-card', '#family .families-grid',
-      { y: 82, z: -145, rotationY: 7.5, rotationX: 2.5 }, { stagger: 0.08, start: 'top 92%', end: 'top 38%' });
+      { y: 82, z: -145, rotationY: 7.5, rotationX: 2.5 }, { stagger: 0.08, start: 'top 95%', end: 'top 42%' });
 
     // 3. EVENTS SECTION - ISOMETRIC SHIFT
     reveal('#events .section-title-wrap', '#events',
-      { y: 64, z: -125, rotationX: 8 }, { start: 'top 92%', end: 'top 48%' });
+      { y: 64, z: -125, rotationX: 8 }, { start: 'top 95%', end: 'top 50%' });
     reveal('#events .event-card', '#events .events-grid',
-      { y: 92, z: -175, rotationX: 8.5, scale: 0.94 }, { stagger: 0.09, start: 'top 90%', end: 'top 26%', scrub: 0.8 });
+      { y: 92, z: -175, rotationX: 8.5, scale: 0.94 }, { stagger: 0.09, start: 'top 95%', end: 'top 35%' });
 
     // 4. LOVE STORY TIMELINE - 3D FILM STRIP RIBBON
     document.querySelectorAll('#story .timeline-item').forEach((item, index) => {
       gsap.fromTo(item, {
-        x: index % 2 ? 74 : -74,
-        y: 44,
-        z: -145,
-        rotationY: index % 2 ? -8 : 8,
-        opacity: 0.22,
+        x: index % 2 ? 60 : -60,
+        y: 36,
+        z: -120,
+        rotationY: index % 2 ? -6 : 6,
         transformPerspective: 1500,
         transformOrigin: index % 2 ? '100% 50%' : '0% 50%'
       }, {
@@ -287,13 +270,12 @@ function setupCinematicScroll() {
         y: 0,
         z: 0,
         rotationY: 0,
-        opacity: 1,
         ease: 'none',
         scrollTrigger: {
           trigger: item,
-          start: 'top 92%',
-          end: 'top 43%',
-          scrub: 0.7,
+          start: 'top 95%',
+          end: 'top 50%',
+          scrub: 0.15,
           toggleClass: 'is-focused',
           invalidateOnRefresh: true
         }
@@ -302,25 +284,25 @@ function setupCinematicScroll() {
 
     // 5. MEMORY FILM - CINEMATIC APERTURE REVEAL
     reveal('#memory-film .memory-film-copy', '#memory-film',
-      { x: -84, z: -135, rotationY: 7 }, { start: 'top 90%', end: 'top 36%' });
+      { x: -70, z: -110, rotationY: 6 }, { start: 'top 95%', end: 'top 45%' });
     reveal('#memory-film .memory-film-player', '#memory-film',
-      { x: 88, z: -180, rotationY: -8, scale: 0.94 }, { start: 'top 86%', end: 'top 30%', scrub: 0.8 });
+      { x: 70, z: -140, rotationY: -6, scale: 0.95 }, { start: 'top 95%', end: 'top 40%' });
 
     // 6. PHOTO GALLERY - CURVED 3D EXHIBITION
     reveal('#gallery .section-title-wrap', '#gallery',
-      { y: 58, z: -105, rotationX: 6 }, { start: 'top 92%', end: 'top 50%' });
+      { y: 50, z: -90, rotationX: 5 }, { start: 'top 95%', end: 'top 55%' });
     reveal('#gallery .gallery-slide-card', '#gallery .gallery-slider-wrapper',
-      { y: 76, z: -190, rotationY: 9, scale: 0.9 }, { stagger: 0.055, start: 'top 94%', end: 'top 28%', scrub: 0.85 });
+      { y: 60, z: -140, rotationY: 7, scale: 0.93 }, { stagger: 0.04, start: 'top 95%', end: 'top 35%' });
 
     // 7. RSVP & GUESTBOOK & FOOTER
     reveal('#rsvp .section-title-wrap', '#rsvp',
-      { y: 52, z: -105, rotationX: 6 }, { start: 'top 92%', end: 'top 52%' });
+      { y: 45, z: -90, rotationX: 5 }, { start: 'top 95%', end: 'top 55%' });
     reveal('#rsvp .rsvp-wrapper', '#rsvp .rsvp-wrapper',
-      { y: 92, z: -190, rotationX: 8.5, scale: 0.955 }, { start: 'top 94%', end: 'top 28%', scrub: 0.8 });
+      { y: 70, z: -140, rotationX: 7, scale: 0.96 }, { start: 'top 95%', end: 'top 35%' });
     reveal('#guestbook .section-title-wrap, #guestbook .wish-item', '#guestbook',
-      { y: 70, z: -120, rotationX: 6 }, { stagger: 0.045, start: 'top 92%', end: 'top 32%' });
+      { y: 55, z: -100, rotationX: 5 }, { stagger: 0.04, start: 'top 95%', end: 'top 40%' });
     reveal('.footer .footer-thank-you, .footer .footer-names, .footer .footer-quote', '.footer',
-      { y: 72, z: -130, rotationX: 7, scale: 0.95 }, { stagger: 0.045, start: 'top 94%', end: 'top 44%' });
+      { y: 55, z: -100, rotationX: 5, scale: 0.96 }, { stagger: 0.04, start: 'top 95%', end: 'top 50%' });
   });
 
   media.add('(max-width: 1023px) and (prefers-reduced-motion: no-preference)', () => {
@@ -328,20 +310,19 @@ function setupCinematicScroll() {
 
     // 1. Mobile Hero Parallax & 3D Float
     const mobileHero = gsap.timeline({
-      scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 0.5 }
+      scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 0.15 }
     });
     mobileHero
-      .to('.hero-copy', { y: -36, opacity: 0.34, ease: 'none' }, 0)
-      .to('.hero-photo-wrapper', { y: 28, scale: 1.045, rotationX: 2.8, ease: 'none' }, 0)
-      .to('.countdown-box', { y: 38, scale: 0.965, ease: 'none' }, 0);
+      .to('.hero-copy', { y: -20, ease: 'none' }, 0)
+      .to('.hero-photo-wrapper', { y: 16, scale: 1.025, rotationX: 1.8, ease: 'none' }, 0)
+      .to('.countdown-box', { y: 22, scale: 0.98, ease: 'none' }, 0);
 
-    // 2. Helper for Mobile 3D Perspective Reveal (vertical rotationX avoids any horizontal overflow)
+    // 2. Helper for Mobile 3D Perspective Reveal (instant visibility, zero flicker)
     const revealMobile = (selector, triggerSelector, fromOptions, scrollOpts = {}) => {
       document.querySelectorAll(selector).forEach(element => {
         gsap.fromTo(element, {
           transformPerspective: 1100,
           transformOrigin: '50% 50%',
-          opacity: 0.32,
           ...fromOptions
         }, {
           x: 0,
@@ -350,13 +331,12 @@ function setupCinematicScroll() {
           rotationX: 0,
           rotationY: 0,
           scale: 1,
-          opacity: 1,
           ease: 'none',
           scrollTrigger: {
             trigger: triggerSelector || element,
-            start: scrollOpts.start || 'top 93%',
+            start: scrollOpts.start || 'top 95%',
             end: scrollOpts.end || 'top 65%',
-            scrub: scrollOpts.scrub || 0.42,
+            scrub: 0.15,
             invalidateOnRefresh: true
           }
         });
@@ -365,32 +345,30 @@ function setupCinematicScroll() {
 
     // Family Cards 3D Entrance
     revealMobile('#family .family-card', '#family .families-grid',
-      { y: 52, rotationX: 6.8, scale: 0.94 }, { scrub: 0.45 });
+      { y: 38, rotationX: 5, scale: 0.96 });
 
     // Events Cards 3D Elevation
     revealMobile('#events .event-card', '#events .events-grid',
-      { y: 56, rotationX: 7.2, scale: 0.93 }, { scrub: 0.45 });
+      { y: 40, rotationX: 5.5, scale: 0.95 });
 
     // Story Timeline 3D Milestone Ribbon
     document.querySelectorAll('#story .timeline-item').forEach(item => {
       gsap.fromTo(item, {
         transformPerspective: 1100,
         transformOrigin: '50% 50%',
-        y: 44,
-        rotationX: 5.5,
-        scale: 0.94,
-        opacity: 0.32
+        y: 32,
+        rotationX: 4,
+        scale: 0.96
       }, {
         y: 0,
         rotationX: 0,
         scale: 1,
-        opacity: 1,
         ease: 'none',
         scrollTrigger: {
           trigger: item,
-          start: 'top 92%',
-          end: 'top 60%',
-          scrub: 0.42,
+          start: 'top 95%',
+          end: 'top 65%',
+          scrub: 0.15,
           toggleClass: 'is-focused',
           invalidateOnRefresh: true
         }
@@ -399,19 +377,19 @@ function setupCinematicScroll() {
 
     // Memory Film Player 3D Cinema Widescreen Expand
     revealMobile('#memory-film .memory-film-player', '#memory-film',
-      { y: 48, rotationX: 6.5, scale: 0.92 }, { scrub: 0.45 });
+      { y: 36, rotationX: 5, scale: 0.95 });
 
     // Gallery Slider 3D Presentation
     revealMobile('#gallery .gallery-slider-wrapper', '#gallery',
-      { y: 45, rotationX: 5.5, scale: 0.93 }, { scrub: 0.45 });
+      { y: 32, rotationX: 4, scale: 0.96 });
 
     // RSVP & Guestbook & Footer 3D Lift
     revealMobile('#rsvp .rsvp-wrapper', '#rsvp',
-      { y: 42, rotationX: 4.5, scale: 0.95 });
+      { y: 30, rotationX: 3.5, scale: 0.97 });
     revealMobile('#guestbook .wish-item', '#guestbook',
-      { y: 34, rotationX: 4, scale: 0.96 });
+      { y: 24, rotationX: 3, scale: 0.97 });
     revealMobile('.footer .footer-thank-you', '.footer',
-      { y: 32, rotationX: 4, scale: 0.96 });
+      { y: 22, rotationX: 3, scale: 0.97 });
 
     // Section Titles Soft Elevation
     const titleTargets = [
@@ -425,15 +403,14 @@ function setupCinematicScroll() {
     ];
     titleTargets.forEach(selector => {
       document.querySelectorAll(selector).forEach(element => {
-        gsap.fromTo(element, { y: 26, opacity: 0.45 }, {
+        gsap.fromTo(element, { y: 18 }, {
           y: 0,
-          opacity: 1,
           ease: 'none',
           scrollTrigger: {
             trigger: element,
-            start: 'top 94%',
-            end: 'top 70%',
-            scrub: 0.35,
+            start: 'top 95%',
+            end: 'top 75%',
+            scrub: 0.15,
             invalidateOnRefresh: true
           }
         });

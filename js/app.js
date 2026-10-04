@@ -525,25 +525,7 @@ function initMusicController() {
 function initScrollReveal() {
   const elements = document.querySelectorAll('.reveal-on-scroll');
   if (!elements.length) return;
-
-  if (prefersReducedMotion() || !('IntersectionObserver' in window)) {
-    elements.forEach(el => el.classList.add('is-revealed'));
-    return;
-  }
-
-  const observer = new IntersectionObserver((entries, obs) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('is-revealed');
-        obs.unobserve(entry.target);
-      }
-    });
-  }, {
-    rootMargin: '0px 0px -50px 0px',
-    threshold: 0.08
-  });
-
-  elements.forEach(el => observer.observe(el));
+  elements.forEach(el => el.classList.add('is-revealed'));
 }
 
 
