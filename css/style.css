@@ -4040,8 +4040,8 @@ body.invitation-opening {
   inset: -10%;
   z-index: -2;
   background:
-    linear-gradient(180deg, rgba(19, 16, 13, 0.9), rgba(19, 16, 13, 0.72)),
-    url('../assets/images/gallery-1.jpg') center / cover no-repeat;
+    linear-gradient(180deg, rgba(19, 16, 13, 0.92), rgba(19, 16, 13, 0.8)),
+    url('../assets/images/hero_1791131600.webp') center / cover no-repeat;
   filter: saturate(0.7) sepia(0.18);
   transform: scale(1.04);
 }

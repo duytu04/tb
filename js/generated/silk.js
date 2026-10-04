@@ -3203,7 +3203,7 @@ function Kl() {
       });
     }), () => r.forEach((t) => t());
   }), a.add("(hover: none) and (pointer: coarse) and (prefers-reduced-motion: no-preference)", () => {
-    const e = document.querySelectorAll(".event-card, .family-card, .gallery-slide-card"), r = [];
+    const e = document.querySelectorAll(".event-card, .family-card"), r = [];
     return e.forEach((t) => {
       const i = () => {
         Ce.to(t, { scale: 0.982, duration: 0.18, ease: "power2.out" });

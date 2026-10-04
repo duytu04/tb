@@ -202,6 +202,13 @@ async function main() {
       const remoteFilePath = path.posix.join(CONFIG.remotePath, file.relPath);
       const remoteStat = await getRemoteStat(sftp, remoteFilePath);
 
+      // Nếu là js/config.js và trên server đã có cấu hình thực tế của người dùng, không ghi đè
+      if (file.relPath === 'js/config.js' && remoteStat) {
+        skippedCount++;
+        console.log(`   ${colors.yellow}↷ [Preserved]${colors.reset} ${file.relPath} (Bảo toàn dữ liệu thật trên server)`);
+        continue;
+      }
+
       // So sánh kích thước và thời gian sửa đổi (nếu remote có cùng kích thước và mtime >= local thì bỏ qua)
       const isUpToDate = remoteStat &&
         remoteStat.size === file.size &&
@@ -222,17 +229,28 @@ async function main() {
       success(`Đã tải lên thành công ${uploadedCount} tệp tin mới/chỉnh sửa (${skippedCount} tệp không đổi đã bỏ qua).`);
     }
 
-    // BƯỚC 5: Đảm bảo Docker Container hoạt động
+    // BƯỚC 5: Đảm bảo Docker Container & API Server hoạt động
     console.log('');
-    log('🐳', `Bước 5: Kiểm tra Docker Container (${CONFIG.containerName})...`);
+    log('🐳', `Bước 5: Kiểm tra Docker Container (${CONFIG.containerName}) & Cập nhật Server API...`);
+
+    // Tải lên và khởi động lại API Python nếu có cập nhật
+    const localApiPy = path.join(__dirname, 'tools', 'server_api.py');
+    if (fs.existsSync(localApiPy)) {
+      await uploadFile(sftp, localApiPy, path.posix.join(CONFIG.remotePath, 'server_api.py'));
+      await runRemote(conn, 'systemctl restart thiepcuoi-api || true');
+      success('Dịch vụ lưu cấu hình và ảnh thiepcuoi-api đã cập nhật & khởi động lại.');
+    }
+
     const psRes = await runRemote(conn, `docker ps --filter name=${CONFIG.containerName} --format "{{.Status}}"`);
     
     if (psRes.stdout.includes('Up')) {
-      success(`Docker container [${CONFIG.containerName}] đang hoạt động bình thường.`);
+      // Restart container so new nginx.conf location directives take full effect
+      await runRemote(conn, `docker restart ${CONFIG.containerName} || true`);
+      success(`Docker container [${CONFIG.containerName}] đã khởi động lại và nạp cấu hình Nginx.`);
     } else {
       log('🔄', `Khởi chạy lại container [${CONFIG.containerName}] trên cổng ${CONFIG.webPort}...`);
       await runRemote(conn, `docker rm -f ${CONFIG.containerName} || true`);
-      const runDockerCmd = `docker run -d --name ${CONFIG.containerName} -p ${CONFIG.webPort}:80 -v ${CONFIG.remotePath}:/usr/share/nginx/html:ro --restart unless-stopped nginx:alpine`;
+      const runDockerCmd = `docker run -d --name ${CONFIG.containerName} -p ${CONFIG.webPort}:80 -v ${CONFIG.remotePath}:/usr/share/nginx/html:ro -v ${CONFIG.remotePath}/nginx.conf:/etc/nginx/conf.d/default.conf:ro --restart unless-stopped nginx:alpine`;
       const runRes = await runRemote(conn, runDockerCmd);
       if (runRes.code === 0) {
         success(`Khởi tạo container [${CONFIG.containerName}] thành công! ID: ${runRes.stdout.substring(0, 12)}`);
@@ -240,6 +258,9 @@ async function main() {
         error(`Lỗi chạy container: ${runRes.stderr}`);
       }
     }
+
+    // Đồng bộ sang thư mục phụ /opt/uavdemo/thuybeo (để người dùng truy cập thư mục nào cũng thấy ảnh & code mới)
+    await runRemote(conn, 'if [ -d /opt/uavdemo/thuybeo ]; then cp -ru /var/www/thiepcuoi/* /opt/uavdemo/thuybeo/ 2>/dev/null || true; fi');
 
     // BƯỚC 6: Health Check
     console.log('');

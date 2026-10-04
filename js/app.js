@@ -157,10 +157,11 @@ function applyDynamicContent(config) {
   const heroLunarDate = document.querySelector('.hero-lunar-date');
   if (heroLunarDate && config.weddingDate?.lunarText) heroLunarDate.textContent = config.weddingDate.lunarText;
 
-  if (config.gallery?.[0]?.src) {
+  const heroCoverSrc = config.couple?.ogImage || config.gallery?.[0]?.src || 'assets/images/hero_1791131600.webp';
+  if (heroCoverSrc) {
     const heroImg = document.querySelector('.hero-photo-inner img');
     if (heroImg) {
-      heroImg.src = config.gallery[0].src;
+      heroImg.src = heroCoverSrc;
       heroImg.alt = `Ảnh cưới ${config.groom?.name || ''} & ${config.bride?.name || ''}`;
     }
   }
@@ -282,9 +283,14 @@ function applyDynamicContent(config) {
       mfYears.innerHTML = `<span>${escapeHtml(config.memoryFilm.startYear || '2022')}</span><i aria-hidden="true"></i><span>${escapeHtml(config.memoryFilm.endYear || '2026')}</span>`;
     }
     const mfVideo = document.getElementById('memory-film-video');
+    const mfPoster = config.memoryFilm?.posterSrc || heroCoverSrc;
     if (mfVideo) {
-      if (config.memoryFilm.videoSrc) mfVideo.dataset.src = config.memoryFilm.videoSrc;
-      if (config.memoryFilm.posterSrc) mfVideo.poster = config.memoryFilm.posterSrc;
+      if (config.memoryFilm?.videoSrc) mfVideo.dataset.src = config.memoryFilm.videoSrc;
+      if (mfPoster) {
+        mfVideo.poster = mfPoster;
+        const mfPlaceholderImg = document.querySelector('#memory-film-placeholder img');
+        if (mfPlaceholderImg) mfPlaceholderImg.src = mfPoster;
+      }
     }
   }
 

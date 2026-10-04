@@ -22,7 +22,7 @@ const DEFAULT_WEDDING_CONFIG = {
     ceremonyType: 'LỄ THÀNH HÔN', // Hoặc 'LỄ VU QUY', 'LỄ TÂN HÔN'
     pageTitle: 'Thiệp Cưới Tuấn Anh & Hoàng Thúy | 20.10.2026',
     metaDescription: 'Thiệp cưới điện tử Tuấn Anh & Hoàng Thúy - Lễ Thành Hôn diễn ra vào Thứ Ba, ngày 20/10/2026 tại Hoài Đức, Hà Nội.',
-    ogImage: 'assets/images/hero.jpg'
+    ogImage: 'assets/images/hero_1791131600.webp'
   },
 
   // 2. THỜI GIAN & ĐẾM NGƯỢC (COUNTDOWN)
@@ -126,30 +126,34 @@ const DEFAULT_WEDDING_CONFIG = {
     startYear: '2022',
     endYear: '2026',
     videoSrc: 'assets/video/hanh-trinh.mp4',
-    posterSrc: 'assets/images/hero.jpg'
+    posterSrc: 'assets/images/poster_1791131932.webp'
   },
 
   // 7. ALBUM ẢNH CƯỚI (GALLERY SLIDER)
   gallery: [
     {
-      src: 'assets/images/hero.jpg',
+      src: 'assets/images/gallery_1791131928_0.webp',
       caption: 'Trọn vẹn tình yêu • Lễ Thành Hôn'
     },
     {
-      src: 'assets/images/gallery-1.jpg',
+      src: 'assets/images/gallery_1791131928_1.webp',
       caption: 'Ánh hoàng hôn bên em'
     },
     {
-      src: 'assets/images/gallery-2.jpg',
+      src: 'assets/images/gallery_1791131928_2.webp',
       caption: 'Duyên nợ trăm năm • Áo dài truyền thống'
     },
     {
-      src: 'assets/images/hero.jpg',
+      src: 'assets/images/gallery_1791131928_3.webp',
       caption: 'Nụ cười hạnh phúc ngày trọng đại'
     },
     {
-      src: 'assets/images/gallery-1.jpg',
+      src: 'assets/images/gallery_1791131928_4.webp',
       caption: 'Tay trong tay trọn đời bình yên'
+    },
+    {
+      src: 'assets/images/gallery_1791131928_5.webp',
+      caption: 'Hạnh phúc đong đầy'
     }
   ],
 
@@ -186,7 +190,8 @@ const DEFAULT_WEDDING_CONFIG = {
 
   // 10. HỆ THỐNG RSVP & SỔ LƯU BÚT
   rsvpEndpoint: '', // URL Google Apps Script Web App để nhận dữ liệu
-  adminPin: '2010' // Mã PIN truy cập trang quản trị admin.html
+  adminPin: '2010', // Mã PIN truy cập trang quản trị admin.html
+  updatedAt: 1791116000000 // Timestamp đồng bộ hệ thống
 };
 
 /**
@@ -199,6 +204,11 @@ function getActiveWeddingConfig() {
     const saved = localStorage.getItem('wedding_custom_config');
     if (saved) {
       const parsed = JSON.parse(saved);
+      // Nếu máy chủ có cấu hình mới hơn hoặc bằng (vừa cập nhật từ admin), ưu tiên cấu hình máy chủ
+      if (DEFAULT_WEDDING_CONFIG.updatedAt && (!parsed.updatedAt || DEFAULT_WEDDING_CONFIG.updatedAt >= parsed.updatedAt)) {
+        localStorage.removeItem('wedding_custom_config');
+        return JSON.parse(JSON.stringify(DEFAULT_WEDDING_CONFIG));
+      }
       return deepMerge(DEFAULT_WEDDING_CONFIG, parsed);
     }
   } catch (e) {

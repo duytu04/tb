@@ -154,6 +154,158 @@ html[data-cinematic-scroll="true"] .wish-item {
     backface-visibility: hidden;
     will-change: transform, opacity;
   }
+
+  /* ============================================================
+     CONCEPT 🅰: "CUỐN SỔ HẸN ƯỚC" - STORYBOOK PAGE-TURN (MOBILE)
+     ============================================================ */
+  .invitation-intro-card {
+    transform-origin: top center;
+    box-shadow: 0 14px 38px rgba(44, 38, 33, 0.08), 0 1px 3px rgba(197, 160, 89, 0.15) !important;
+    border-radius: 18px !important;
+  }
+
+  .family-card {
+    border-radius: 14px !important;
+    box-shadow: 0 8px 24px rgba(44, 38, 33, 0.06), 0 1px 2px rgba(197, 160, 89, 0.12) !important;
+  }
+
+  .timeline-item {
+    transform-origin: left bottom;
+  }
+
+  .timeline-content {
+    background: #FFFDF9 !important;
+    border: 1px solid rgba(197, 160, 89, 0.28) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 6px 20px rgba(44, 38, 33, 0.05) !important;
+    transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease !important;
+  }
+
+  .timeline-item.is-focused .timeline-content {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(197, 160, 89, 0.18) !important;
+    border-color: var(--color-gold) !important;
+  }
+
+  /* ============================================================
+     CONCEPT ①: "CHỒNG ẢNH TRÊN BÀN" - POLAROID 3D STACK (MOBILE)
+     ============================================================ */
+  .gallery-slider-wrapper {
+    padding: 10px 0 20px !important;
+  }
+
+  .gallery-slider-track {
+    padding: 24px 18px 36px !important;
+    gap: 18px !important;
+    align-items: center;
+    perspective: 1200px;
+    -webkit-perspective: 1200px;
+  }
+
+  /* Polaroid Photo Card styling */
+  .gallery-slide-card {
+    flex: 0 0 min(270px, 75vw) !important;
+    aspect-ratio: auto !important;
+    padding: 10px 10px 46px 10px !important;
+    background: #FFFFFF !important;
+    border: 1px solid rgba(197, 160, 89, 0.38) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 12px 32px rgba(44, 38, 33, 0.12), 0 2px 6px rgba(197, 160, 89, 0.15) !important;
+    transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.45s ease, opacity 0.4s ease, border-color 0.4s ease !important;
+    position: relative;
+    cursor: pointer;
+  }
+
+  /* Scrapbook washi tape accent on top of polaroid card */
+  .gallery-slide-card::before {
+    content: '';
+    position: absolute;
+    top: -7px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-1deg);
+    width: 48px;
+    height: 15px;
+    background: rgba(229, 196, 120, 0.42);
+    border: 1px dashed rgba(197, 160, 89, 0.45);
+    border-radius: 2px;
+    box-shadow: 0 2px 4px rgba(44, 38, 33, 0.08);
+    pointer-events: none;
+    z-index: 6;
+  }
+
+  /* Polaroid inner image */
+  .gallery-slide-card img {
+    aspect-ratio: 4 / 5 !important;
+    width: 100% !important;
+    height: auto !important;
+    object-fit: cover !important;
+    border-radius: 6px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    display: block;
+    transform: none !important;
+  }
+
+  /* Polaroid handwritten romantic caption */
+  .gallery-slide-card .gallery-overlay {
+    position: absolute !important;
+    inset: auto 0 0 0 !important;
+    height: 46px !important;
+    background: transparent !important;
+    opacity: 1 !important;
+    padding: 2px 10px 6px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+  }
+
+  .gallery-slide-card .gallery-caption {
+    font-family: var(--font-script), 'Alex Brush', cursive !important;
+    font-size: 1.18rem !important;
+    color: #4A3B2C !important;
+    line-height: 1.22 !important;
+    letter-spacing: 0.3px !important;
+    white-space: normal !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2 !important;
+    -webkit-box-orient: vertical !important;
+    overflow: hidden !important;
+    font-weight: 500 !important;
+  }
+
+  /* Hand-placed organic tilt angles */
+  .gallery-slide-card:nth-child(5n+1) { --stack-tilt: -2deg; }
+  .gallery-slide-card:nth-child(5n+2) { --stack-tilt: 2.2deg; }
+  .gallery-slide-card:nth-child(5n+3) { --stack-tilt: -2.8deg; }
+  .gallery-slide-card:nth-child(5n+4) { --stack-tilt: 1.8deg; }
+  .gallery-slide-card:nth-child(5n+5) { --stack-tilt: -1.5deg; }
+
+  /* Inactive cards in stack */
+  .gallery-slide-card:not(.is-current) {
+    transform: scale(0.92) rotate(var(--stack-tilt, 0deg)) !important;
+    opacity: 0.78 !important;
+    filter: brightness(0.97) !important;
+  }
+
+  /* Active card in stack - floats up with golden shadow */
+  .gallery-slide-card.is-current {
+    transform: scale(1.05) rotate(0deg) translateY(-8px) translateZ(30px) !important;
+    box-shadow: 0 22px 50px rgba(44, 38, 33, 0.22), 0 0 24px rgba(212, 175, 55, 0.32) !important;
+    border-color: var(--color-gold) !important;
+    opacity: 1 !important;
+    z-index: 5 !important;
+  }
+
+  /* Mobile Slider Navigation Buttons styling */
+  .slider-nav-btn {
+    width: 40px !important;
+    height: 40px !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(197, 160, 89, 0.35) !important;
+    box-shadow: 0 4px 16px rgba(44, 38, 33, 0.15) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

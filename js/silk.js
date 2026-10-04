@@ -185,7 +185,7 @@ function addDepthInteraction() {
 
   // Mobile tactile spring-back feel on touch
   media.add('(hover: none) and (pointer: coarse) and (prefers-reduced-motion: no-preference)', () => {
-    const cards = document.querySelectorAll('.event-card, .family-card, .gallery-slide-card');
+    const cards = document.querySelectorAll('.event-card, .family-card');
     const cleanups = [];
     cards.forEach(card => {
       const onTouchStart = () => {
