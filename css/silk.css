@@ -9,7 +9,7 @@
   z-index: 0;
   overflow: hidden;
   pointer-events: none;
-  opacity: 0.62;
+  opacity: 0.65;
   mix-blend-mode: screen;
   mask-image: radial-gradient(ellipse at center, #000 28%, transparent 73%);
   -webkit-mask-image: radial-gradient(ellipse at center, #000 28%, transparent 73%);
@@ -42,6 +42,7 @@ html[data-silk-ready="true"] .gallery-slide-card {
   will-change: transform;
 }
 
+/* 3D Perspective Staging */
 html[data-cinematic-scroll="true"] .cinematic-scene,
 html[data-cinematic-scroll="true"] .cinematic-scene .container,
 html[data-cinematic-scroll="true"] .families-grid,
@@ -68,10 +69,65 @@ html[data-cinematic-scroll="true"] .wish-item {
   transform-style: preserve-3d;
 }
 
+/* Timeline Milestone Golden Focus */
+.timeline-item .timeline-node {
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.45s ease;
+}
+
+.timeline-item.is-focused .timeline-node {
+  box-shadow: 0 0 0 5px rgba(197, 160, 89, 0.28), 0 0 16px rgba(212, 175, 55, 0.65);
+  transform: scale(1.22);
+}
+
+/* Metallic Specular Sweep on Luxury Cards */
+.event-card,
+.family-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.event-card::after,
+.family-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -130%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 248, 220, 0.18), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+  transition: left 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.event-card:hover::after,
+.family-card:hover::after {
+  left: 150%;
+}
+
+/* Laurel Wreath & Footer Aura */
+.date-circle-wreath img {
+  filter: drop-shadow(0 3px 8px rgba(197, 160, 89, 0.32));
+}
+
+.footer-monogram {
+  animation: monogramAura 5s ease-in-out infinite alternate;
+}
+
+@keyframes monogramAura {
+  0% {
+    filter: drop-shadow(0 2px 6px rgba(197, 160, 89, 0.25));
+  }
+  100% {
+    filter: drop-shadow(0 4px 18px rgba(212, 175, 55, 0.6));
+  }
+}
+
+/* Mobile Specific 3D Tuning & Hardware Acceleration */
 @media (max-width: 767px) {
   #silk-stage {
     inset: -16% -12%;
-    opacity: 0.88;
+    opacity: 0.90;
   }
 
   html[data-cinematic-scroll="true"] .cinematic-scene,
@@ -101,8 +157,10 @@ html[data-cinematic-scroll="true"] .wish-item {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #silk-stage {
+  #silk-stage,
+  .footer-monogram {
     display: none;
+    animation: none;
   }
 
   html[data-silk-ready="true"] .hero-photo-frame,

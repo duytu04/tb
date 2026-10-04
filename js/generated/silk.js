@@ -3296,6 +3296,7 @@ function Zl() {
           start: "top 92%",
           end: "top 43%",
           scrub: 0.7,
+          toggleClass: "is-focused",
           invalidateOnRefresh: !0
         }
       });
@@ -3399,6 +3400,7 @@ function Zl() {
           start: "top 92%",
           end: "top 60%",
           scrub: 0.42,
+          toggleClass: "is-focused",
           invalidateOnRefresh: !0
         }
       });
