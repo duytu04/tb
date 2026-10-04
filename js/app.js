@@ -24,14 +24,6 @@ function forceScrollToTop() {
 // Reset immediately on script load
 forceScrollToTop();
 
-if (window.location.hash) {
-  history.replaceState(null, '', window.location.pathname + window.location.search);
-}
-
-window.addEventListener('beforeunload', () => {
-  forceScrollToTop();
-});
-
 document.addEventListener('DOMContentLoaded', () => {
   forceScrollToTop();
   if (typeof window.getActiveWeddingConfig === 'function') {
@@ -39,11 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   applyDynamicContent(window.WEDDING_CONFIG);
   initEnvelope();
-  initPetalsCanvas();
   initCountdown();
   initMusicController();
   initScrollReveal();
-  initCardTilt3D();
   initMapModal();
   initMemoryFilm();
   initGallerySlider();
@@ -51,6 +41,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initGuestbook();
   initGiftModal();
   initLightbox();
+  document.documentElement.dataset.weddingReady = 'true';
+  document.dispatchEvent(new Event('wedding:ready'));
 });
 
 const appConfig = window.WEDDING_CONFIG || {};
@@ -66,7 +58,9 @@ function applyDynamicContent(config) {
   const urlParams = new URLSearchParams(window.location.search);
   const rawGuestParam = urlParams.get('to') || urlParams.get('guest') || urlParams.get('name');
   if (rawGuestParam) {
-    const guestName = decodeURIComponent(rawGuestParam).replace(/\+/g, ' ').trim();
+    const guestName = rawGuestParam.trim();
+    const openingGuest = document.getElementById('opening-guest');
+    if (openingGuest) openingGuest.textContent = guestName;
     const pocketGuest = document.querySelector('.pocket-guest-val');
     if (pocketGuest) pocketGuest.textContent = guestName;
     const rsvpName = document.getElementById('rsvp-name');
@@ -253,10 +247,13 @@ function applyDynamicContent(config) {
       timelineContainer.appendChild(line);
     }
 
-    config.loveStory.forEach((item) => {
+    config.loveStory.forEach((item, index) => {
       const itemEl = document.createElement('div');
       itemEl.className = 'timeline-item is-revealed';
+      itemEl.dataset.chapter = String(index + 1).padStart(2, '0');
+      const photo = config.gallery?.[index % config.gallery.length];
       itemEl.innerHTML = `
+        ${photo ? `<figure class="story-photo"><img src="${escapeHtml(photo.src)}" alt="${escapeHtml(photo.caption || 'Kỷ niệm của chúng mình')}" loading="lazy" decoding="async"></figure>` : ''}
         <div class="timeline-node">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <circle cx="12" cy="12" r="8" />
@@ -299,6 +296,9 @@ function applyDynamicContent(config) {
       const slide = document.createElement('div');
       slide.className = 'gallery-slide-card';
       slide.dataset.index = idx;
+      slide.setAttribute('role', 'button');
+      slide.setAttribute('tabindex', '0');
+      slide.setAttribute('aria-label', `Mở ảnh ${idx + 1}: ${item.caption || 'Ảnh cưới'}`);
       slide.innerHTML = `
         <img src="${escapeHtml(item.src)}" alt="${escapeHtml(item.caption || 'Ảnh cưới')}" loading="lazy" decoding="async">
         <div class="gallery-overlay">
@@ -431,6 +431,7 @@ function applyDynamicContent(config) {
    1. REALISTIC 3D ENVELOPE OPENING & INTERACTIVE UNBOXING
    ========================================================================== */
 function initEnvelope() {
+  if (window.SilkOpening) return window.SilkOpening.init();
   forceScrollToTop();
   const overlay = document.getElementById('envelope-overlay');
   const envelopeBox = document.getElementById('envelope-3d-box');
@@ -923,14 +924,25 @@ function initRSVPForm() {
       addWishToGuestbook(name, side, wish);
     }
 
-    form.reset();
     setSubmitState(submitBtn, false);
-
-    if (result.sent) {
-      showToast(`Cảm ơn ${name}! Xác nhận tham dự đã được gửi.`);
-    } else {
-      showToast(`Đã lưu xác nhận trên thiết bị này. Vui lòng cấu hình RSVP_ENDPOINT để nhận dữ liệu thật.`);
+    const message = result.sent
+      ? `Cảm ơn ${name}! Xác nhận tham dự đã được gửi.`
+      : result.unverified
+        ? 'Đã gửi yêu cầu. Chưa thể xác nhận đã nhận được; bạn có thể liên hệ trực tiếp với gia đình.'
+        : result.localOnly
+          ? 'Thông tin đã được lưu trên thiết bị này. Bạn vui lòng báo trực tiếp với gia đình để xác nhận tham dự.'
+          : 'Chưa gửi được xác nhận. Thông tin vẫn được giữ lại để bạn thử lại.';
+    const feedback = document.getElementById('rsvp-result');
+    if (feedback) {
+      feedback.hidden = false;
+      feedback.textContent = message;
+      feedback.classList.toggle('is-success', Boolean(result.sent));
     }
+    if (result.sent) {
+      form.reset();
+      document.dispatchEvent(new CustomEvent('wedding:rsvp-success'));
+    }
+    showToast(message);
 
     // Scroll gently to guestbook if wish was entered
     if (wish) {
@@ -973,7 +985,7 @@ async function submitRSVP(data) {
     if (!isGoogleScript && !response.ok) {
       throw new Error(`RSVP endpoint returned ${response.status}`);
     }
-    return { sent: true };
+    return isGoogleScript ? { sent: false, unverified: true } : { sent: true };
   } catch (error) {
     console.warn('Không gửi được RSVP:', error);
     return { sent: false, error };
@@ -1124,7 +1136,9 @@ function initGallerySlider() {
   if (dotsContainer) {
     dotsContainer.innerHTML = '';
     slides.forEach((_, idx) => {
-      const dot = document.createElement('div');
+      const dot = document.createElement('button');
+      dot.type = 'button';
+      dot.setAttribute('aria-label', `Xem ảnh ${idx + 1}`);
       dot.className = `slider-dot ${idx === 0 ? 'active' : ''}`;
       dot.addEventListener('click', () => {
         goToSlide(idx);
@@ -1164,16 +1178,20 @@ function initGallerySlider() {
   }
 
   function updateDots(activeIdx) {
+    slides.forEach((slide, idx) => {
+      slide.classList.toggle('is-current', idx === activeIdx);
+      slide.classList.toggle('is-before', idx < activeIdx);
+    });
     if (!dotsContainer) return;
     const dots = dotsContainer.querySelectorAll('.slider-dot');
     dots.forEach((d, idx) => {
       d.classList.toggle('active', idx === activeIdx);
+      d.setAttribute('aria-pressed', String(idx === activeIdx));
     });
   }
 
   function startAutoplay() {
     stopAutoplay();
-    autoplayTimer = setInterval(nextSlide, AUTOPLAY_INTERVAL);
   }
 
   function stopAutoplay() {
@@ -1232,6 +1250,7 @@ function initGallerySlider() {
     updateDots(currentIndex);
   }, { passive: true });
 
+  updateDots(0);
   // Only auto-slide when the gallery section is currently visible on the user's screen
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver((entries) => {
@@ -1261,7 +1280,11 @@ function initMemoryFilm() {
   const unmuteBtn = document.getElementById('memory-film-unmute');
   const retryBtn = document.getElementById('memory-film-retry');
 
-  if (!section || !player || !video || !video.dataset.src) return;
+  if (!section || !player || !video) return;
+  if (!window.WEDDING_CONFIG?.memoryFilm?.videoSrc) {
+    section.hidden = true;
+    return;
+  }
 
   let inView = false;
   let unavailable = false;
@@ -1414,6 +1437,12 @@ function initLightbox() {
   if (!modal || !lightboxImg) return;
 
   galleryCards.forEach(card => {
+    card.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        card.click();
+      }
+    });
     card.addEventListener('click', () => {
       const img = card.querySelector('img');
       if (img) {
@@ -1453,7 +1482,7 @@ function showToast(message) {
 
 function escapeHtml(str) {
   if (!str) return '';
-  return str.replace(/[&<>'"]/g, 
+  return String(str).replace(/[&<>'"]/g, 
     tag => ({
       '&': '&amp;',
       '<': '&lt;',

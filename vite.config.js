@@ -12,6 +12,7 @@ export default defineConfig({
       cpSync('js/config.js', 'dist/js/config.js');
       cpSync('js/music.js', 'dist/js/music.js');
       cpSync('js/app.js', 'dist/js/app.js');
+      cpSync('js/opening.js', 'dist/js/opening.js');
     }
   }],
   build: {

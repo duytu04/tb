@@ -125,7 +125,7 @@ const DEFAULT_WEDDING_CONFIG = {
     desc: 'Từ những ngày đầu gặp gỡ đến lời hẹn ước cho một mái nhà chung - những khoảnh khắc đẹp nhất của chúng mình trong một thước phim.',
     startYear: '2022',
     endYear: '2026',
-    videoSrc: 'assets/video/hanh-trinh.mp4',
+    videoSrc: '',
     posterSrc: 'assets/images/hero.jpg'
   },
 
