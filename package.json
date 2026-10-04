@@ -1,0 +1,21 @@
+{
+  "name": "thuybeo-wedding",
+  "version": "1.0.0",
+  "description": "Website thiệp cưới điện tử Tuấn Anh & Hoàng Thúy",
+  "main": "deploy.js",
+  "scripts": {
+    "build": "node deploy.js",
+    "deploy": "node deploy.js",
+    "start": "npx serve -l 3000 ."
+  },
+  "keywords": [
+    "wedding",
+    "invitation",
+    "thiep-cuoi"
+  ],
+  "author": "Tuấn Anh & Hoàng Thúy",
+  "license": "ISC",
+  "dependencies": {
+    "ssh2": "^1.17.0"
+  }
+}
