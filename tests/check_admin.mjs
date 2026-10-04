@@ -11,7 +11,7 @@ try { await access(chromium.executablePath()); } catch {
 
 const browser = await chromium.launch({ executablePath, headless: true });
 const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
-await page.goto('http://127.0.0.1:5173/admin.html');
+await page.goto('http://180.93.54.36:8080/admin.html');
 
 // Enter PIN 2010
 await page.fill('#pin-input', '2010');

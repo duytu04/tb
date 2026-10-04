@@ -292,6 +292,10 @@ function applyDynamicContent(config) {
         if (mfPlaceholderImg) mfPlaceholderImg.src = mfPoster;
       }
     }
+    const mfBg = document.querySelector('.memory-film-background');
+    if (mfBg && heroCoverSrc) {
+      mfBg.style.backgroundImage = `linear-gradient(180deg, rgba(19, 16, 13, 0.92), rgba(19, 16, 13, 0.8)), url('${heroCoverSrc}')`;
+    }
   }
 
   // 9. Album Ảnh Cưới (Gallery Slider)
