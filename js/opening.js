@@ -13,6 +13,9 @@ window.SilkOpening = (() => {
       const overlay = document.getElementById('envelope-overlay');
       const open = document.getElementById('btn-open-envelope');
       const skip = document.getElementById('skip-opening');
+      const wax = document.getElementById('flap-wax-seal');
+      const envelope = document.getElementById('envelope-3d-box');
+      const sceneElement = document.querySelector('.envelope-scene');
       const hero = document.getElementById('hero');
       const background = [...document.body.children].filter(el =>
         el !== overlay && !['SCRIPT', 'NOSCRIPT', 'STYLE'].includes(el.tagName));
@@ -38,7 +41,8 @@ window.SilkOpening = (() => {
       const start = () => {
         if (state !== 'closed') return;
         state = 'opening';
-        open.disabled = true;
+        if (open) open.disabled = true;
+        wax?.setAttribute('aria-disabled', 'true');
         document.body.classList.add('invitation-opening');
         document.getElementById('opening-status').textContent = 'Đang mở lời hẹn ước.';
         window.weddingMusic?.play();
@@ -47,13 +51,28 @@ window.SilkOpening = (() => {
         if (scene) {
           try { scene.open(finish); } catch { finish(); }
         } else {
-          overlay.classList.add('silk-fallback-opening');
-          timeout = setTimeout(finish, 800);
+          sceneElement.classList.add('is-opening', 'is-unsealing');
+          setTimeout(() => sceneElement.classList.add('is-flap-open'), 380);
+          setTimeout(() => sceneElement.classList.add('is-letter-rising'), 1050);
+          setTimeout(() => {
+            sceneElement.classList.add('is-portal');
+            overlay.classList.add('is-transitioning');
+          }, 2020);
+          timeout = setTimeout(finish, 2920);
         }
       };
-      open.addEventListener('click', start);
-      skip.addEventListener('click', () => finish());
-      document.getElementById('flap-wax-seal')?.addEventListener('click', start);
+      open?.addEventListener('click', start);
+      skip?.addEventListener('click', () => finish());
+      wax?.addEventListener('click', start);
+      wax?.addEventListener('keydown', event => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          start();
+        }
+      });
+      envelope?.addEventListener('click', event => {
+        if (!event.target.closest('#flap-wax-seal')) start();
+      });
       overlay.addEventListener('keydown', event => {
         if (event.key === 'Escape') { event.preventDefault(); finish(); }
         if (event.key !== 'Tab') return;
@@ -67,7 +86,7 @@ window.SilkOpening = (() => {
       const hash = location.hash.slice(1);
       const target = hash && document.getElementById(hash);
       if (target) finish(target);
-      else open.focus({ preventScroll: true });
+      else (open || wax)?.focus({ preventScroll: true });
     },
     skip() { finishOpening?.(); }
   };

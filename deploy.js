@@ -1,9 +1,11 @@
 /**
- * Deploy Script for Wedding Invitation
+ * Deploy Script for Wedding Invitation (Direct Server Sync via SFTP/SSH)
+ * Hoàn toàn KHÔNG đẩy code lên Git!
  * Triggered by: npm run build or npm run deploy
  */
 
-const { execSync } = require('child_process');
+const fs = require('fs');
+const path = require('path');
 const { Client } = require('ssh2');
 
 // Cấu hình máy chủ triển khai
@@ -16,6 +18,26 @@ const CONFIG = {
   containerName: 'thiepcuoi-web',
   webPort: 8080
 };
+
+// Các thư mục và tệp tin loại trừ (không upload lên server)
+const EXCLUDED_DIRS = new Set([
+  'node_modules',
+  '.git',
+  'tests',
+  'test-results',
+  '.gemini',
+  '.vscode',
+  '.idea'
+]);
+
+const EXCLUDED_FILES = new Set([
+  'deploy.js',
+  'deploy.cjs',
+  '.gitignore',
+  'package-lock.json',
+  'Thumbs.db',
+  '.DS_Store'
+]);
 
 // ANSI color codes
 const colors = {
@@ -45,13 +67,36 @@ function error(msg) {
   console.error(`${colors.red}✖ ${msg}${colors.reset}`);
 }
 
-function runLocal(cmd, desc) {
-  try {
-    return execSync(cmd, { stdio: 'pipe', encoding: 'utf-8' }).trim();
-  } catch (err) {
-    if (err.stdout) return err.stdout.trim();
-    throw err;
+// Quét toàn bộ tệp tin cần upload
+function scanProjectFiles(dir, baseDir = dir) {
+  let results = [];
+  const list = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const item of list) {
+    const fullPath = path.join(dir, item.name);
+    const relPath = path.relative(baseDir, fullPath).replace(/\\/g, '/');
+
+    if (item.isDirectory()) {
+      if (EXCLUDED_DIRS.has(item.name)) continue;
+      results = results.concat(scanProjectFiles(fullPath, baseDir));
+    } else {
+      if (EXCLUDED_FILES.has(item.name) || item.name.endsWith('.log')) continue;
+      const stats = fs.statSync(fullPath);
+      results.push({
+        localPath: fullPath,
+        relPath: relPath,
+        size: stats.size,
+        mtime: stats.mtimeMs
+      });
+    }
   }
+  return results;
+}
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
 }
 
 async function runRemote(conn, command) {
@@ -73,40 +118,40 @@ async function runRemote(conn, command) {
   });
 }
 
+function getRemoteStat(sftp, remoteFilePath) {
+  return new Promise((resolve) => {
+    sftp.stat(remoteFilePath, (err, stats) => {
+      if (err) return resolve(null);
+      resolve(stats);
+    });
+  });
+}
+
+function uploadFile(sftp, localPath, remotePath) {
+  return new Promise((resolve, reject) => {
+    sftp.fastPut(localPath, remotePath, (err) => {
+      if (err) return reject(err);
+      resolve();
+    });
+  });
+}
+
 async function main() {
   const startTime = Date.now();
 
-  console.log('\n' + '='.repeat(60));
-  console.log(`${colors.bold}${colors.magenta}   👰💒 TUẤN ANH & HOÀNG THÚY - AUTO BUILD & DEPLOY 💒🤵${colors.reset}`);
-  console.log('='.repeat(60) + '\n');
+  console.log('\n' + '='.repeat(65));
+  console.log(`${colors.bold}${colors.magenta}   👰💒 TUẤN ANH & HOÀNG THÚY - BUILD & DEPLOY TRỰC TIẾP 💒🤵${colors.reset}`);
+  console.log(`${colors.dim}   (Cơ chế: Upload thẳng lên Server qua SFTP - Hoàn toàn không qua Git)${colors.reset}`);
+  console.log('='.repeat(65) + '\n');
 
-  // BƯỚC 1: Xử lý Git local
-  log('📦', 'Bước 1: Đồng bộ mã nguồn Git local...');
-  try {
-    const status = runLocal('git status --porcelain');
-    if (status) {
-      log('📝', 'Phát hiện thay đổi trong mã nguồn, đang tự động commit...');
-      runLocal('git add .');
-      const now = new Date().toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh' });
-      const commitMsg = `Auto deploy build: ${now}`;
-      runLocal(`git commit -m "${commitMsg}"`);
-      success(`Đã tạo commit: "${commitMsg}"`);
-    } else {
-      success('Mã nguồn local sạch (không có thay đổi chưa lưu).');
-    }
+  // BƯỚC 1: Quét tệp tin local
+  log('📂', 'Bước 1: Quét tệp tin mã nguồn local...');
+  const localFiles = scanProjectFiles(process.cwd());
+  success(`Đã quét thấy ${localFiles.length} tệp tin dự án (đã bỏ qua node_modules, .git, tệp tạm).`);
 
-    log('🚀', 'Đang đẩy mã nguồn lên GitHub (origin/main)...');
-    runLocal('git push origin main');
-    const commitHash = runLocal('git rev-parse --short HEAD');
-    success(`Đã đẩy lên GitHub thành công! Commit: [${commitHash}]`);
-  } catch (err) {
-    warn(`Lưu ý Git: ${err.message}`);
-    log('ℹ️', 'Tiếp tục tiến trình deploy lên server...');
-  }
-
-  // BƯỚC 2: Kết nối SSH tới Server
+  // BƯỚC 2: Kết nối SSH & SFTP tới Server
   console.log('');
-  log('🔐', `Bước 2: Kết nối SSH tới Server ${CONFIG.host}:${CONFIG.port}...`);
+  log('🔐', `Bước 2: Kết nối SSH & SFTP tới Server ${CONFIG.host}:${CONFIG.port}...`);
   const conn = new Client();
 
   await new Promise((resolve, reject) => {
@@ -128,20 +173,58 @@ async function main() {
   });
 
   try {
-    // BƯỚC 3: Đồng bộ Git trên Server
+    const sftp = await new Promise((resolve, reject) => {
+      conn.sftp((err, sftpClient) => {
+        if (err) return reject(err);
+        success('Mở kênh truyền tải tệp tin SFTP thành công.');
+        resolve(sftpClient);
+      });
+    });
+
+    // BƯỚC 3: Tạo thư mục cần thiết trên Server
     console.log('');
-    log('📥', `Bước 3: Đồng bộ mã nguồn tại ${CONFIG.remotePath}...`);
-    const updateCmd = `cd ${CONFIG.remotePath} && git fetch origin && git reset --hard origin/main`;
-    const gitRes = await runRemote(conn, updateCmd);
-    if (gitRes.code === 0) {
-      success(`Cập nhật server thành công: ${gitRes.stdout}`);
-    } else {
-      warn(`Cảnh báo cập nhật git trên server: ${gitRes.stderr || gitRes.stdout}`);
+    log('📁', 'Bước 3: Đảm bảo các thư mục đích tồn tại trên server...');
+    const remoteDirs = new Set(
+      localFiles.map(f => path.posix.dirname(path.posix.join(CONFIG.remotePath, f.relPath)))
+    );
+    remoteDirs.add(CONFIG.remotePath);
+    const mkdirCmd = `mkdir -p ${Array.from(remoteDirs).map(d => `"${d}"`).join(' ')}`;
+    await runRemote(conn, mkdirCmd);
+    success(`Đã kiểm tra cấu trúc thư mục trên server (${CONFIG.remotePath}).`);
+
+    // BƯỚC 4: Đồng bộ tệp tin (Smart Sync qua SFTP)
+    console.log('');
+    log('📤', 'Bước 4: Đồng bộ tệp tin lên server (chỉ tải tệp có thay đổi)...');
+    let uploadedCount = 0;
+    let skippedCount = 0;
+
+    for (const file of localFiles) {
+      const remoteFilePath = path.posix.join(CONFIG.remotePath, file.relPath);
+      const remoteStat = await getRemoteStat(sftp, remoteFilePath);
+
+      // So sánh kích thước và thời gian sửa đổi (nếu remote có cùng kích thước và mtime >= local thì bỏ qua)
+      const isUpToDate = remoteStat &&
+        remoteStat.size === file.size &&
+        remoteStat.mtime >= Math.floor(file.mtime / 1000);
+
+      if (isUpToDate) {
+        skippedCount++;
+      } else {
+        await uploadFile(sftp, file.localPath, remoteFilePath);
+        uploadedCount++;
+        console.log(`   ${colors.green}↑ [Uploaded]${colors.reset} ${file.relPath} (${formatSize(file.size)})`);
+      }
     }
 
-    // BƯỚC 4: Kiểm tra và đảm bảo Docker Container hoạt động
+    if (uploadedCount === 0) {
+      success(`Tất cả ${skippedCount} tệp tin trên server đã đồng bộ mới nhất (không có tệp thay đổi).`);
+    } else {
+      success(`Đã tải lên thành công ${uploadedCount} tệp tin mới/chỉnh sửa (${skippedCount} tệp không đổi đã bỏ qua).`);
+    }
+
+    // BƯỚC 5: Đảm bảo Docker Container hoạt động
     console.log('');
-    log('🐳', `Bước 4: Kiểm tra Docker Container (${CONFIG.containerName})...`);
+    log('🐳', `Bước 5: Kiểm tra Docker Container (${CONFIG.containerName})...`);
     const psRes = await runRemote(conn, `docker ps --filter name=${CONFIG.containerName} --format "{{.Status}}"`);
     
     if (psRes.stdout.includes('Up')) {
@@ -158,9 +241,9 @@ async function main() {
       }
     }
 
-    // BƯỚC 5: Health Check
+    // BƯỚC 6: Health Check
     console.log('');
-    log('🔍', 'Bước 5: Kiểm tra trạng thái phản hồi HTTP...');
+    log('🔍', 'Bước 6: Kiểm tra trạng thái phản hồi HTTP...');
     const checkRes = await runRemote(conn, `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:${CONFIG.webPort}/`);
     if (checkRes.stdout === '200') {
       success(`Máy chủ phản hồi hoàn hảo: HTTP 200 OK!`);
@@ -170,9 +253,9 @@ async function main() {
 
     // TỔNG KẾT
     const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log('\n' + '='.repeat(60));
+    console.log('\n' + '='.repeat(65));
     console.log(`${colors.bold}${colors.green}   🎉 BUILD & DEPLOY HOÀN TẤT THÀNH CÔNG (${duration}s)! 🎉${colors.reset}`);
-    console.log('='.repeat(60));
+    console.log('='.repeat(65));
     console.log(`\n${colors.bold}🌐 ĐỊA CHỈ TRUY CẬP TRỰC TIẾP:${colors.reset}`);
     console.log(`   💌 Website Thiệp Cưới:   ${colors.cyan}http://${CONFIG.host}:${CONFIG.webPort}/${colors.reset}`);
     console.log(`   ⚙️  Trang Quản Trị:      ${colors.cyan}http://${CONFIG.host}:${CONFIG.webPort}/admin.html${colors.reset}`);

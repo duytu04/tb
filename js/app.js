@@ -159,7 +159,10 @@ function applyDynamicContent(config) {
 
   if (config.gallery?.[0]?.src) {
     const heroImg = document.querySelector('.hero-photo-inner img');
-    if (heroImg) heroImg.src = config.gallery[0].src;
+    if (heroImg) {
+      heroImg.src = config.gallery[0].src;
+      heroImg.alt = `Ảnh cưới ${config.groom?.name || ''} & ${config.bride?.name || ''}`;
+    }
   }
 
   // 5. Phần Gia đình 2 bên
@@ -247,13 +250,10 @@ function applyDynamicContent(config) {
       timelineContainer.appendChild(line);
     }
 
-    config.loveStory.forEach((item, index) => {
+    config.loveStory.forEach((item) => {
       const itemEl = document.createElement('div');
       itemEl.className = 'timeline-item is-revealed';
-      itemEl.dataset.chapter = String(index + 1).padStart(2, '0');
-      const photo = config.gallery?.[index % config.gallery.length];
       itemEl.innerHTML = `
-        ${photo ? `<figure class="story-photo"><img src="${escapeHtml(photo.src)}" alt="${escapeHtml(photo.caption || 'Kỷ niệm của chúng mình')}" loading="lazy" decoding="async"></figure>` : ''}
         <div class="timeline-node">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
             <circle cx="12" cy="12" r="8" />
@@ -432,266 +432,14 @@ function applyDynamicContent(config) {
    ========================================================================== */
 function initEnvelope() {
   if (window.SilkOpening) return window.SilkOpening.init();
-  forceScrollToTop();
-  const overlay = document.getElementById('envelope-overlay');
-  const envelopeBox = document.getElementById('envelope-3d-box');
-  const openBtn = document.getElementById('btn-open-envelope');
-  const waxSeal = document.getElementById('flap-wax-seal');
-  const scene = document.querySelector('.envelope-scene');
-  const hero = document.getElementById('hero');
-  const status = document.getElementById('opening-status');
-
-  if (!overlay || !envelopeBox) return;
-
-  let isOpening = false;
-  let tiltFrame = null;
-  let tiltX = 0;
-  let tiltY = 0;
-  const reducedMotion = prefersReducedMotion();
-  const canTilt = window.matchMedia('(hover: hover) and (pointer: fine)').matches && !reducedMotion;
-  const timing = reducedMotion
-    ? { unseal: 0, flap: 0, rise: 0, portal: 0 }
-    : { unseal: 360, flap: 680, rise: 960, portal: 920 };
-
-  const wait = (duration) => new Promise(resolve => window.setTimeout(resolve, duration));
-
-  function announce(message) {
-    if (status) status.textContent = message;
-  }
-
-  function resetTilt() {
-    if (tiltFrame) {
-      cancelAnimationFrame(tiltFrame);
-      tiltFrame = null;
-    }
-    envelopeBox.style.setProperty('--tilt-x', '0deg');
-    envelopeBox.style.setProperty('--tilt-y', '0deg');
-  }
-
-  // A requestAnimationFrame buffer keeps the parallax responsive without repainting on every pointer event.
-  if (canTilt) {
-    overlay.addEventListener('pointermove', (event) => {
-      if (isOpening) return;
-
-      const bounds = envelopeBox.getBoundingClientRect();
-      const normalizedX = Math.max(-1, Math.min(1, (event.clientX - (bounds.left + bounds.width / 2)) / (bounds.width / 2)));
-      const normalizedY = Math.max(-1, Math.min(1, (event.clientY - (bounds.top + bounds.height / 2)) / (bounds.height / 2)));
-
-      tiltX = -normalizedY * 5.5;
-      tiltY = normalizedX * 6.5;
-
-      if (!tiltFrame) {
-        tiltFrame = requestAnimationFrame(() => {
-          envelopeBox.style.setProperty('--tilt-x', `${tiltX.toFixed(2)}deg`);
-          envelopeBox.style.setProperty('--tilt-y', `${tiltY.toFixed(2)}deg`);
-          tiltFrame = null;
-        });
-      }
-    });
-
-    overlay.addEventListener('pointerleave', () => {
-      if (!isOpening) resetTilt();
-    });
-  }
-
-  async function triggerOpening() {
-    if (isOpening) return;
-    isOpening = true;
-
-    forceScrollToTop();
-    resetTilt();
-    document.body.classList.add('invitation-opening');
-    document.documentElement.classList.add('invitation-opening');
-    if (openBtn) {
-      openBtn.setAttribute('aria-disabled', 'true');
-      openBtn.disabled = true;
-    }
-    waxSeal?.setAttribute('aria-disabled', 'true');
-    waxSeal?.setAttribute('tabindex', '-1');
-    overlay.setAttribute('aria-busy', 'true');
-    announce('Đang mở con dấu thiệp cưới.');
-
-    // The audio controller keeps its own rejected-playback fallback for browsers that deny autoplay.
-    window.weddingMusic?.play();
-    scene?.classList.add('is-opening', 'is-unsealing');
-
-    await wait(timing.unseal);
-    scene?.classList.add('is-flap-open');
-    announce('Đang mở phong bì.');
-
-    await wait(timing.flap);
-    scene?.classList.add('is-letter-rising');
-
-    await wait(timing.rise);
-    hero?.classList.add('hero-opening');
-    scene?.classList.add('is-portal');
-    overlay.classList.add('is-transitioning');
-    announce('Thiệp đã mở.');
-
-    await wait(timing.portal);
-    overlay.classList.add('opened');
-    overlay.setAttribute('aria-hidden', 'true');
-    overlay.removeAttribute('aria-busy');
-    document.body.classList.remove('invitation-locked', 'invitation-opening');
-    document.documentElement.classList.remove('invitation-locked', 'invitation-opening');
-    forceScrollToTop();
-    hero?.setAttribute('tabindex', '-1');
-    hero?.focus({ preventScroll: true });
-    forceScrollToTop();
-
-    window.setTimeout(() => hero?.classList.remove('hero-opening'), reducedMotion ? 0 : 1250);
-  }
-
-  if (openBtn) {
-    openBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      triggerOpening();
-    });
-  }
-
-  if (waxSeal) {
-    waxSeal.addEventListener('click', (e) => {
-      e.stopPropagation();
-      triggerOpening();
-    });
-
-    waxSeal.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        triggerOpening();
-      }
-    });
-  }
-
-  envelopeBox.addEventListener('click', () => {
-    triggerOpening();
-  });
+  document.getElementById('envelope-overlay')?.classList.add('opened');
+  document.body.classList.remove('invitation-locked');
+  document.documentElement.classList.remove('invitation-locked');
 }
 
 /* ==========================================================================
    2. FALLING GOLDEN PETALS ANIMATION (3D ORGANIC FLUTTER)
    ========================================================================== */
-function initPetalsCanvas() {
-  const canvas = document.getElementById('petals-canvas');
-  if (!canvas) return;
-  if (prefersReducedMotion()) {
-    canvas.style.display = 'none';
-    return;
-  }
-  const ctx = canvas.getContext('2d');
-
-  let width = (canvas.width = window.innerWidth);
-  let height = (canvas.height = window.innerHeight);
-
-  window.addEventListener('resize', () => {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-  });
-
-  const petals = [];
-  const maxPetals = window.innerWidth <= 768 ? 16 : 26;
-
-  class Petal {
-    constructor() {
-      this.reset(true);
-    }
-
-    reset(initial = false) {
-      this.x = Math.random() * width;
-      this.y = initial ? Math.random() * height : -25;
-      this.size = Math.random() * 9 + 7;
-      this.speedY = Math.random() * 0.85 + 0.55;
-      this.speedX = Math.random() * 0.7 - 0.35;
-      this.rotation = Math.random() * 360;
-      this.rotSpeed = Math.random() * 0.8 - 0.4;
-      this.flip = Math.random() * Math.PI * 2;
-      this.flipSpeed = Math.random() * 0.024 + 0.012;
-      this.opacity = Math.random() * 0.32 + 0.22;
-      this.sway = Math.random() * Math.PI * 2;
-      this.swaySpeed = Math.random() * 0.016 + 0.008;
-      this.colorType = Math.random() > 0.35 ? 'gold' : 'ivory';
-    }
-
-    update() {
-      this.y += this.speedY;
-      this.sway += this.swaySpeed;
-      this.flip += this.flipSpeed;
-      this.x += Math.sin(this.sway) * 0.65 + this.speedX;
-      this.rotation += this.rotSpeed;
-
-      if (this.y > height + 25 || this.x < -35 || this.x > width + 35) {
-        this.reset();
-      }
-    }
-
-    draw() {
-      ctx.save();
-      ctx.translate(this.x, this.y);
-      ctx.rotate((this.rotation * Math.PI) / 180);
-      
-      // 3D tumble flip along vertical axis
-      const scaleX = Math.cos(this.flip);
-      ctx.scale(scaleX, 1);
-      ctx.globalAlpha = this.opacity;
-
-      // Soft metallic champagne & ivory tones
-      const grad = ctx.createLinearGradient(-this.size, -this.size, this.size, this.size);
-      if (this.colorType === 'gold') {
-        grad.addColorStop(0, '#F5E4B8');
-        grad.addColorStop(0.5, '#D4B06A');
-        grad.addColorStop(1, '#A98338');
-      } else {
-        grad.addColorStop(0, '#FFFDF8');
-        grad.addColorStop(0.6, '#F8EBD4');
-        grad.addColorStop(1, '#E6D3B1');
-      }
-      ctx.fillStyle = grad;
-
-      // Delicate blossom petal curve
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.bezierCurveTo(this.size * 0.6, -this.size * 0.5, this.size * 1.1, 0, 0, this.size * 1.1);
-      ctx.bezierCurveTo(-this.size * 1.1, 0, -this.size * 0.6, -this.size * 0.5, 0, 0);
-      ctx.fill();
-
-      // Specular spine highlight
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.45)';
-      ctx.lineWidth = 0.5;
-      ctx.beginPath();
-      ctx.moveTo(0, 1);
-      ctx.quadraticCurveTo(this.size * 0.08, this.size * 0.5, 0, this.size * 0.9);
-      ctx.stroke();
-
-      ctx.restore();
-    }
-  }
-
-  for (let i = 0; i < maxPetals; i++) {
-    petals.push(new Petal());
-  }
-
-  let animationFrameId = null;
-
-  function render() {
-    ctx.clearRect(0, 0, width, height);
-    for (let p of petals) {
-      p.update();
-      p.draw();
-    }
-    animationFrameId = requestAnimationFrame(render);
-  }
-
-  render();
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden && animationFrameId) {
-      cancelAnimationFrame(animationFrameId);
-      animationFrameId = null;
-    } else if (!document.hidden && !animationFrameId) {
-      render();
-    }
-  });
-}
 
 /* ==========================================================================
    3. COUNTDOWN TIMER
@@ -792,37 +540,6 @@ function initScrollReveal() {
   elements.forEach(el => observer.observe(el));
 }
 
-function initCardTilt3D() {
-  // Only enable on desktop with fine mouse pointer
-  const canHover = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-  if (!canHover || prefersReducedMotion()) return;
-
-  const tiltCards = document.querySelectorAll('.event-card, .family-card, .invitation-intro-card');
-  tiltCards.forEach(card => {
-    card.addEventListener('mousemove', (e) => {
-      const rect = card.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const centerX = rect.width / 2;
-      const centerY = rect.height / 2;
-      const normX = (x - centerX) / centerX;
-      const normY = (y - centerY) / centerY;
-
-      const tiltX = -normY * 3.5;
-      const tiltY = normX * 3.5;
-
-      card.style.transform = `perspective(1000px) rotateX(${tiltX.toFixed(2)}deg) rotateY(${tiltY.toFixed(2)}deg) translateY(-4px)`;
-    });
-
-    card.addEventListener('mouseleave', () => {
-      card.style.transform = '';
-      card.style.transition = 'transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
-      setTimeout(() => {
-        card.style.transition = '';
-      }, 600);
-    });
-  });
-}
 
 /* ==========================================================================
    4B. MAP MODAL & INTERACTIVE MAP TABS (NHÀ TRAI & NHÀ GÁI)
@@ -920,7 +637,7 @@ function initRSVPForm() {
     const result = await submitRSVP(rsvpData);
 
     // If wish exists, append to Guestbook
-    if (wish) {
+    if (wish && (result.sent || result.localOnly)) {
       addWishToGuestbook(name, side, wish);
     }
 
@@ -1119,154 +836,59 @@ function initGiftModal() {
    ========================================================================== */
 function initGallerySlider() {
   const slider = document.getElementById('gallery-slider');
-  const prevBtn = document.getElementById('gallery-prev');
-  const nextBtn = document.getElementById('gallery-next');
-  const dotsContainer = document.getElementById('gallery-dots');
-
   if (!slider) return;
-
-  const slides = Array.from(slider.querySelectorAll('.gallery-slide-card'));
+  const slides = [...slider.querySelectorAll('.gallery-slide-card')];
   if (!slides.length) return;
-
+  const dotsContainer = document.getElementById('gallery-dots');
   let currentIndex = 0;
-  let autoplayTimer = null;
-  const AUTOPLAY_INTERVAL = 3200; // 3.2 seconds smooth, comfortable interval
-
-  // Render dots indicator
-  if (dotsContainer) {
-    dotsContainer.innerHTML = '';
-    slides.forEach((_, idx) => {
-      const dot = document.createElement('button');
-      dot.type = 'button';
-      dot.setAttribute('aria-label', `Xem ảnh ${idx + 1}`);
-      dot.className = `slider-dot ${idx === 0 ? 'active' : ''}`;
-      dot.addEventListener('click', () => {
-        goToSlide(idx);
-        restartAutoplay();
-      });
-      dotsContainer.appendChild(dot);
-    });
-  }
-
-  function goToSlide(index) {
-    if (index < 0) index = slides.length - 1;
-    if (index >= slides.length) index = 0;
-    currentIndex = index;
-
-    const targetCard = slides[currentIndex];
-    if (targetCard) {
-      // ONLY scroll horizontally inside the slider container!
-      // This strictly moves slider.scrollLeft and NEVER scrolls the window or webpage!
-      const targetScrollLeft = targetCard.offsetLeft - (slider.clientWidth - targetCard.clientWidth) / 2;
-      slider.scrollTo({
-        left: Math.max(0, targetScrollLeft),
-        behavior: 'smooth'
-      });
-    }
-
-    updateDots(currentIndex);
-  }
-
-  function nextSlide() {
-    const nextIdx = (currentIndex + 1) % slides.length;
-    goToSlide(nextIdx);
-  }
-
-  function prevSlide() {
-    const prevIdx = (currentIndex - 1 + slides.length) % slides.length;
-    goToSlide(prevIdx);
-  }
-
-  function updateDots(activeIdx) {
-    slides.forEach((slide, idx) => {
-      slide.classList.toggle('is-current', idx === activeIdx);
-      slide.classList.toggle('is-before', idx < activeIdx);
-    });
-    if (!dotsContainer) return;
-    const dots = dotsContainer.querySelectorAll('.slider-dot');
-    dots.forEach((d, idx) => {
-      d.classList.toggle('active', idx === activeIdx);
-      d.setAttribute('aria-pressed', String(idx === activeIdx));
-    });
-  }
-
-  function startAutoplay() {
-    stopAutoplay();
-  }
-
-  function stopAutoplay() {
-    if (autoplayTimer) {
-      clearInterval(autoplayTimer);
-      autoplayTimer = null;
-    }
-  }
-
-  function restartAutoplay() {
-    stopAutoplay();
-    startAutoplay();
-  }
-
-  // Next / Prev button navigation
-  if (prevBtn) {
-    prevBtn.addEventListener('click', () => {
-      prevSlide();
-      restartAutoplay();
-    });
-  }
-
-  if (nextBtn) {
-    nextBtn.addEventListener('click', () => {
-      nextSlide();
-      restartAutoplay();
-    });
-  }
-
-  // Pause on hover (desktop) and touch (mobile)
-  slider.addEventListener('mouseenter', stopAutoplay);
-  slider.addEventListener('mouseleave', () => {
-    startAutoplay();
+  let frame = 0;
+  const dots = slides.map((_, index) => {
+    const dot = document.createElement('button');
+    dot.type = 'button';
+    dot.className = 'slider-dot';
+    dot.setAttribute('aria-label', `Xem ảnh ${index + 1}`);
+    dot.addEventListener('click', () => goToSlide(index));
+    return dot;
   });
-  slider.addEventListener('touchstart', stopAutoplay, { passive: true });
-  slider.addEventListener('touchend', () => {
-    setTimeout(startAutoplay, 2500);
-  }, { passive: true });
+  dotsContainer?.replaceChildren(...dots);
 
-  // Update dots indicator when manually scrolled
-  slider.addEventListener('scroll', () => {
-    const scrollPos = slider.scrollLeft + slider.offsetWidth / 2;
-    let closestIndex = 0;
-    let minDistance = Infinity;
-
-    slides.forEach((slide, idx) => {
-      const slideCenter = slide.offsetLeft + slide.offsetWidth / 2;
-      const dist = Math.abs(scrollPos - slideCenter);
-      if (dist < minDistance) {
-        minDistance = dist;
-        closestIndex = idx;
-      }
+  function update(index) {
+    currentIndex = index;
+    slides.forEach((slide, i) => {
+      slide.classList.toggle('is-current', i === index);
+      slide.classList.toggle('is-before', i < index);
     });
-
-    currentIndex = closestIndex;
-    updateDots(currentIndex);
-  }, { passive: true });
-
-  updateDots(0);
-  // Only auto-slide when the gallery section is currently visible on the user's screen
-  if ('IntersectionObserver' in window) {
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          startAutoplay();
-        } else {
-          stopAutoplay();
-        }
-      });
-    }, { threshold: 0.15 });
-
-    observer.observe(slider);
-  } else {
-    startAutoplay();
+    dots.forEach((dot, i) => {
+      dot.classList.toggle('active', i === index);
+      dot.setAttribute('aria-pressed', String(i === index));
+    });
   }
+  function goToSlide(index, instant = false) {
+    index = (index + slides.length) % slides.length;
+    const slide = slides[index];
+    const left = slide.offsetLeft - (slider.clientWidth - slide.offsetWidth) / 2;
+    slider.scrollTo({ left, behavior: instant || prefersReducedMotion() ? 'instant' : 'smooth' });
+    update(index);
+  }
+  document.getElementById('gallery-prev')?.addEventListener('click', () => goToSlide(currentIndex - 1));
+  document.getElementById('gallery-next')?.addEventListener('click', () => goToSlide(currentIndex + 1));
+  slider.addEventListener('scroll', () => {
+    if (frame) return;
+    frame = requestAnimationFrame(() => {
+      frame = 0;
+      const center = slider.scrollLeft + slider.clientWidth / 2;
+      let nearest = 0;
+      slides.forEach((slide, index) => {
+        const distance = Math.abs(slide.offsetLeft + slide.offsetWidth / 2 - center);
+        const previous = Math.abs(slides[nearest].offsetLeft + slides[nearest].offsetWidth / 2 - center);
+        if (distance < previous) nearest = index;
+      });
+      update(nearest);
+    });
+  }, { passive: true });
+  const observer = new ResizeObserver(() => goToSlide(currentIndex, true));
+  observer.observe(slider);
+  update(0);
 }
 
 /* ===========================================================================
