@@ -118,6 +118,7 @@ html[data-cinematic-scroll="true"] .wish-item {
   0% {
     filter: drop-shadow(0 2px 6px rgba(197, 160, 89, 0.25));
   }
+
   100% {
     filter: drop-shadow(0 4px 18px rgba(212, 175, 55, 0.6));
   }
@@ -274,11 +275,25 @@ html[data-cinematic-scroll="true"] .wish-item {
   }
 
   /* Hand-placed organic tilt angles */
-  .gallery-slide-card:nth-child(5n+1) { --stack-tilt: -2deg; }
-  .gallery-slide-card:nth-child(5n+2) { --stack-tilt: 2.2deg; }
-  .gallery-slide-card:nth-child(5n+3) { --stack-tilt: -2.8deg; }
-  .gallery-slide-card:nth-child(5n+4) { --stack-tilt: 1.8deg; }
-  .gallery-slide-card:nth-child(5n+5) { --stack-tilt: -1.5deg; }
+  .gallery-slide-card:nth-child(5n+1) {
+    --stack-tilt: -2deg;
+  }
+
+  .gallery-slide-card:nth-child(5n+2) {
+    --stack-tilt: 2.2deg;
+  }
+
+  .gallery-slide-card:nth-child(5n+3) {
+    --stack-tilt: -2.8deg;
+  }
+
+  .gallery-slide-card:nth-child(5n+4) {
+    --stack-tilt: 1.8deg;
+  }
+
+  .gallery-slide-card:nth-child(5n+5) {
+    --stack-tilt: -1.5deg;
+  }
 
   /* Inactive cards in stack */
   .gallery-slide-card:not(.is-current) {
@@ -309,6 +324,7 @@ html[data-cinematic-scroll="true"] .wish-item {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   #silk-stage,
   .footer-monogram {
     display: none;
