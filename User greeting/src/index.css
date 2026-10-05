@@ -1,0 +1,7 @@
+@import 'tailwindcss';
+@import './styles/style.css';
+@import './styles/silk.css';
+@import './styles/mobile-fixes.css';
+@import './styles/opening-album.css';
+@import './styles/opening-waiting.css';
+@import './styles/film-reel.css';

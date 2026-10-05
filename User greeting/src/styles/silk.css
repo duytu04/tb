@@ -1,0 +1,217 @@
+
+/* Motion enhancement layer. The original invitation remains the visual source of truth. */
+[hidden] {
+  display: none !important;
+}
+
+#silk-stage {
+  position: absolute;
+  inset: -20% -18%;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.65;
+  mix-blend-mode: screen;
+  mask-image: radial-gradient(ellipse at center, #000 28%, transparent 73%);
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 28%, transparent 73%);
+}
+
+#silk-stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+#envelope-overlay .envelope-scene {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+#envelope-overlay .envelope-stage {
+  min-width: 0;
+  max-width: 100%;
+}
+
+#envelope-overlay .envelope-3d-box {
+  z-index: 1;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+html[data-silk-ready="true"] .hero-photo-frame,
+html[data-silk-ready="true"] .event-card,
+html[data-silk-ready="true"] .gallery-slide-card {
+  will-change: transform;
+}
+
+/* 3D Perspective Staging */
+html[data-cinematic-scroll="true"] .cinematic-scene,
+html[data-cinematic-scroll="true"] .cinematic-scene .container,
+html[data-cinematic-scroll="true"] .families-grid,
+html[data-cinematic-scroll="true"] .events-grid,
+html[data-cinematic-scroll="true"] .timeline-container,
+html[data-cinematic-scroll="true"] .gallery-slider-wrapper {
+  perspective: 1400px;
+  perspective-origin: 50% 45%;
+  transform-style: preserve-3d;
+}
+
+html[data-cinematic-scroll="true"] .hero-copy,
+html[data-cinematic-scroll="true"] .hero-photo-wrapper,
+html[data-cinematic-scroll="true"] .countdown-box,
+html[data-cinematic-scroll="true"] .family-card,
+html[data-cinematic-scroll="true"] .event-card,
+html[data-cinematic-scroll="true"] .timeline-item,
+html[data-cinematic-scroll="true"] .memory-film-copy,
+html[data-cinematic-scroll="true"] .memory-film-player,
+html[data-cinematic-scroll="true"] .gallery-slide-card,
+html[data-cinematic-scroll="true"] .rsvp-wrapper,
+html[data-cinematic-scroll="true"] .wish-item {
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+}
+
+/* Timeline Milestone Golden Focus */
+.timeline-item .timeline-node {
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.45s ease;
+}
+
+.timeline-item.is-focused .timeline-node {
+  box-shadow: 0 0 0 5px rgba(197, 160, 89, 0.28), 0 0 16px rgba(212, 175, 55, 0.65);
+  transform: scale(1.22);
+}
+
+/* Metallic Specular Sweep on Luxury Cards */
+.event-card,
+.family-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.event-card::after,
+.family-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -130%;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 248, 220, 0.18), transparent);
+  transform: skewX(-20deg);
+  pointer-events: none;
+  transition: left 0.9s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.event-card:hover::after,
+.family-card:hover::after {
+  left: 150%;
+}
+
+/* Laurel Wreath & Footer Aura */
+.date-circle-wreath img {
+  filter: drop-shadow(0 3px 8px rgba(197, 160, 89, 0.32));
+}
+
+.footer-monogram {
+  animation: monogramAura 5s ease-in-out infinite alternate;
+}
+
+@keyframes monogramAura {
+  0% {
+    filter: drop-shadow(0 2px 6px rgba(197, 160, 89, 0.25));
+  }
+
+  100% {
+    filter: drop-shadow(0 4px 18px rgba(212, 175, 55, 0.6));
+  }
+}
+
+/* Mobile Specific 3D Tuning & Hardware Acceleration */
+@media (max-width: 767px) {
+  #silk-stage {
+    inset: -16% -12%;
+    opacity: 0.90;
+  }
+
+  html[data-cinematic-scroll="true"] .cinematic-scene,
+  html[data-cinematic-scroll="true"] .cinematic-scene .container,
+  html[data-cinematic-scroll="true"] .families-grid,
+  html[data-cinematic-scroll="true"] .events-grid,
+  html[data-cinematic-scroll="true"] .timeline-container,
+  html[data-cinematic-scroll="true"] .gallery-slider-wrapper {
+    perspective: 1100px;
+    -webkit-perspective: 1100px;
+    perspective-origin: 50% 40%;
+  }
+
+  .hero-photo-wrapper,
+  .family-card,
+  .event-card,
+  .timeline-item,
+  .memory-film-player,
+  .gallery-slide-card,
+  .rsvp-wrapper {
+    -webkit-transform-style: preserve-3d;
+    transform-style: preserve-3d;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    will-change: transform, opacity;
+  }
+
+  /* ============================================================
+     CONCEPT 🅰: "CUỐN SỔ HẸN ƯỚC" - STORYBOOK PAGE-TURN (MOBILE)
+     ============================================================ */
+  .invitation-intro-card {
+    transform-origin: top center;
+    box-shadow: 0 14px 38px rgba(44, 38, 33, 0.08), 0 1px 3px rgba(197, 160, 89, 0.15) !important;
+    border-radius: 18px !important;
+  }
+
+  .family-card {
+    border-radius: 14px !important;
+    box-shadow: 0 8px 24px rgba(44, 38, 33, 0.06), 0 1px 2px rgba(197, 160, 89, 0.12) !important;
+  }
+
+  .timeline-item {
+    transform-origin: left bottom;
+  }
+
+  .timeline-content {
+    background: #FFFDF9 !important;
+    border: 1px solid rgba(197, 160, 89, 0.28) !important;
+    border-radius: 14px !important;
+    box-shadow: 0 6px 20px rgba(44, 38, 33, 0.05) !important;
+    transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease !important;
+  }
+
+  .timeline-item.is-focused .timeline-content {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(197, 160, 89, 0.18) !important;
+    border-color: var(--color-gold) !important;
+  }
+
+  /* Mobile Slider Navigation Buttons styling */
+  .slider-nav-btn {
+    width: 40px !important;
+    height: 40px !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid rgba(197, 160, 89, 0.35) !important;
+    box-shadow: 0 4px 16px rgba(44, 38, 33, 0.15) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  #silk-stage,
+  .footer-monogram {
+    display: none;
+    animation: none;
+  }
+
+  html[data-silk-ready="true"] .hero-photo-frame,
+  html[data-silk-ready="true"] .event-card,
+  html[data-silk-ready="true"] .gallery-slide-card {
+    will-change: auto;
+  }
+}

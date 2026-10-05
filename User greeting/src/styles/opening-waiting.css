@@ -1,0 +1,346 @@
+/* ==========================================================================
+   MÀN CHỜ MỞ THƯ — ánh nến, bụi vàng, tem bưu điện, con dấu có hồn
+   Chỉ animate transform/opacity để GPU tự chạy; tắt hết khi bắt đầu mở thiệp
+   ========================================================================== */
+
+/* ---------- Ánh nến ấm sau phong thư, chập chờn rất chậm ---------- */
+.opening-candle-glow {
+  position: absolute;
+  left: 50%;
+  top: 52%;
+  width: min(150vw, 900px);
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  pointer-events: none;
+  z-index: 1;
+  background:
+    radial-gradient(closest-side, rgba(255, 196, 112, 0.2), rgba(222, 150, 62, 0.08) 45%, transparent 72%);
+  animation: candle-flicker 5.2s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+@keyframes candle-flicker {
+  0%, 100% { opacity: 0.85; transform: scale(1); }
+  18% { opacity: 1; transform: scale(1.03); }
+  31% { opacity: 0.78; transform: scale(0.99); }
+  54% { opacity: 0.95; transform: scale(1.02); }
+  73% { opacity: 0.8; transform: scale(1); }
+}
+
+/* ---------- Bụi vàng lơ lửng ---------- */
+.opening-dust {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.opening-dust span {
+  position: absolute;
+  bottom: -12px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #ffe7a8 0%, rgba(233, 190, 98, 0.6) 45%, transparent 70%);
+  opacity: 0;
+  animation: dust-rise var(--d, 14s) var(--delay, 0s) linear infinite;
+  will-change: transform, opacity;
+}
+
+.opening-dust span:nth-child(1) { left: 8%; --d: 15s; --delay: -2s; --x: 18px; }
+.opening-dust span:nth-child(2) { left: 17%; --d: 19s; --delay: -11s; --x: -14px; width: 2px; height: 2px; }
+.opening-dust span:nth-child(3) { left: 26%; --d: 13s; --delay: -6s; --x: 22px; }
+.opening-dust span:nth-child(4) { left: 34%; --d: 21s; --delay: -15s; --x: -10px; width: 4px; height: 4px; }
+.opening-dust span:nth-child(5) { left: 43%; --d: 16s; --delay: -4s; --x: 16px; width: 2px; height: 2px; }
+.opening-dust span:nth-child(6) { left: 51%; --d: 18s; --delay: -9s; --x: -20px; }
+.opening-dust span:nth-child(7) { left: 58%; --d: 14s; --delay: -13s; --x: 12px; width: 2px; height: 2px; }
+.opening-dust span:nth-child(8) { left: 66%; --d: 20s; --delay: -1s; --x: -16px; width: 4px; height: 4px; }
+.opening-dust span:nth-child(9) { left: 73%; --d: 15s; --delay: -7s; --x: 20px; }
+.opening-dust span:nth-child(10) { left: 81%; --d: 17s; --delay: -12s; --x: -12px; width: 2px; height: 2px; }
+.opening-dust span:nth-child(11) { left: 89%; --d: 22s; --delay: -5s; --x: 14px; }
+.opening-dust span:nth-child(12) { left: 94%; --d: 16s; --delay: -10s; --x: -18px; width: 2px; height: 2px; }
+.opening-dust span:nth-child(13) { left: 38%; --d: 24s; --delay: -18s; --x: 10px; width: 5px; height: 5px; filter: blur(1px); }
+.opening-dust span:nth-child(14) { left: 62%; --d: 23s; --delay: -20s; --x: -8px; width: 5px; height: 5px; filter: blur(1px); }
+
+@keyframes dust-rise {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  12% { opacity: 0.9; }
+  50% { transform: translate3d(var(--x), -52vh, 0); opacity: 0.55; }
+  85% { opacity: 0.7; }
+  100% { transform: translate3d(calc(var(--x) * -0.5), -104vh, 0); opacity: 0; }
+}
+
+/* ---------- Phong thư bồng bềnh nhẹ + quầng sáng dưới chân ---------- */
+.envelope-stage {
+  animation: envelope-float 6.5s ease-in-out infinite;
+}
+
+@keyframes envelope-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.envelope-halo {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(118%, 600px);
+  height: 78%;
+  translate: -50% -46%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(closest-side, rgba(244, 205, 128, 0.22), rgba(244, 205, 128, 0.06) 60%, transparent);
+  animation: halo-breathe 6.5s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+@keyframes halo-breathe {
+  0%, 100% { opacity: 0.7; transform: scale(0.97); }
+  50% { opacity: 1; transform: scale(1.03); }
+}
+
+/* ---------- Tem bưu điện + dấu hủy tem trên nắp thư ---------- */
+.envelope-stamp {
+  position: absolute;
+  top: 7%;
+  right: 4.5%;
+  width: clamp(38px, 11vw, 52px);
+  aspect-ratio: 0.84;
+  transform: translateZ(2px) rotate(4deg);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.stamp-paper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  padding: 5px;
+  background:
+    radial-gradient(circle at 3px 3px, transparent 2px, #fbf6ea 2.2px) -3px -3px / 6px 6px;
+  filter: drop-shadow(0 1px 1.5px rgba(80, 52, 18, 0.28));
+}
+
+.stamp-paper::before {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid rgba(138, 30, 34, 0.55);
+  background: linear-gradient(160deg, #8c2a24, #5e1714);
+}
+
+.stamp-paper img {
+  position: relative;
+  width: 62%;
+  filter: brightness(0) invert(84%) sepia(40%) saturate(560%) hue-rotate(352deg);
+}
+
+.stamp-paper span {
+  position: relative;
+  font-family: var(--font-serif);
+  font-size: 0.42rem;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: #ecd08e;
+}
+
+.stamp-postmark {
+  position: absolute;
+  width: 128%;
+  left: -66%;
+  top: 22%;
+  overflow: visible;
+  fill: none;
+  stroke: rgba(66, 46, 30, 0.42);
+  stroke-width: 2.4;
+  transform: rotate(-14deg);
+  mix-blend-mode: multiply;
+}
+
+.stamp-postmark text {
+  fill: rgba(66, 46, 30, 0.5);
+  stroke: none;
+  font-family: var(--font-serif);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+}
+
+.stamp-postmark .stamp-cancel {
+  stroke-width: 2;
+  transform: translateX(-60px);
+}
+
+/* ---------- Con dấu sáp: ánh nhũ lướt qua + nhấn lún khi chạm ---------- */
+.wax-seal-wrapper {
+  isolation: isolate;
+}
+
+.wax-glint {
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 3;
+  mix-blend-mode: screen;
+}
+
+.wax-glint::before {
+  content: '';
+  position: absolute;
+  inset: -20% auto -20% 0;
+  width: 38%;
+  background: linear-gradient(100deg, transparent, rgba(255, 236, 190, 0.75), transparent);
+  transform: translateX(-140%) skewX(-18deg);
+  animation: wax-glint 4.8s 1.2s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+}
+
+@keyframes wax-glint {
+  0%, 62% { transform: translateX(-140%) skewX(-18deg); }
+  86%, 100% { transform: translateX(380%) skewX(-18deg); }
+}
+
+.wax-seal-3d-img {
+  transition: transform 0.18s cubic-bezier(0.3, 0, 0.2, 1), filter 0.18s ease;
+}
+
+.flap-wax-seal:active .wax-seal-3d-img {
+  transform: scale(0.93);
+  filter: brightness(0.9);
+}
+
+/* ---------- Lời nhắc: chỉ hiện khi khách còn chần chừ ---------- */
+.envelope-action-prompt {
+  animation: prompt-reveal 0.9s 2.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@keyframes prompt-reveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.opening-instruction {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.instruction-tap {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #e7c982;
+  box-shadow: 0 0 10px rgba(231, 201, 130, 0.7);
+}
+
+.instruction-tap::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 1px solid rgba(231, 201, 130, 0.8);
+  animation: tap-ping 1.8s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+
+@keyframes tap-ping {
+  0% { transform: scale(0.5); opacity: 1; }
+  100% { transform: scale(1.9); opacity: 0; }
+}
+
+/* ---------- Chân trang: lời mời + đếm ngược ---------- */
+.opening-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.opening-countdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-body);
+  font-size: 0.62rem;
+  font-style: normal;
+  font-weight: 500;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(231, 201, 130, 0.72);
+}
+
+.opening-countdown strong {
+  font-family: var(--font-serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: #edcf89;
+}
+
+.countdown-rule {
+  width: 22px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(231, 201, 130, 0.6));
+}
+
+.countdown-rule:last-child {
+  transform: scaleX(-1);
+}
+
+/* ---------- Khi bắt đầu mở: dừng / gỡ mọi thứ trang trí để dồn GPU cho phim ---------- */
+.is-album-opening .opening-dust,
+.is-album-opening .opening-candle-glow,
+.is-album-opening .envelope-halo,
+.is-album-opening .wax-glint {
+  display: none;
+}
+
+/* Animation lời nhắc giữ opacity (fill: both) → phải gỡ để lệnh ẩn có sẵn khi mở thiệp có hiệu lực */
+.envelope-scene.is-opening .envelope-action-prompt {
+  animation: none;
+}
+
+/* Nắp thư có filter nên backface-visibility không có tác dụng → tự ẩn tem khi nắp bắt đầu lật */
+.envelope-stamp {
+  transition: opacity 0.25s ease;
+}
+
+.envelope-scene.is-flap-open .envelope-stamp {
+  opacity: 0;
+}
+
+/* Giữ nguyên độ lệch đang bồng bềnh (không giật về 0) */
+.is-album-opening .envelope-stage {
+  animation-play-state: paused;
+}
+
+.lite-motion .opening-dust,
+.lite-motion .wax-glint::before {
+  display: none;
+}
+
+.lite-motion .opening-candle-glow,
+.lite-motion .envelope-halo,
+.lite-motion .envelope-stage {
+  animation: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .opening-dust { display: none; }
+  .opening-candle-glow,
+  .envelope-halo,
+  .envelope-stage,
+  .wax-glint::before,
+  .instruction-tap::after {
+    animation: none;
+  }
+}
