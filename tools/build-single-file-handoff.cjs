@@ -14,6 +14,7 @@ const mimeTypes = new Map([
   ['.jpg', 'image/jpeg'],
   ['.jpeg', 'image/jpeg'],
   ['.gif', 'image/gif'],
+  ['.mp3', 'audio/mpeg'],
 ]);
 
 function listFiles(directory) {
@@ -43,34 +44,65 @@ for (const stylesheet of ['css/style.css', 'css/silk.css']) {
   );
 }
 
-// The handoff is a static visual reference. Runtime scripts are deliberately
-// removed so the full invitation is visible immediately when an AI or browser
-// opens the single file.
-html = html.replace(
-  /\s*<script(?:\s+type="module")?(?:\s+async)?\s+src="js\/[^">]+"><\/script>/gi,
-  '',
-);
-html = html.replace(/<html([^>]*)\sclass="invitation-locked"([^>]*)>/i, '<html$1$2>');
-html = html.replace(/<body([^>]*)\sclass="invitation-locked"([^>]*)>/i, '<body$1$2>');
-html = html.replace(/href="admin\.html"/g, 'href="#"');
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
-const staticPreviewCss = `
-  /* AI handoff: show the complete post-opening mobile page as editable HTML. */
-  html, body { overflow: visible !important; }
-  #envelope-overlay { display: none !important; }
-  .reveal-on-scroll,
-  .reveal-on-scroll.revealed {
-    opacity: 1 !important;
-    transform: none !important;
-    visibility: visible !important;
-  }
-`;
-html = html.replace('</head>', `<style data-ai-handoff-preview>${staticPreviewCss}</style>\n</head>`);
+function escapeInlineScript(source) {
+  return source.replace(/<\/script/gi, '<\\/script');
+}
+
+// Inline the complete public-site runtime in the same order as the production
+// page so the one-file handoff retains all UI interactions.
+for (const scriptPath of [
+  'js/config.js',
+  'js/opening.js',
+  'js/music.js',
+  'js/app.js',
+]) {
+  const source = escapeInlineScript(readUtf8(path.join(sourceRoot, scriptPath)));
+  const pattern = new RegExp(
+    `<script\\s+src="${escapeRegExp(scriptPath)}(?:\\?[^"\\s]*)?"\\s*><\\/script>`,
+    'i',
+  );
+  const standaloneOverrides = scriptPath === 'js/config.js'
+    ? `<script data-standalone-overrides>
+document.addEventListener('DOMContentLoaded', () => {
+  const originalGenerateVietQRUrl = window.generateVietQRUrl;
+  const embeddedQrByAccount = new Map([
+    [window.WEDDING_CONFIG?.banking?.groom?.accountNumber, document.querySelector('#tab-groom .qr-image-display')?.src],
+    [window.WEDDING_CONFIG?.banking?.bride?.accountNumber, document.querySelector('#tab-bride .qr-image-display')?.src],
+  ]);
+  window.generateVietQRUrl = (bankCode, accountNo, accountName, memo, template) =>
+    embeddedQrByAccount.get(accountNo)
+    || originalGenerateVietQRUrl(bankCode, accountNo, accountName, memo, template);
+}, { once: true });
+</script>`
+    : '';
+  html = html.replace(
+    pattern,
+    `<script data-inlined-from="${scriptPath}">\n${source}\n</script>${standaloneOverrides}`,
+  );
+}
+
+const sceneModuleSource = readUtf8(
+  path.join(sourceRoot, 'js/generated/silk-scene-C3YXL0wU.js'),
+);
+const sceneModuleUri = `data:text/javascript;base64,${Buffer.from(sceneModuleSource).toString('base64')}`;
+const silkBundle = escapeInlineScript(
+  readUtf8(path.join(sourceRoot, 'js/generated/silk.js'))
+    .replace('./silk-scene-C3YXL0wU.js', sceneModuleUri),
+);
+html = html.replace(
+  /<script\s+type="module"\s+async\s+src="js\/generated\/silk\.js(?:\?[^"\s]*)?"\s*><\/script>/i,
+  `<script type="module" data-inlined-from="js/generated/silk.js">\n${silkBundle}\n</script>`,
+);
 
 const handoffInstructions = `
 <!--
 AI / FIGMA REDRAW INSTRUCTIONS
 - Treat this as the source of truth for a 390 px wide mobile design.
+- This file also contains the complete public-site interaction runtime.
 - Recreate the page with editable frames, text, vectors, image fills, Auto Layout,
   reusable components and design variables. Do not use a full-page screenshot.
 - Preserve the Vietnamese copy, section order, embedded imagery and fixed five-item
@@ -96,6 +128,10 @@ for (const assetPath of listFiles(assetsRoot)) {
   const dataUri = `data:${mimeType};base64,${base64}`;
   html = html.split(relativePath).join(dataUri);
 }
+
+// The repository currently has no memory-film MP4. Preserve the interactive
+// player's built-in unavailable state instead of leaving a broken file path.
+html = html.split('assets/video/hanh-trinh.mp4').join('data:video/mp4;base64,');
 
 fs.writeFileSync(outputPath, html, 'utf8');
 
