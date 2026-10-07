@@ -31,7 +31,14 @@ let html = readUtf8(path.join(sourceRoot, 'index.html'));
 // local reference.
 html = html.replace(/\s+data-src="assets\/video\/hanh-trinh\.mp4"/g, '');
 
-for (const stylesheet of ['css/style.css', 'css/silk.css']) {
+for (const stylesheet of [
+  'css/style.css',
+  'css/silk.css',
+  'css/mobile-fixes.css',
+  'css/opening-album.css',
+  'css/opening-waiting.css',
+  'css/film-reel.css',
+]) {
   const css = readUtf8(path.join(sourceRoot, stylesheet));
   const escaped = stylesheet.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const linkPattern = new RegExp(
@@ -56,6 +63,7 @@ function escapeInlineScript(source) {
 // page so the one-file handoff retains all UI interactions.
 for (const scriptPath of [
   'js/config.js',
+  'js/opening-album-ui.js',
   'js/opening.js',
   'js/music.js',
   'js/app.js',
@@ -122,10 +130,12 @@ for (const assetPath of listFiles(assetsRoot)) {
   if (!mimeType) continue;
 
   const relativePath = path.relative(sourceRoot, assetPath).split(path.sep).join('/');
-  if (!html.includes(relativePath)) continue;
+  if (!html.includes(relativePath) && !html.includes(`../${relativePath}`) && !html.includes(`/${relativePath}`)) continue;
 
   const base64 = fs.readFileSync(assetPath).toString('base64');
   const dataUri = `data:${mimeType};base64,${base64}`;
+  html = html.split(`../${relativePath}`).join(dataUri);
+  html = html.split(`/${relativePath}`).join(dataUri);
   html = html.split(relativePath).join(dataUri);
 }
 

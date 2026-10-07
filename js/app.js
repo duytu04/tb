@@ -67,6 +67,18 @@ function applyDynamicContent(config) {
     if (rsvpName && !rsvpName.value) rsvpName.value = guestName;
   }
 
+  const openingCountdown = document.getElementById('opening-countdown');
+  const openingDays = document.getElementById('opening-days-left');
+  if (openingCountdown && openingDays && config.weddingDate?.targetIso) {
+    const today = new Date();
+    const weddingDay = new Date(config.weddingDate.targetIso);
+    today.setHours(0, 0, 0, 0);
+    weddingDay.setHours(0, 0, 0, 0);
+    const daysLeft = Math.ceil((weddingDay.getTime() - today.getTime()) / 86400000);
+    openingCountdown.hidden = !Number.isFinite(daysLeft) || daysLeft <= 0;
+    if (daysLeft > 0) openingDays.textContent = String(daysLeft);
+  }
+
   // 1. Tiêu đề trang & Thẻ Meta SEO/Social
   if (config.couple?.pageTitle) {
     document.title = config.couple.pageTitle;
@@ -179,7 +191,7 @@ function applyDynamicContent(config) {
         gParents.innerHTML = `<div>${escapeHtml(config.family.groom.father)}</div><div>${escapeHtml(config.family.groom.mother)}</div>`;
       }
       const gAddr = familyCards[0].querySelector('.family-address');
-      if (gAddr) gAddr.innerHTML = config.family.groom.address;
+      if (gAddr) gAddr.innerHTML = stripPresentationIcon(config.family.groom.address);
     }
     // Card 1: Nhà Gái
     if (config.family.bride) {
@@ -190,7 +202,7 @@ function applyDynamicContent(config) {
         bParents.innerHTML = `<div>${escapeHtml(config.family.bride.father)}</div><div>${escapeHtml(config.family.bride.mother)}</div>`;
       }
       const bAddr = familyCards[1].querySelector('.family-address');
-      if (bAddr) bAddr.innerHTML = config.family.bride.address;
+      if (bAddr) bAddr.innerHTML = stripPresentationIcon(config.family.bride.address);
     }
   }
 
@@ -215,7 +227,7 @@ function applyDynamicContent(config) {
       if (lunar && ev.lunarDate) lunar.textContent = ev.lunarDate;
 
       const locName = card.querySelector('.location-name');
-      if (locName && ev.venueName) locName.textContent = ev.venueName;
+      if (locName && ev.venueName) locName.textContent = stripPresentationIcon(ev.venueName);
       const locAddr = card.querySelector('.location-address');
       if (locAddr && ev.address) locAddr.textContent = ev.address;
 
@@ -379,9 +391,9 @@ function applyDynamicContent(config) {
       if (info) {
         info.innerHTML = `
           <div class="map-modal-event">${escapeHtml(groomEv.title)}</div>
-          <div class="map-modal-venue">${escapeHtml(groomEv.venueName)}</div>
-          <div class="map-modal-addr">📍 ${escapeHtml(groomEv.address)}</div>
-          <div class="map-modal-time">⏰ ${escapeHtml(groomEv.time)} • ${escapeHtml(groomEv.date)}</div>
+          <div class="map-modal-venue">${escapeHtml(stripPresentationIcon(groomEv.venueName))}</div>
+          <div class="map-modal-addr">${escapeHtml(stripPresentationIcon(groomEv.address))}</div>
+          <div class="map-modal-time">${escapeHtml(stripPresentationIcon(groomEv.time))} • ${escapeHtml(groomEv.date)}</div>
         `;
       }
       const iframe = modalGroom.querySelector('iframe');
@@ -396,9 +408,9 @@ function applyDynamicContent(config) {
       if (info) {
         info.innerHTML = `
           <div class="map-modal-event">${escapeHtml(brideEv.title)}</div>
-          <div class="map-modal-venue">${escapeHtml(brideEv.venueName)}</div>
-          <div class="map-modal-addr">📍 ${escapeHtml(brideEv.address)}</div>
-          <div class="map-modal-time">⏰ ${escapeHtml(brideEv.time)} • ${escapeHtml(brideEv.date)}</div>
+          <div class="map-modal-venue">${escapeHtml(stripPresentationIcon(brideEv.venueName))}</div>
+          <div class="map-modal-addr">${escapeHtml(stripPresentationIcon(brideEv.address))}</div>
+          <div class="map-modal-time">${escapeHtml(stripPresentationIcon(brideEv.time))} • ${escapeHtml(brideEv.date)}</div>
         `;
       }
       const iframe = modalBride.querySelector('iframe');
@@ -751,6 +763,8 @@ function addWishToGuestbook(name, side, text) {
   const container = document.getElementById('wishes-container');
   if (container) {
     const el = createWishElement(name, side, text);
+    el.classList.add('wish-new');
+    el.addEventListener('animationend', () => el.classList.remove('wish-new'), { once: true });
     container.insertBefore(el, container.firstChild);
   }
 }
@@ -839,8 +853,32 @@ function initGallerySlider() {
     return dot;
   });
   dotsContainer?.replaceChildren(...dots);
+  const caption = document.getElementById('gallery-film-caption');
+  slides.forEach((slide, index) => { slide.dataset.frame = String(index + 1).padStart(2, '0'); });
+
+  function curve() {
+    const center = slider.scrollLeft + slider.clientWidth / 2;
+    const still = prefersReducedMotion();
+    slides.forEach((slide) => {
+      const width = slide.offsetWidth || 1;
+      const distance = still
+        ? 0
+        : Math.max(-3, Math.min(3, (slide.offsetLeft + width / 2 - center) / width));
+      const absoluteDistance = Math.abs(distance);
+      slide.style.setProperty('--ry', `${distance * 24}deg`);
+      slide.style.setProperty('--tz', `${-Math.pow(absoluteDistance, 1.25) * 70}px`);
+      slide.style.setProperty('--dim', String(1 - Math.min(absoluteDistance, 2) * 0.24));
+      slide.style.setProperty('--px', `${distance * -12}px`);
+    });
+  }
 
   function update(index) {
+    if (caption && (index !== currentIndex || !caption.textContent)) {
+      caption.textContent = slides[index].querySelector('.gallery-caption')?.textContent || '';
+      caption.style.animation = 'none';
+      void caption.offsetWidth;
+      caption.style.animation = '';
+    }
     currentIndex = index;
     slides.forEach((slide, i) => {
       slide.classList.toggle('is-current', i === index);
@@ -864,6 +902,7 @@ function initGallerySlider() {
     if (frame) return;
     frame = requestAnimationFrame(() => {
       frame = 0;
+      curve();
       const center = slider.scrollLeft + slider.clientWidth / 2;
       let nearest = 0;
       slides.forEach((slide, index) => {
@@ -874,9 +913,10 @@ function initGallerySlider() {
       update(nearest);
     });
   }, { passive: true });
-  const observer = new ResizeObserver(() => goToSlide(currentIndex, true));
+  const observer = new ResizeObserver(() => { goToSlide(currentIndex, true); curve(); });
   observer.observe(slider);
   update(0);
+  curve();
 }
 
 /* ===========================================================================
@@ -1080,14 +1120,21 @@ function showToast(message) {
     toast = document.createElement('div');
     toast.id = 'toast-notification';
     toast.className = 'toast-msg';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
     document.body.appendChild(toast);
   }
   toast.innerText = message;
   toast.classList.add('show');
 
-  setTimeout(() => {
+  clearTimeout(showToast._timeout);
+  showToast._timeout = setTimeout(() => {
     toast.classList.remove('show');
   }, 3500);
+}
+
+function stripPresentationIcon(value) {
+  return String(value ?? '').replace(/^\s*(?:📍|🏛️?|⏰)\s*/u, '');
 }
 
 function escapeHtml(str) {
@@ -1133,6 +1180,20 @@ function saveLocalItem(key, item, prepend = false) {
 
 let activeModal = null;
 let previousFocus = null;
+let modalBackgroundState = [];
+
+function setModalBackgroundInert(modal, inert) {
+  if (inert) {
+    modalBackgroundState = [...document.body.children]
+      .filter(element => element !== modal && !['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(element.tagName))
+      .map(element => ({ element, wasInert: element.inert }));
+    modalBackgroundState.forEach(({ element }) => { element.inert = true; });
+    return;
+  }
+
+  modalBackgroundState.forEach(({ element, wasInert }) => { element.inert = wasInert; });
+  modalBackgroundState = [];
+}
 
 function openModal(modal, focusTarget) {
   if (!modal) return;
@@ -1141,9 +1202,19 @@ function openModal(modal, focusTarget) {
   modal.classList.add('active');
   modal.setAttribute('aria-hidden', 'false');
   document.body.classList.add('modal-open');
+  setModalBackgroundInert(modal, true);
 
   const target = focusTarget || getFocusableElements(modal)[0] || modal;
-  setTimeout(() => target.focus?.(), 0);
+  const focusInsideModal = () => {
+    if (activeModal !== modal) return;
+    target.focus?.({ preventScroll: true });
+    if (!modal.contains(document.activeElement)) {
+      (getFocusableElements(modal)[0] || modal).focus?.({ preventScroll: true });
+    }
+  };
+  focusInsideModal();
+  requestAnimationFrame(focusInsideModal);
+  setTimeout(focusInsideModal, 50);
 }
 
 function closeModal(modal) {
@@ -1151,6 +1222,7 @@ function closeModal(modal) {
   modal.classList.remove('active');
   modal.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('modal-open');
+  setModalBackgroundInert(modal, false);
 
   if (activeModal === modal) {
     activeModal = null;
@@ -1185,7 +1257,10 @@ document.addEventListener('keydown', (event) => {
   const first = focusable[0];
   const last = focusable[focusable.length - 1];
 
-  if (event.shiftKey && document.activeElement === first) {
+  if (!activeModal.contains(document.activeElement)) {
+    event.preventDefault();
+    (event.shiftKey ? last : first).focus();
+  } else if (event.shiftKey && document.activeElement === first) {
     event.preventDefault();
     last.focus();
   } else if (!event.shiftKey && document.activeElement === last) {

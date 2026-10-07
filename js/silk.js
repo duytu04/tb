@@ -63,11 +63,18 @@ function startGoldenPetals() {
     petal.spin = Math.random() * Math.PI * 2;
     petal.spinSpeed = 0.012 + Math.random() * 0.01;
     petal.opacity = 0.16 + Math.random() * 0.22;
-    petal.colorType = Math.floor(Math.random() * 3);
+    petal.colorType = Math.floor(Math.random() * 5);
+    petal.flower = Math.random() < 0.22;
+    if (petal.flower) {
+      petal.size = 7 + Math.random() * 5;
+      petal.speed *= 0.8;
+      petal.spinSpeed *= 0.45;
+      petal.opacity = 0.26 + Math.random() * 0.2;
+    }
   }
 
   resize();
-  const count = innerWidth < 768 ? 8 : 14;
+  const count = innerWidth < 768 ? 20 : 22;
   for (let index = 0; index < count; index++) {
     const petal = {};
     reset(petal, true);
@@ -94,7 +101,25 @@ function startGoldenPetals() {
     }
   }, { passive: true });
 
-  const PETAL_COLORS = ['#E5C478', '#D4AF37', '#C5A059'];
+  const PETAL_COLORS = ['#E5C478', '#D4AF37', '#C5A059', '#F2C6C2', '#EBB3AE'];
+
+  // Bông hoa 5 cánh: cánh hồng phấn, nhụy vàng
+  function drawFlower(petal) {
+    const size = petal.size;
+    context.fillStyle = PETAL_COLORS[3 + (petal.colorType % 2)];
+    for (let k = 0; k < 5; k++) {
+      context.rotate((Math.PI * 2) / 5);
+      context.beginPath();
+      context.moveTo(0, 0);
+      context.bezierCurveTo(size * 0.55, -size * 0.25, size * 0.5, -size * 0.95, 0, -size * 0.82);
+      context.bezierCurveTo(-size * 0.5, -size * 0.95, -size * 0.55, -size * 0.25, 0, 0);
+      context.fill();
+    }
+    context.fillStyle = '#D4AF37';
+    context.beginPath();
+    context.arc(0, 0, size * 0.2, 0, Math.PI * 2);
+    context.fill();
+  }
 
   function draw(now = 0) {
     if (document.hidden || reduced.matches) {
@@ -122,16 +147,23 @@ function startGoldenPetals() {
       context.save();
       context.translate(petal.x, petal.y);
       context.rotate(petal.spin);
-      context.scale(Math.cos(petal.spin), Math.sin(petal.sway) * 0.35 + 0.65);
-      context.globalAlpha = petal.opacity;
 
-      context.fillStyle = PETAL_COLORS[petal.colorType % 3];
-      context.beginPath();
-      context.moveTo(0, -petal.size);
-      context.bezierCurveTo(petal.size * 0.95, -petal.size * 0.45, petal.size * 0.95, petal.size * 0.5, 0, petal.size);
-      context.bezierCurveTo(-petal.size * 0.95, petal.size * 0.5, -petal.size * 0.95, -petal.size * 0.45, 0, -petal.size);
-      context.fill();
-      context.restore();
+      if (petal.flower) {
+        context.scale(1, Math.sin(petal.sway) * 0.18 + 0.82);
+        context.globalAlpha = petal.opacity;
+        drawFlower(petal);
+        context.restore();
+      } else {
+        context.scale(Math.cos(petal.spin), Math.sin(petal.sway) * 0.35 + 0.65);
+        context.globalAlpha = petal.opacity;
+        context.fillStyle = PETAL_COLORS[petal.colorType];
+        context.beginPath();
+        context.moveTo(0, -petal.size);
+        context.bezierCurveTo(petal.size * 0.95, -petal.size * 0.45, petal.size * 0.95, petal.size * 0.5, 0, petal.size);
+        context.bezierCurveTo(-petal.size * 0.95, petal.size * 0.5, -petal.size * 0.95, -petal.size * 0.45, 0, -petal.size);
+        context.fill();
+        context.restore();
+      }
     });
   }
 

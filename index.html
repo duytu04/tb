@@ -30,11 +30,15 @@
   <meta property="og:image" content="assets/images/hero_1791131600.webp">
 
   <!-- Main Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=37">
-  <link rel="stylesheet" href="css/silk.css?v=37">
+  <link rel="stylesheet" href="css/style.css?v=39">
+  <link rel="stylesheet" href="css/silk.css?v=39">
+  <link rel="stylesheet" href="css/mobile-fixes.css?v=39">
+  <link rel="stylesheet" href="css/opening-album.css?v=40">
+  <link rel="stylesheet" href="css/opening-waiting.css?v=39">
+  <link rel="stylesheet" href="css/film-reel.css?v=39">
 
   <!-- Dynamic Wedding Config Store -->
-  <script src="js/config.js?v=37"></script>
+  <script src="js/config.js?v=39"></script>
   <script>
     if ('scrollRestoration' in history) {
       history.scrollRestoration = 'manual';
@@ -81,12 +85,19 @@
       <img src="assets/icons/floral-art.svg" alt="">
     </div>
     <div class="opening-light-sweep" aria-hidden="true"></div>
+    <div class="opening-candle-glow" aria-hidden="true"></div>
+    <div class="opening-dust" aria-hidden="true">
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+      <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+    </div>
 
     <!-- Ambient depth layer -->
     <div class="envelope-ambient-bg">
       <div class="ambient-glow glow-1"></div>
       <div class="ambient-glow glow-2"></div>
     </div>
+
+    <div class="opening-dissolve-veil" aria-hidden="true"></div>
 
     <!-- 3D Envelope Scene -->
     <div class="envelope-scene">
@@ -106,6 +117,7 @@
 
       <div class="envelope-stage">
         <div id="silk-stage" aria-hidden="true"></div>
+        <div class="envelope-halo" aria-hidden="true"></div>
         <div class="envelope-3d-box" id="envelope-3d-box">
 
           <!-- 1. Inside Backing of the Envelope -->
@@ -116,6 +128,9 @@
 
           <!-- 2. The Letter / Card Inside that slides out -->
           <div class="envelope-letter" id="envelope-letter">
+            <div class="letter-album-proxy" aria-hidden="true">
+              <img src="assets/icons/monogram.svg" alt="">
+            </div>
             <div class="letter-shimmer"></div>
             <div class="letter-inner">
               <img src="assets/icons/corner-ornament.svg" alt="" class="letter-corner lt">
@@ -177,6 +192,23 @@
                 stroke="rgba(197, 155, 39, 0.35)" stroke-width="1" stroke-dasharray="4 3" />
             </svg>
 
+            <div class="envelope-stamp" aria-hidden="true">
+              <div class="stamp-paper">
+                <img src="assets/icons/monogram.svg" alt="">
+                <span>20·10</span>
+              </div>
+              <svg class="stamp-postmark" viewBox="0 0 100 100">
+                <defs>
+                  <path id="postmark-arc" d="M 50,50 m -33,0 a 33,33 0 1,1 66,0 a 33,33 0 1,1 -66,0"></path>
+                </defs>
+                <circle cx="50" cy="50" r="44"></circle>
+                <circle cx="50" cy="50" r="24"></circle>
+                <text><textPath href="#postmark-arc">HÀ NỘI · 20.10.2026 ·</textPath></text>
+                <path class="stamp-cancel"
+                  d="M 96,38 q 12,-6 24,0 t 24,0 t 24,0 M 96,50 q 12,-6 24,0 t 24,0 t 24,0 M 96,62 q 12,-6 24,0 t 24,0 t 24,0"></path>
+              </svg>
+            </div>
+
             <!-- Wax Seal button attached to the tip of flap -->
             <div class="flap-wax-seal" id="flap-wax-seal" role="button" tabindex="0"
               aria-label="Mở thiệp bằng con dấu sáp">
@@ -189,19 +221,31 @@
                 <span class="wax-spark wax-spark-4" aria-hidden="true"></span>
                 <span class="wax-spark wax-spark-5" aria-hidden="true"></span>
                 <img src="assets/icons/wax-seal.svg" alt="" class="wax-seal-3d-img">
+                <span class="wax-glint" aria-hidden="true"></span>
               </div>
             </div>
           </div>
 
         </div>
         <div class="opening-envelope-shadow" aria-hidden="true"></div>
+        <div id="opening-album-root"></div>
       </div>
 
       <!-- Action Prompt -->
       <div class="envelope-action-prompt">
-        <p id="opening-instruction" class="opening-instruction">Chạm vào con dấu để mở thiệp</p>
+        <p id="opening-instruction" class="opening-instruction">
+          <span class="instruction-tap" aria-hidden="true"></span>
+          Chạm vào con dấu để mở thiệp
+        </p>
       </div>
-      <p class="opening-footer">Trân trọng kính mời Quý khách</p>
+      <p class="opening-footer">
+        Trân trọng kính mời <span id="opening-guest">Quý Khách</span>
+        <span class="opening-countdown" id="opening-countdown">
+          <span class="countdown-rule" aria-hidden="true"></span>
+          còn <strong id="opening-days-left">15</strong> ngày
+          <span class="countdown-rule" aria-hidden="true"></span>
+        </span>
+      </p>
     </div>
     <p id="opening-status" class="sr-only" aria-live="polite"></p>
   </div>
@@ -341,7 +385,7 @@
               <div>BÀ: <strong>BÙI THỊ XUÂN</strong></div>
             </div>
             <div class="family-address">
-              📍 Thôn Ngãi Cầu, xã An Khánh<br>huyện Hoài Đức, TP. Hà Nội
+              Thôn Ngãi Cầu, xã An Khánh<br>huyện Hoài Đức, TP. Hà Nội
             </div>
           </div>
 
@@ -353,7 +397,7 @@
               <div>BÀ: <strong>NGUYỄN THỊ LAI</strong></div>
             </div>
             <div class="family-address">
-              📍 TDP Hải Châu, phường Ngọc Sơn<br>thị xã Nghi Sơn, tỉnh Thanh Hóa
+              TDP Hải Châu, phường Ngọc Sơn<br>thị xã Nghi Sơn, tỉnh Thanh Hóa
             </div>
           </div>
         </div>
@@ -399,7 +443,7 @@
           </div>
 
           <div class="event-location">
-            <div class="location-name">🏛 Tại Tư Gia Nhà Gái</div>
+            <div class="location-name">Tại Tư Gia Nhà Gái</div>
             <div class="location-address">TDP Hải Châu, phường Ngọc Sơn, thị xã Nghi Sơn, tỉnh Thanh Hóa</div>
           </div>
 
@@ -447,7 +491,7 @@
           </div>
 
           <div class="event-location">
-            <div class="location-name">🏛 Nhà Văn Hóa Thôn Ngãi Cầu</div>
+            <div class="location-name">Nhà Văn Hóa Thôn Ngãi Cầu</div>
             <div class="location-address">Thôn Ngãi Cầu, xã An Khánh, huyện Hoài Đức, TP. Hà Nội</div>
           </div>
 
@@ -617,7 +661,7 @@
       </div>
 
       <!-- Horizontal Card Slider -->
-      <div class="gallery-slider-wrapper reveal-on-scroll">
+      <div class="gallery-slider-wrapper film-reel reveal-on-scroll">
         <!-- Prev Button -->
         <button id="gallery-prev" class="slider-nav-btn prev" aria-label="Xem ảnh trước">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -683,6 +727,8 @@
           </svg>
         </button>
       </div>
+
+      <p id="gallery-film-caption" class="film-caption" aria-live="polite"></p>
 
       <!-- Slider Dots Pagination -->
       <div id="gallery-dots" class="slider-dots-container"></div>
@@ -751,11 +797,11 @@
             <div class="radio-group">
               <label class="radio-item">
                 <input type="radio" name="guest-attending" value="Chắc chắn tham dự" checked>
-                <span>Chắc chắn sẽ tới chung vui 🎉</span>
+                <span class="ico-party">Chắc chắn sẽ tới chung vui</span>
               </label>
               <label class="radio-item">
                 <input type="radio" name="guest-attending" value="Rất tiếc không thể đến">
-                <span>Rất tiếc không thể tham dự 💌</span>
+                <span class="ico-letter">Rất tiếc không thể tham dự</span>
               </label>
             </div>
           </div>
@@ -878,11 +924,11 @@
       <div class="map-modal-tabs" role="tablist">
         <button class="map-modal-tab-btn active" role="tab" data-target="modal-tab-groom"
           aria-controls="modal-tab-groom" aria-selected="true">
-          🏛 Nhà Trai (Hà Nội)
+          Nhà Trai (Hà Nội)
         </button>
         <button class="map-modal-tab-btn" role="tab" data-target="modal-tab-bride" aria-controls="modal-tab-bride"
           aria-selected="false">
-          🏛 Nhà Gái (Thanh Hóa)
+          Nhà Gái (Thanh Hóa)
         </button>
       </div>
 
@@ -891,8 +937,8 @@
         <div class="map-modal-info-box">
           <div class="map-modal-event">LỄ THÀNH HÔN &amp; TIỆC CƯỚI</div>
           <div class="map-modal-venue">Nhà Văn Hóa Thôn Ngãi Cầu</div>
-          <div class="map-modal-addr">📍 Thôn Ngãi Cầu, xã An Khánh, huyện Hoài Đức, TP. Hà Nội</div>
-          <div class="map-modal-time">⏰ 11:00 Trưa • Thứ Ba, 20/10/2026</div>
+          <div class="map-modal-addr">Thôn Ngãi Cầu, xã An Khánh, huyện Hoài Đức, TP. Hà Nội</div>
+          <div class="map-modal-time">11:00 Trưa • Thứ Ba, 20/10/2026</div>
         </div>
 
         <div class="map-modal-iframe-wrap">
@@ -916,8 +962,8 @@
         <div class="map-modal-info-box">
           <div class="map-modal-event">LỄ NẠP TÀI</div>
           <div class="map-modal-venue">Tại Tư Gia Nhà Gái</div>
-          <div class="map-modal-addr">📍 TDP Hải Châu, phường Ngọc Sơn, thị xã Nghi Sơn, tỉnh Thanh Hóa</div>
-          <div class="map-modal-time">⏰ 08:00 Sáng • Chủ Nhật, 18/10/2026</div>
+          <div class="map-modal-addr">TDP Hải Châu, phường Ngọc Sơn, thị xã Nghi Sơn, tỉnh Thanh Hóa</div>
+          <div class="map-modal-time">08:00 Sáng • Chủ Nhật, 18/10/2026</div>
         </div>
 
         <div class="map-modal-iframe-wrap">
@@ -1040,10 +1086,11 @@
   </nav>
 
   <!-- Scripts -->
-  <script src="js/opening.js?v=37"></script>
-  <script src="js/music.js?v=37"></script>
-  <script src="js/app.js?v=37"></script>
-  <script type="module" async src="js/generated/silk.js?v=37"></script>
+  <script src="js/opening-album-ui.js?v=39"></script>
+  <script src="js/opening.js?v=39"></script>
+  <script src="js/music.js?v=39"></script>
+  <script src="js/app.js?v=39"></script>
+  <script type="module" async src="js/generated/silk.js?v=39"></script>
 </body>
 
 </html>

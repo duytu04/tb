@@ -29,6 +29,17 @@ async function noOverflow(page) {
   assert(size.content <= size.screen + 1, `Horizontal overflow: ${JSON.stringify(size)}`);
 }
 
+async function startOpening(page) {
+  const seal = page.getByRole('button', { name: /Mở thiệp bằng con dấu sáp/ });
+  await seal.focus();
+  await page.keyboard.press('Enter');
+}
+
+async function finishOpening(page) {
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => window.SilkOpening.state === 'opened');
+}
+
 async function assertOriginalDesign(page) {
   const fingerprint = await page.evaluate(() => ({
     theme: document.querySelector('meta[name="theme-color"]').content,
@@ -66,11 +77,11 @@ try {
     assert(await page.locator('#silk-stage canvas').count(), `${size}: missing Three.js atmosphere`);
     await page.screenshot({ path: `test-results/${size}-original-opening.png` });
 
-    await page.getByRole('button', { name: /Mở thiệp bằng con dấu sáp/ }).click();
+    await startOpening(page);
     await page.waitForTimeout(1250);
     assert(await page.locator('.envelope-scene').evaluate(element => element.classList.contains('is-letter-rising')));
     await page.screenshot({ path: `test-results/${size}-original-unfold.png` });
-    await page.waitForFunction(() => window.SilkOpening.state === 'opened');
+    await finishOpening(page);
     await page.waitForTimeout(250);
     await noOverflow(page);
     await page.screenshot({ path: `test-results/${size}-original-hero.png` });
@@ -108,8 +119,8 @@ try {
   await page.goto(`${base}/?to=${encodeURIComponent(guest)}`);
   await page.waitForSelector('html[data-silk-ready="true"]');
   assert.equal(await page.locator('.pocket-guest-val').textContent(), guest);
-  await page.getByRole('button', { name: /Mở thiệp bằng con dấu sáp/ }).click();
-  await page.waitForFunction(() => window.SilkOpening.state === 'opened');
+  await startOpening(page);
+  await finishOpening(page);
   await page.locator('#gallery').scrollIntoViewIfNeeded();
   await page.evaluate(() => document.getElementById('gallery-next').click());
   await page.waitForTimeout(700);
@@ -144,7 +155,8 @@ try {
     }
     await page.goto(`${base}/${fallback === 'hash' ? '#events' : ''}`);
     if (fallback !== 'hash') {
-      await page.getByRole('button', { name: /Mở thiệp bằng con dấu sáp/ }).click();
+      await startOpening(page);
+      if (fallback !== 'reduced') await page.keyboard.press('Escape');
     }
     await page.waitForFunction(() => window.SilkOpening.state === 'opened', { timeout: 6000 });
     await noOverflow(page);

@@ -1,0 +1,186 @@
+/* ==========================================================================
+   ALBUM ẢNH CƯỚI — CUỘN PHIM 35MM 3D
+   ========================================================================== */
+.film-reel {
+  --film-base: #1C1814;
+  --film-hole: var(--color-bg-alt, #F4EFEB);
+  --film-ink: rgba(229, 196, 120, 0.78);
+  padding: 6px 0 0;
+}
+
+.film-reel .gallery-slider-track {
+  gap: 0;
+  padding: 34px 0 40px;
+  scroll-padding-inline: 50%;
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent 100%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 9%, #000 91%, transparent 100%);
+}
+
+.film-reel .gallery-slider-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* Khoảng đệm hai đầu để khung đầu/cuối dừng được ở giữa */
+.film-reel .gallery-slider-track::before,
+.film-reel .gallery-slider-track::after {
+  content: '';
+  flex: 0 0 calc(50% - 150px);
+}
+
+/* Mỗi khung phim: nền phim tối, lỗ răng cưa trên và dưới */
+.film-reel .gallery-slide-card {
+  flex: 0 0 300px;
+  aspect-ratio: auto;
+  padding: 30px 9px;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  background-color: var(--film-base);
+  background-image:
+    repeating-linear-gradient(90deg, transparent 0 7px, var(--film-hole) 7px 17px, transparent 17px 25px),
+    repeating-linear-gradient(90deg, transparent 0 7px, var(--film-hole) 7px 17px, transparent 17px 25px);
+  background-size: 100% 12px, 100% 12px;
+  background-position: 0 9px, 0 calc(100% - 9px);
+  background-repeat: no-repeat;
+  box-shadow: 0 26px 40px -22px rgba(28, 24, 20, 0.55);
+  transform: perspective(900px) translateZ(var(--tz, 0)) rotateY(var(--ry, 0deg));
+  transform-origin: 50% 50%;
+  filter: brightness(var(--dim, 1));
+  transition: transform 0.18s linear, filter 0.18s linear;
+  will-change: transform;
+}
+
+.film-reel .gallery-slide-card:hover {
+  transform: perspective(900px) translateZ(var(--tz, 0)) rotateY(var(--ry, 0deg));
+  box-shadow: 0 26px 40px -22px rgba(28, 24, 20, 0.55);
+}
+
+/* Chữ in mép phim: số khung + ngày cưới */
+.film-reel .gallery-slide-card::before,
+.film-reel .gallery-slide-card::after {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  font: 600 9px/1 ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  letter-spacing: 0.18em;
+  color: var(--film-ink);
+  pointer-events: none;
+}
+
+.film-reel .gallery-slide-card::before {
+  content: '◂ ' attr(data-frame) 'A';
+  top: -14px;
+  color: rgba(197, 160, 89, 0.85);
+}
+
+.film-reel .gallery-slide-card::after {
+  content: 'AT · 20.10.2026 · ' attr(data-frame);
+  bottom: -15px;
+  text-align: right;
+  color: rgba(140, 120, 95, 0.75);
+}
+
+.film-reel .gallery-slide-card img {
+  aspect-ratio: 4 / 5;
+  height: auto;
+  border-radius: 3px;
+  transform: scale(1.08) translateX(var(--px, 0));
+  transition: transform 0.18s linear;
+}
+
+.film-reel .gallery-slide-card:hover img {
+  transform: scale(1.08) translateX(var(--px, 0));
+}
+
+/* Lớp ánh sáng: vệt sáng lướt qua khung đang ở giữa */
+.film-reel .gallery-overlay {
+  inset: 30px 9px;
+  padding: 0;
+  opacity: 1;
+  border-radius: 3px;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(28, 24, 20, 0.08), transparent 30%, transparent 75%, rgba(28, 24, 20, 0.22));
+}
+
+.film-reel .gallery-overlay::after {
+  content: '';
+  position: absolute;
+  inset: -20% -60%;
+  background: linear-gradient(105deg, transparent 40%, rgba(255, 240, 210, 0.38) 50%, transparent 60%);
+  transform: translateX(-70%);
+  opacity: 0;
+}
+
+.film-reel .gallery-slide-card.is-current .gallery-overlay::after {
+  animation: filmSheen 1.3s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+
+@keyframes filmSheen {
+  0% { transform: translateX(-70%); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateX(70%); opacity: 0; }
+}
+
+.film-reel .gallery-caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+/* Chú thích viết tay dưới cuộn phim */
+.film-caption {
+  min-height: 2.2em;
+  margin: 6px auto 0;
+  max-width: 34ch;
+  text-align: center;
+  font-family: var(--font-script);
+  font-size: 1.65rem;
+  line-height: 1.1;
+  color: var(--color-gold-dark, #A8823F);
+  animation: filmCaptionIn 0.5s ease both;
+}
+
+@keyframes filmCaptionIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.film-reel .slider-nav-btn.prev { left: 8px; }
+.film-reel .slider-nav-btn.next { right: 8px; }
+
+@media (max-width: 767px) {
+  .film-reel .gallery-slide-card {
+    flex-basis: min(240px, 66vw);
+    padding: 26px 7px;
+    background-size: 100% 10px, 100% 10px;
+    background-position: 0 8px, 0 calc(100% - 8px);
+  }
+
+  .film-reel .gallery-overlay {
+    inset: 26px 7px;
+  }
+
+  .film-reel .gallery-slider-track::before,
+  .film-reel .gallery-slider-track::after {
+    flex-basis: calc(50% - min(120px, 33vw));
+  }
+
+  .film-caption {
+    font-size: 1.4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .film-reel .gallery-slide-card,
+  .film-reel .gallery-slide-card img {
+    transition: none;
+  }
+
+  .film-reel .gallery-overlay::after,
+  .film-caption {
+    animation: none;
+  }
+}
