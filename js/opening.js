@@ -22,6 +22,7 @@ window.SilkOpening = (() => {
       const background = [...overlay.parentElement.children].filter(element =>
         element !== overlay && !['SCRIPT', 'NOSCRIPT', 'STYLE'].includes(element.tagName));
       const cardSlot = overlay.querySelector('.album-card-slot');
+      const cardVideo = overlay.querySelector('#album-invitation-video');
       const albumImages = [...overlay.querySelectorAll('.album-opening img')];
       const cues = [];
       let timeout;
@@ -48,6 +49,11 @@ window.SilkOpening = (() => {
         state = 'opened';
         clearTimeout(timeout);
         cues.forEach(clearTimeout);
+        if (cardVideo) {
+          cardVideo.pause();
+          cardVideo.classList.remove('is-active');
+        }
+        overlay.classList.remove('is-video-playing');
         cardSlot?.removeEventListener('animationstart', onFlightStart);
         cardSlot?.removeEventListener('animationend', onFlightEnd);
         scene?.dispose();
@@ -112,12 +118,40 @@ window.SilkOpening = (() => {
         cardSlot?.addEventListener('animationstart', onFlightStart);
         cardSlot?.addEventListener('animationend', onFlightEnd);
         overlay.classList.add('is-album-playing');
+        if (cardVideo) {
+          cardVideo.currentTime = 0;
+          cardVideo.pause();
+          cardVideo.addEventListener('ended', () => {
+            if (state === 'opening') setTimeout(finish, 1000);
+          }, { once: true });
+        }
+
+        const playCardVideo = () => {
+          if (state !== 'opening' || !cardVideo) return;
+          cardVideo.currentTime = 0;
+          cardVideo.classList.add('is-active');
+          overlay.classList.add('is-video-playing');
+          const playPromise = cardVideo.play();
+          if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch(() => {
+              console.warn('Card video autoplay was prevented');
+            });
+          }
+        };
+        cues.push(setTimeout(playCardVideo, 14800));
+
         if (document.documentElement.classList.contains('lite-motion')) {
           requestAnimationFrame(() => overlay.getAnimations({ subtree: true })
             .forEach(animation => animation.updatePlaybackRate(1.4)));
         }
-        timeout = setTimeout(finish, 30000);
+        timeout = setTimeout(finish, 32000);
       };
+
+      overlay.addEventListener('click', () => {
+        if (state === 'opening' && overlay.classList.contains('is-video-playing')) {
+          finish();
+        }
+      });
 
       open?.addEventListener('click', start);
       wax?.addEventListener('click', start);

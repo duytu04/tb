@@ -186,6 +186,7 @@ button:disabled {
 #envelope-overlay {
   position: fixed;
   inset: 0;
+  background-color: #0b0907;
   background: radial-gradient(circle at center, #261E17 0%, #110E0B 100%);
   z-index: 9999;
   display: flex;
@@ -2970,6 +2971,7 @@ body.invitation-opening {
 }
 
 #envelope-overlay {
+  background-color: #0b0907;
   background:
     linear-gradient(130deg, #100d0b 0%, #201811 47%, #0d0b09 100%);
   isolation: isolate;

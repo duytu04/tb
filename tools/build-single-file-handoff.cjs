@@ -15,6 +15,7 @@ const mimeTypes = new Map([
   ['.jpeg', 'image/jpeg'],
   ['.gif', 'image/gif'],
   ['.mp3', 'audio/mpeg'],
+  ['.mp4', 'video/mp4'],
 ]);
 
 function listFiles(directory) {

@@ -46,6 +46,16 @@
   opacity: 1;
 }
 
+#envelope-overlay.is-album-opening {
+  overflow: hidden !important;
+}
+
+body.invitation-opening,
+html.invitation-opening {
+  background-color: #000000 !important;
+  background-image: none !important;
+}
+
 /* --------------------------------------------------------------------------
    Phong thư: lá thư biến thành album thu nhỏ trồi lên giữa túi và nắp
    -------------------------------------------------------------------------- */
@@ -133,7 +143,7 @@
 }
 
 .is-album-playing .opening-dissolve-veil {
-  animation: album-fade-in 0.5s 18.75s ease-in both;
+  animation: album-fade-in 0.8s 25.0s ease-in both;
 }
 
 /* --------------------------------------------------------------------------
@@ -840,8 +850,8 @@
   top: 50%;
   left: 50%;
   width: var(--card-w);
-  height: calc(var(--card-w) * 1.36);
-  margin: calc(var(--card-w) * -0.68) 0 0 calc(var(--card-w) * -0.5);
+  height: calc(var(--card-w) * 1.408);
+  margin: calc(var(--card-w) * -0.704) 0 0 calc(var(--card-w) * -0.5);
   transform: scale(calc(0.8 / 0.86));
   animation: album-card-retire 0.1s 12.8s forwards;
 }
@@ -867,20 +877,66 @@
   top: 50%;
   left: 50%;
   width: var(--card-w);
-  height: calc(var(--card-w) * 1.36);
-  margin: calc(var(--card-w) * -0.68) 0 0 calc(var(--card-w) * -0.5);
+  height: calc(var(--card-w) * 1.408);
+  margin: calc(var(--card-w) * -0.704) 0 0 calc(var(--card-w) * -0.5);
   perspective: 1400px;
   z-index: 5;
   will-change: transform, opacity;
   animation:
     album-card-reveal 0.1s 12.8s forwards,
-    album-card-journey 6.9s 12.8s both;
+    album-card-journey 13.5s 12.8s both;
 }
 
 .album-flying-invitation {
   position: absolute;
   inset: 0;
   transform-style: preserve-3d;
+}
+
+.album-invitation-video {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: calc(var(--card-w) * (720 / 468));
+  height: calc(var(--card-w) * (720 / 468) * (1280 / 720));
+  transform: translate(-49.1%, -50.16%);
+  max-width: none;
+  max-height: none;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease-out;
+  z-index: 10;
+  border-radius: 4px;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 12%, black 22%, black 78%, transparent 88%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, transparent 12%, black 22%, black 78%, transparent 88%, transparent 100%);
+}
+
+.album-invitation-video.is-active {
+  opacity: 1;
+}
+
+#envelope-overlay.is-video-playing {
+  background: #000000 !important;
+}
+
+#envelope-overlay.is-video-playing::before,
+#envelope-overlay.is-video-playing::after,
+#envelope-overlay.is-video-playing .opening-paper-grain {
+  opacity: 0 !important;
+  display: none !important;
+}
+
+.is-video-playing .opening-album-book,
+.is-video-playing .album-book,
+.is-video-playing .album-table-shadow,
+.is-video-playing .album-eyebrow-wrap,
+.is-video-playing .album-caption-wrap,
+.is-video-playing .album-invitation-core,
+.is-video-playing .album-invitation-wing,
+.is-video-playing .album-card-corners,
+.is-video-playing .album-mounted-card {
+  opacity: 0 !important;
+  transition: opacity 0.2s ease-out;
 }
 
 .album-invitation-core {
@@ -972,13 +1028,11 @@
 .album-invitation-left {
   left: 0;
   transform-origin: left center;
-  animation: album-card-left 1.4s 14.9s cubic-bezier(0.6, 0.05, 0.25, 1) both;
 }
 
 .album-invitation-right {
   right: 0;
   transform-origin: right center;
-  animation: album-card-right 1.4s 14.9s cubic-bezier(0.6, 0.05, 0.25, 1) both;
 }
 
 .wing-face {
@@ -1090,28 +1144,28 @@
 }
 
 @keyframes album-card-journey {
-  0%, 7.25% {
+  0%, 7.41% {
     opacity: 1;
     transform: perspective(1600px) translate(0, 0) rotateX(7deg) rotate(0deg) scale(var(--card-s0));
     animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
   }
-  16.52% {
+  11.11% {
     transform: perspective(1600px) translate(0, calc(var(--page-h) * -0.08)) rotateX(3deg) rotate(-2.5deg) scale(calc(var(--card-s0) * 1.04));
     animation-timing-function: cubic-bezier(0.3, 0.6, 0.2, 1);
   }
-  28.91%, 82.57% {
+  14.81%, 81.48% {
     opacity: 1;
     transform: perspective(1600px) translate(0, 0) rotateX(0deg) rotate(0deg) scale(1);
     animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.5);
   }
-  93.39% {
+  91.0% {
     opacity: 1;
-    transform: perspective(1600px) translate(0, 0) rotateX(0deg) rotate(0deg) scale(2.6);
+    transform: perspective(1600px) translate(0, 0) rotateX(0deg) rotate(0deg) scale(1.6);
     animation-timing-function: ease-out;
   }
   100% {
     opacity: 0;
-    transform: perspective(1600px) translate(0, 0) rotateX(0deg) rotate(0deg) scale(2.8);
+    transform: perspective(1600px) translate(0, 0) rotateX(0deg) rotate(0deg) scale(2.2);
   }
 }
 
