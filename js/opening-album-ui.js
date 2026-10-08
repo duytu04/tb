@@ -207,7 +207,7 @@
           </div>
           ${wing('left')}
           ${wing('right')}
-          <video id="album-invitation-video" class="album-invitation-video" src="assets/video/gemini_generated_video_b7de137a.mp4" playsinline muted preload="auto"></video>
+          <video id="album-invitation-video" class="album-invitation-video" data-src="assets/video/gemini_generated_video_b7de137a.mp4" playsinline muted preload="none"></video>
           <div class="album-card-corners">${photoCorners()}</div>
         </div>
       </div>

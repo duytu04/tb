@@ -94,7 +94,10 @@ export function createEnvelopeAtmosphere(container) {
       return;
     }
     frame = requestAnimationFrame(render);
-    if (now - last < 30) return;
+    // Khóa trần ở 60 FPS (tối thiểu ~16ms/frame)
+    if (now - last < 16) return;
+    const delta = last ? Math.min((now - last) / 1000, 0.05) : 0.016;
+    const step = delta / 0.033;
     last = now;
 
     const values = geometry.attributes.position.array;
@@ -115,13 +118,13 @@ export function createEnvelopeAtmosphere(container) {
       // Smooth camera dolly-in & material fade out
       camera.position.z = 8 - easeProgress * 2.8;
       material.opacity = Math.max(0, 0.85 * (1 - progress * 1.15));
-      particles.rotation.y += 0.008;
+      particles.rotation.y += 0.008 * step;
     } else {
       // Gentle ambient floating stardust with subtle wave motion
       for (let index = 0; index < count; index++) {
         const offset = index * 3;
-        basePositions[offset + 1] += speeds[index] * 0.016;
-        basePositions[offset] += Math.sin(now * 0.0006 + phases[index]) * 0.001;
+        basePositions[offset + 1] += speeds[index] * 0.016 * step;
+        basePositions[offset] += Math.sin(now * 0.0006 + phases[index]) * 0.001 * step;
 
         if (basePositions[offset + 1] > 3.4) {
           basePositions[offset + 1] = -3.4;

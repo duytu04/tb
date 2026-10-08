@@ -102,6 +102,11 @@ window.SilkOpening = (() => {
         wax?.setAttribute('aria-disabled', 'true');
         document.body.classList.add('invitation-opening');
         setStatus('Album kỷ niệm đang mở, tiếp theo là lời mời dự lễ thành hôn.');
+        if (cardVideo && !cardVideo.src && cardVideo.dataset.src) {
+          cardVideo.src = cardVideo.dataset.src;
+          cardVideo.preload = 'auto';
+          cardVideo.load();
+        }
         window.weddingMusic?.play();
         if (matchMedia('(prefers-reduced-motion: reduce)').matches) return finish();
 

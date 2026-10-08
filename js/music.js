@@ -6,10 +6,10 @@
 
 class WeddingMusicPlayer {
   constructor() {
-    const audioSrc = window.WEDDING_CONFIG?.music?.audioSrc || 'assets/audio/i-do.mp3';
-    this.audio = new Audio(audioSrc);
+    this.audioSrc = window.WEDDING_CONFIG?.music?.audioSrc || 'assets/audio/i-do.mp3';
+    this.audio = new Audio();
     this.audio.loop = true;
-    this.audio.preload = 'metadata';
+    this.audio.preload = 'none';
     this.audio.volume = 0.6; // comfortable background volume
     this.isPlaying = false;
 
@@ -58,6 +58,9 @@ class WeddingMusicPlayer {
   }
 
   play() {
+    if (!this.audio.src) {
+      this.audio.src = this.audioSrc;
+    }
     const playPromise = this.audio.play();
     if (playPromise !== undefined) {
       playPromise

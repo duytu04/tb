@@ -35,6 +35,7 @@ const EXCLUDED_FILES = new Set([
   'deploy.cjs',
   '.gitignore',
   'package-lock.json',
+  'mobile-ui-single-file.html',
   'Thumbs.db',
   '.DS_Store'
 ]);

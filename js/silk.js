@@ -127,19 +127,22 @@ function startGoldenPetals() {
       return;
     }
     frame = requestAnimationFrame(draw);
-    if (now - last < 30) return;
+    // Khóa trần ở 60 FPS (tối thiểu ~16ms/frame)
+    if (now - last < 16) return;
+    const delta = last ? Math.min((now - last) / 1000, 0.05) : 0.016;
+    const step = delta / 0.033;
     last = now;
 
     // Decay scroll velocity gradually
-    scrollVelocity *= 0.92;
+    scrollVelocity *= Math.pow(0.92, step);
 
     context.clearRect(0, 0, width, height);
 
     petals.forEach(petal => {
-      petal.y += petal.speed + scrollVelocity * 0.25;
-      petal.sway += petal.swaySpeed;
-      petal.spin += petal.spinSpeed;
-      petal.x += Math.sin(petal.sway) * 0.35;
+      petal.y += (petal.speed + scrollVelocity * 0.25) * step;
+      petal.sway += petal.swaySpeed * step;
+      petal.spin += petal.spinSpeed * step;
+      petal.x += Math.sin(petal.sway) * 0.35 * step;
 
       if (petal.y > height + 25) reset(petal);
       if (petal.y < -30) petal.y = height + 10;
