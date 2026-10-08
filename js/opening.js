@@ -138,13 +138,18 @@ window.SilkOpening = (() => {
             });
           }
         };
-        cues.push(setTimeout(playCardVideo, 14800));
+        const leafCount = overlay.querySelectorAll('.album-opening .album-leaf:not(.album-cover)').length || 3;
+        const cardRevealDelaySec = 2 + leafCount * 3 + 1.8;
+        const playVideoMs = Math.round((cardRevealDelaySec + 2.0) * 1000);
+        const totalTimeoutMs = Math.round((cardRevealDelaySec + 19.2) * 1000);
+
+        cues.push(setTimeout(playCardVideo, playVideoMs));
 
         if (document.documentElement.classList.contains('lite-motion')) {
           requestAnimationFrame(() => overlay.getAnimations({ subtree: true })
             .forEach(animation => animation.updatePlaybackRate(1.4)));
         }
-        timeout = setTimeout(finish, 32000);
+        timeout = setTimeout(finish, totalTimeoutMs);
       };
 
       overlay.addEventListener('click', () => {

@@ -157,17 +157,21 @@ const DEFAULT_WEDDING_CONFIG = {
     }
   ],
 
-  // 7b. CHÚ THÍCH CUỐN ALBUM MINI (MÀN HÌNH MỞ PHONG BÌ)
+  // 7b. CUỐN ALBUM MINI (MÀN HÌNH MỞ PHONG BÌ)
+  // Ảnh và chú thích riêng biệt cho từng trang khi mở phong bì
   openingMemories: [
     {
+      src: 'assets/images/gallery_1791131928_0.webp',
       caption: 'Ngày mình có nhau',
       date: 'Tháng 10 · Khởi đầu duyên nợ'
     },
     {
+      src: 'assets/images/gallery_1791131928_1.webp',
       caption: 'Thương nhau một đời',
       date: 'Bình yên những sớm mai'
     },
     {
+      src: 'assets/images/gallery_1791131928_2.webp',
       caption: 'Và hôm nay, chung đôi',
       date: 'Khoảnh khắc trọn vẹn'
     }

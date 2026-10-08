@@ -118,6 +118,25 @@ class WeddingHandler(BaseHTTPRequestHandler):
                             item['src'] = f'assets/images/{filename}'
                             processed_images += 1
 
+                # 1b. Process Opening Memories Images (Album Mini Khi Mở Phong Bì)
+                opening_memories = config.get('openingMemories', [])
+                if isinstance(opening_memories, list):
+                    for idx, item in enumerate(opening_memories):
+                        if isinstance(item, dict):
+                            src = item.get('src', '')
+                            if src and src.startswith('data:image/'):
+                                match = re.match(r'^data:image/([a-zA-Z0-9+]+);base64,(.+)$', src)
+                                if match:
+                                    raw_ext = match.group(1).lower()
+                                    ext = 'jpg' if raw_ext in ('jpeg', 'jpg') else ('png' if raw_ext == 'png' else 'webp')
+                                    b64data = match.group(2)
+                                    filename = f'opening_{timestamp}_{idx}.{ext}'
+                                    filepath = os.path.join(IMAGES_DIR, filename)
+                                    with open(filepath, 'wb') as f:
+                                        f.write(base64.b64decode(b64data))
+                                    item['src'] = f'assets/images/{filename}'
+                                    processed_images += 1
+
                 # 2. Process Memory Film Poster
                 if 'memoryFilm' in config and isinstance(config['memoryFilm'], dict):
                     poster_src = config['memoryFilm'].get('posterSrc', '')

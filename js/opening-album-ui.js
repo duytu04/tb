@@ -23,32 +23,41 @@
     { length: 6 },
     (_, index) => `assets/images/gallery_1791131928_${index}.webp`
   );
-  const photos = fallbackPhotos.map((fallback, index) =>
-    escapeHtml(config.gallery?.[index]?.src || fallback)
-  );
   const defaultMemories = [
-    { caption: 'Ngày mình có nhau', date: 'Tháng 10 · Khởi đầu duyên nợ' },
-    { caption: 'Thương nhau một đời', date: 'Bình yên những sớm mai' },
-    { caption: 'Và hôm nay, chung đôi', date: 'Khoảnh khắc trọn vẹn' }
+    { src: 'assets/images/gallery_1791131928_0.webp', caption: 'Ngày mình có nhau', date: 'Tháng 10 · Khởi đầu duyên nợ' },
+    { src: 'assets/images/gallery_1791131928_1.webp', caption: 'Thương nhau một đời', date: 'Bình yên những sớm mai' },
+    { src: 'assets/images/gallery_1791131928_2.webp', caption: 'Và hôm nay, chung đôi', date: 'Khoảnh khắc trọn vẹn' }
   ];
-  const albumConfig = Array.isArray(config.openingMemories) && config.openingMemories.length
+  const rawAlbumConfig = Array.isArray(config.openingMemories) && config.openingMemories.length > 0
     ? config.openingMemories
-    : (Array.isArray(config.openingAlbum) && config.openingAlbum.length ? config.openingAlbum : defaultMemories);
+    : (Array.isArray(config.openingAlbum) && config.openingAlbum.length > 0 ? config.openingAlbum : defaultMemories);
 
-  const memories = [0, 1, 2].map((index) => {
-    const item = albumConfig[index];
+  const memories = rawAlbumConfig.map((item, index) => {
+    const photo = escapeHtml(
+      (item && typeof item.src === 'string' && item.src.trim() !== '')
+        ? item.src.trim()
+        : (config.gallery?.[index]?.src || fallbackPhotos[index % fallbackPhotos.length])
+    );
     const caption = (item && typeof item.caption === 'string' && item.caption.trim() !== '')
       ? item.caption.trim()
-      : (defaultMemories[index]?.caption || '');
+      : (defaultMemories[index]?.caption || `Kỷ niệm ${index + 1}`);
     const date = (item && typeof item.date === 'string' && item.date.trim() !== '')
       ? item.date.trim()
-      : (defaultMemories[index]?.date || '');
+      : (defaultMemories[index]?.date || 'Khoảnh khắc yêu thương');
     return {
-      photo: photos[index],
+      photo,
       caption: escapeHtml(caption),
       date: escapeHtml(date)
     };
   });
+
+  const totalPages = memories.length;
+  const totalPagesStr = String(totalPages).padStart(2, '0');
+  const cardRevealDelay = 2 + totalPages * 3 + 1.8;
+  const captionRetireDelay = cardRevealDelay + 0.5;
+  const albumSceneFadeDelay = cardRevealDelay + 0.7;
+  const dissolveVeilDelay = cardRevealDelay + 12.2;
+  const baseUnderDelay = 2 + (totalPages - 1) * 3;
 
   const photoCorners = () => `
     <span class="photo-corner corner-tl"></span>
@@ -56,13 +65,15 @@
     <span class="photo-corner corner-bl"></span>
     <span class="photo-corner corner-br"></span>`;
 
-  const leafFaces = (memory, index) => `
+  const leafFaces = (memory, index) => {
+    const pageIndexStr = String(index + 1).padStart(2, '0');
+    return `
     <div class="album-segment-face album-segment-front">
       <div class="album-leaf-front">
         <div class="album-paper-texture"></div>
         <div class="album-page-header">
           <span class="album-page-label">${groom.toUpperCase()} &amp; ${bride.toUpperCase()}</span>
-          <span class="album-page-number">0${index + 1} / 03</span>
+          <span class="album-page-number">${pageIndexStr} / ${totalPagesStr}</span>
         </div>
         <figure class="album-photo-mount">
           <div class="album-photo-frame">
@@ -76,7 +87,7 @@
           </figcaption>
         </figure>
         <span class="album-filigree">❦</span>
-        <div class="album-under-shade"></div>
+        <div class="album-under-shade" style="--under-delay: ${2 + index * 3}s;"></div>
         <div class="album-turn-shade"></div>
       </div>
     </div>
@@ -93,6 +104,7 @@
         <div class="album-turn-shade"></div>
       </div>
     </div>`;
+  };
 
   const curlStrip = (memory, index, level = 0) => `
     <div class="album-paper-segment album-paper-strip album-strip-${level}">
@@ -112,6 +124,23 @@
   const album = document.createElement('div');
   album.className = 'album-opening';
   album.setAttribute('aria-hidden', 'true');
+
+  const timingVars = {
+    '--card-reveal-delay': `${cardRevealDelay}s`,
+    '--card-retire-delay': `${cardRevealDelay}s`,
+    '--caption-retire-delay': `${captionRetireDelay}s`,
+    '--album-scene-fade-delay': `${albumSceneFadeDelay}s`,
+    '--dissolve-veil-delay': `${dissolveVeilDelay}s`,
+    '--total-album-pages': `${totalPages}`
+  };
+
+  const overlay = document.getElementById('envelope-overlay');
+  for (const [key, value] of Object.entries(timingVars)) {
+    document.documentElement.style.setProperty(key, value);
+    if (overlay) overlay.style.setProperty(key, value);
+    album.style.setProperty(key, value);
+  }
+
   album.innerHTML = `
     <div class="album-eyebrow-wrap">
       <span class="album-badge-pill">KỶ NIỆM TÌNH YÊU</span>
@@ -136,19 +165,25 @@
                 <div class="album-card-corners">${photoCorners()}</div>
               </div>
             </div>
-            <div class="album-under-shade"></div>
+            <div class="album-under-shade" style="--under-delay: ${baseUnderDelay}s;"></div>
           </div>
-          ${memories.map((memory, index) => `
-            <div class="album-leaf album-leaf-${index + 1}">
+          ${memories.map((memory, index) => {
+            const turnDelay = 2 + (index + 1) * 3;
+            const underDelay = 2 + index * 3;
+            const endDeg = (318 + ((index + 1) / totalPages) * 24).toFixed(1);
+            const z0 = Math.max(1, Math.round(((totalPages - index) / totalPages) * 8) + 1);
+            return `
+            <div class="album-leaf album-leaf-${index + 1}" style="--z0: ${z0}px; --end: ${endDeg}deg; --turn-delay: ${turnDelay}s; --under-delay: ${underDelay}s;">
               <div class="album-paper-segment album-paper-upper">
                 ${leafFaces(memory, index)}
               </div>
               ${curlStrip(memory, index)}
-            </div>`).join('')}
+            </div>`;
+          }).join('')}
           <div class="album-binding">
             ${Array.from({ length: 17 }, () => '<span class="album-ring"></span>').join('')}
           </div>
-          <div class="album-leaf album-cover">
+          <div class="album-leaf album-cover" style="--z0: 10px; --end: 318deg; --turn-delay: 2s;">
             <div class="album-leaf-front album-cover-front">
               <div class="album-leather-texture"></div>
               <div class="album-cover-border">

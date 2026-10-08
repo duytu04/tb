@@ -156,7 +156,7 @@
   gap: 6px;
   text-align: center;
   padding: 0 20px;
-  animation: album-copy-in 0.9s 1.2s both, album-fade-out 0.8s 13.3s forwards;
+  animation: album-copy-in 0.9s 1.2s both, album-fade-out 0.8s var(--caption-retire-delay, 13.3s) forwards;
 }
 
 .album-badge-pill {
@@ -215,7 +215,7 @@
   inset: 0;
   perspective: 1600px;
   perspective-origin: 50% 30%;
-  animation: album-fade-out 0.9s 13.5s forwards;
+  animation: album-fade-out 0.9s var(--album-scene-fade-delay, 13.5s) forwards;
 }
 
 .album-table-shadow {
@@ -315,11 +315,16 @@
   will-change: transform;
 }
 
-/* --end: góc rủ sau lưng; tờ lật sau nằm sát trang đáy hơn để không đè hình */
+/* --end: góc rủ sau lưng; tờ lật sau nằm sát trang đáy hơn để không đè hình (giữ trong khoảng 318deg - 344deg) */
 .album-cover { --z0: 8px; --end: 318deg; --turn-delay: 2s; }
-.album-leaf-1 { --z0: 6px; --end: 325deg; --turn-delay: 5s; }
-.album-leaf-2 { --z0: 4px; --end: 332deg; --turn-delay: 8s; }
-.album-leaf-3 { --z0: 2px; --end: 339deg; --turn-delay: 11s; }
+.album-leaf-1 { --z0: 6px; --end: 322deg; --turn-delay: 5s; }
+.album-leaf-2 { --z0: 5px; --end: 325deg; --turn-delay: 8s; }
+.album-leaf-3 { --z0: 4px; --end: 328deg; --turn-delay: 11s; }
+.album-leaf-4 { --z0: 3px; --end: 331deg; --turn-delay: 14s; }
+.album-leaf-5 { --z0: 3px; --end: 334deg; --turn-delay: 17s; }
+.album-leaf-6 { --z0: 2px; --end: 337deg; --turn-delay: 20s; }
+.album-leaf-7 { --z0: 2px; --end: 340deg; --turn-delay: 23s; }
+.album-leaf-8 { --z0: 2px; --end: 343deg; --turn-delay: 26s; }
 
 .album-paper-segment {
   position: absolute;
@@ -486,7 +491,12 @@
 .album-leaf-1 .album-under-shade { --under-delay: 2s; }
 .album-leaf-2 .album-under-shade { --under-delay: 5s; }
 .album-leaf-3 .album-under-shade { --under-delay: 8s; }
-.album-base > .album-under-shade { --under-delay: 11s; }
+.album-leaf-4 .album-under-shade { --under-delay: 11s; }
+.album-leaf-5 .album-under-shade { --under-delay: 14s; }
+.album-leaf-6 .album-under-shade { --under-delay: 17s; }
+.album-leaf-7 .album-under-shade { --under-delay: 20s; }
+.album-leaf-8 .album-under-shade { --under-delay: 23s; }
+.album-base > .album-under-shade { --under-delay: var(--under-delay, 11s); }
 
 @keyframes album-under {
   0% { opacity: 1; }
@@ -901,7 +911,7 @@
   height: calc(var(--card-w) * 1.36);
   margin: calc(var(--card-w) * -0.68) 0 0 calc(var(--card-w) * -0.5);
   transform: scale(calc(0.8 / 0.86));
-  animation: album-card-retire 0.1s 12.8s forwards;
+  animation: album-card-retire 0.1s var(--card-retire-delay, 12.8s) forwards;
 }
 
 .album-mounted-card-paper {
@@ -931,8 +941,8 @@
   z-index: 5;
   will-change: transform, opacity;
   animation:
-    album-card-reveal 0.1s 12.8s forwards,
-    album-card-journey 6.9s 12.8s both;
+    album-card-reveal 0.1s var(--card-reveal-delay, 12.8s) forwards,
+    album-card-journey 6.9s var(--card-reveal-delay, 12.8s) both;
 }
 
 .album-flying-invitation {
