@@ -158,24 +158,8 @@ const DEFAULT_WEDDING_CONFIG = {
   ],
 
   // 7b. CUỐN ALBUM MINI (MÀN HÌNH MỞ PHONG BÌ)
-  // Ảnh và chú thích riêng biệt cho từng trang khi mở phong bì
-  openingMemories: [
-    {
-      src: 'assets/images/gallery_1791131928_0.webp',
-      caption: 'Ngày mình có nhau',
-      date: 'Tháng 10 · Khởi đầu duyên nợ'
-    },
-    {
-      src: 'assets/images/gallery_1791131928_1.webp',
-      caption: 'Thương nhau một đời',
-      date: 'Bình yên những sớm mai'
-    },
-    {
-      src: 'assets/images/gallery_1791131928_2.webp',
-      caption: 'Và hôm nay, chung đôi',
-      date: 'Khoảnh khắc trọn vẹn'
-    }
-  ],
+  // Ảnh và chú thích riêng biệt cho từng trang khi mở phong bì (do Admin thêm từ thiết bị)
+  openingMemories: [],
 
   // 8. HỘP MỪNG CƯỚI & TÀI KHOẢN NGÂN HÀNG (VIETQR)
   banking: {
@@ -210,23 +194,7 @@ const DEFAULT_WEDDING_CONFIG = {
 
   // 10. HỆ THỐNG RSVP & SỔ LƯU BÚT
   rsvpEndpoint: '', // URL Google Apps Script Web App để nhận dữ liệu
-  wishes: [
-    {
-      name: 'Gia đình Bác Hùng (Hà Nội)',
-      side: 'Khách Nhà Trai',
-      text: 'Chúc mừng hai cháu Tuấn Anh và Hoàng Thúy trăm năm hạnh phúc, răng long đầu bạc, sớm sinh quý tử nhé!'
-    },
-    {
-      name: 'Cô Lan & Chú Tuấn (Thanh Hóa)',
-      side: 'Khách Nhà Gái',
-      text: 'Mừng hạnh phúc đôi bạn trẻ! Chúc hai con luôn yêu thương, nhường nhịn và đồng hành cùng nhau xây đắp tổ ấm vững bền.'
-    },
-    {
-      name: 'Minh Trí & Hội Bạn Cấp 3',
-      side: 'Bạn Cả Hai',
-      text: 'Cuối cùng ngày này cũng tới! Chúc bạn thân của tao lấy được vợ hiền, chúc cô dâu luôn xinh đẹp rạng ngời!'
-    }
-  ],
+  wishes: [], // Danh sách lời chúc hiển thị trên thiệp (do khách gửi hoặc Admin quản lý)
   adminPin: '2010', // Mã PIN truy cập trang quản trị admin.html
   updatedAt: 1791116000000 // Timestamp đồng bộ hệ thống
 };

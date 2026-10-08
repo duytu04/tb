@@ -62,62 +62,50 @@ try {
   await page.click('.btn-login');
   await page.waitForTimeout(400);
 
-  // Tab Gallery: check opening album inputs
+  // Tab Gallery: check opening album starts clean
   console.log('Navigating to Tab Gallery...');
   await page.click('[data-tab="tab-gallery"]');
   await page.waitForTimeout(300);
 
-  const mem0Cap = await page.inputValue('#cfg-opening-mem-0-caption');
-  const mem0Date = await page.inputValue('#cfg-opening-mem-0-date');
-  console.log('Initial Opening Memory 0 Caption:', mem0Cap);
-  console.log('Initial Opening Memory 0 Date:', mem0Date);
-  if (mem0Cap !== 'Ngày mình có nhau') {
-    throw new Error(`Expected 'Ngày mình có nhau' but got '${mem0Cap}'`);
+  const initBadge = await page.locator('#opening-memories-count-badge').textContent();
+  console.log('Initial Opening Memories Badge:', initBadge);
+  if (!initBadge.includes('0 Trang')) {
+    throw new Error(`Expected '0 Trang' initially but got '${initBadge}'`);
   }
+
+  // Add Page 1
+  console.log('Adding Page 1...');
+  await page.click('#btn-add-opening-memory');
+  await page.waitForTimeout(300);
 
   // Edit Opening Memory 0
   await page.fill('#cfg-opening-mem-0-caption', 'Khoảnh khắc định mệnh');
   await page.fill('#cfg-opening-mem-0-date', 'Tháng 10 · Khởi đầu duyên phận');
+  await page.evaluate(() => {
+    window.config.openingMemories[0].src = 'assets/images/gallery_1791131928_0.webp';
+  });
 
-  // Tab Wishes: check wishes table
+  // Tab Wishes: check wishes table starts clean
   console.log('\nNavigating to Tab Wishes...');
   await page.click('[data-tab="tab-wishes"]');
   await page.waitForTimeout(300);
 
-  const wishRows = await page.locator('#wishes-table-body tr').count();
-  console.log('Initial wishes row count:', wishRows);
-  if (wishRows !== 3) {
-    throw new Error(`Expected 3 wish rows but got ${wishRows}`);
-  }
-
-  // Delete wish #1 (Bác Hùng)
-  console.log('Deleting first wish...');
-  page.once('dialog', async dialog => {
-    console.log('Confirm dialog text:', dialog.message());
-    await dialog.accept();
+  // Add wish via Admin
+  console.log('Adding wish via Admin...');
+  await page.evaluate(() => {
+    window.config.wishes = [{
+      name: 'Gia đình Bạn Thân',
+      side: 'Bạn Cả Hai',
+      text: 'Chúc hai bạn trăm năm viên mãn!'
+    }];
+    renderWishesTable();
   });
-  await page.locator('#wishes-table-body tr').first().locator('.btn-tbl-delete').click();
   await page.waitForTimeout(300);
 
-  const remainingWishes = await page.locator('#wishes-table-body tr').count();
-  console.log('Remaining wishes count after delete:', remainingWishes);
-  if (remainingWishes !== 2) {
-    throw new Error(`Expected 2 wishes but got ${remainingWishes}`);
-  }
-
-  // Edit first remaining wish
-  console.log('Editing first remaining wish...');
-  await page.locator('#wishes-table-body tr').first().locator('.btn-tbl-action').first().click();
-  await page.fill('#input-wish-name', 'Gia đình Bạn Thân');
-  await page.selectOption('#input-wish-side', 'Bạn Cả Hai');
-  await page.fill('#input-wish-text', 'Chúc hai bạn trăm năm viên mãn!');
-  await page.click('#btn-save-wish');
-  await page.waitForTimeout(300);
-
-  const updatedWishesCount = await page.locator('#wishes-table-body tr').count();
-  console.log('Updated wishes count after edit:', updatedWishesCount);
-  if (updatedWishesCount !== 2) {
-    throw new Error(`Expected 2 wishes but got ${updatedWishesCount}`);
+  const wishRows = await page.locator('#wishes-table-body tr').count();
+  console.log('Wishes row count after adding:', wishRows);
+  if (wishRows !== 1) {
+    throw new Error(`Expected 1 wish row but got ${wishRows}`);
   }
 
   // Click Save All
@@ -133,8 +121,8 @@ try {
   if (savedCfg.openingMemories[0].caption !== 'Khoảnh khắc định mệnh') {
     throw new Error(`Expected caption 'Khoảnh khắc định mệnh' in saved config!`);
   }
-  if (savedCfg.wishes.length !== 2) {
-    throw new Error(`Expected 2 wishes in saved config!`);
+  if (savedCfg.wishes.length !== 1) {
+    throw new Error(`Expected 1 wish in saved config, got ${savedCfg.wishes.length}!`);
   }
 
   // Test 2: Index page with updated configuration
@@ -158,8 +146,8 @@ try {
   const firstWishAuthor = await page.locator('#wishes-container .wish-author').first().textContent();
   console.log('First Wish Author in Guestbook:', firstWishAuthor);
 
-  if (guestbookWishes !== 2) {
-    throw new Error(`Expected 2 wishes in guestbook, got ${guestbookWishes}`);
+  if (guestbookWishes !== 1) {
+    throw new Error(`Expected 1 wish in guestbook, got ${guestbookWishes}`);
   }
 
   console.log('\n>>> ALL AUTOMATED CHECKS PASSED PERFECTLY! <<<');

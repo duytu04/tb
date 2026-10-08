@@ -69,26 +69,32 @@ try {
   await page.click('[data-tab="tab-gallery"]');
   await page.waitForTimeout(300);
 
-  // Check initial count badge and cards
+  // Check initial count badge and cards (clean state, no mock data)
   const badgeText = await page.locator('#opening-memories-count-badge').textContent();
   console.log('Initial Opening Memories Badge:', badgeText);
-  if (!badgeText.includes('3 Trang')) {
-    throw new Error(`Expected '3 Trang', got '${badgeText}'`);
+  if (!badgeText.includes('0 Trang')) {
+    throw new Error(`Expected '0 Trang', got '${badgeText}'`);
   }
 
   const initialCardsCount = await page.locator('#opening-memories-container .opening-memory-card').count();
   console.log('Initial Opening Memories Cards:', initialCardsCount);
-  if (initialCardsCount !== 3) {
-    throw new Error(`Expected 3 cards, got ${initialCardsCount}`);
+  if (initialCardsCount !== 0) {
+    throw new Error(`Expected 0 cards, got ${initialCardsCount}`);
   }
 
-  // Click "+ Thêm Trang Mới Vào Album Mini"
-  console.log('\n--- 2. Testing Adding a 4th Page ---');
+  // Click "+ Thêm Trang Mới Vào Album Mini" 4 times
+  console.log('\n--- 2. Testing Adding 4 Pages from clean state ---');
+  await page.click('#btn-add-opening-memory');
+  await page.waitForTimeout(200);
+  await page.click('#btn-add-opening-memory');
+  await page.waitForTimeout(200);
+  await page.click('#btn-add-opening-memory');
+  await page.waitForTimeout(200);
   await page.click('#btn-add-opening-memory');
   await page.waitForTimeout(300);
 
   const updatedBadge = await page.locator('#opening-memories-count-badge').textContent();
-  console.log('Updated Badge after adding:', updatedBadge);
+  console.log('Updated Badge after adding 4 pages:', updatedBadge);
   if (!updatedBadge.includes('4 Trang')) {
     throw new Error(`Expected '4 Trang', got '${updatedBadge}'`);
   }
@@ -99,17 +105,19 @@ try {
     throw new Error(`Expected 4 cards, got ${cardsCountAfterAdd}`);
   }
 
-  // Edit Page 4 Caption and Date
-  console.log('Editing Page 4 Caption & Date...');
+  // Set image and captions for all 4 pages
+  console.log('Setting photos & captions for 4 pages...');
+  await page.evaluate(() => {
+    window.config.openingMemories[0].src = 'assets/images/gallery_1791131928_0.webp';
+    window.config.openingMemories[0].caption = 'Ngày mình có nhau';
+    window.config.openingMemories[1].src = 'assets/images/gallery_1791131928_1.webp';
+    window.config.openingMemories[1].caption = 'Thương nhau một đời';
+    window.config.openingMemories[2].src = 'assets/images/gallery_1791131928_2.webp';
+    window.config.openingMemories[2].caption = 'Và hôm nay, chung đôi';
+    window.config.openingMemories[3].src = 'assets/images/gallery_1791131928_4.webp';
+  });
   await page.fill('#cfg-opening-mem-3-caption', 'Kỷ niệm trang thứ tư');
   await page.fill('#cfg-opening-mem-3-date', 'Năm 2026 · Hạnh phúc sum vầy');
-
-  // Set a custom image URL for Page 4 directly in config
-  await page.evaluate(() => {
-    window.config.openingMemories[3].src = 'assets/images/gallery_1791131928_4.webp';
-    const thumb = document.getElementById('opening-mem-thumb-3');
-    if (thumb) thumb.src = 'assets/images/gallery_1791131928_4.webp';
-  });
 
   // Save All
   console.log('Clicking Save All...');

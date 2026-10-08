@@ -1611,10 +1611,21 @@
                 <span>📖 Cuốn Album Mini (Màn Hình Mở Phong Bì Thư)</span>
                 <span id="opening-memories-count-badge" class="gallery-item-badge" style="background: rgba(212, 175, 55, 0.2); color: var(--gold-light); font-size: 0.8rem;">3 Trang</span>
               </div>
-              <button type="button" id="btn-add-opening-memory" class="btn-picker" style="cursor: pointer; padding: 8px 16px; font-size: 0.85rem;" onclick="addOpeningMemory()">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                + Thêm Trang Mới Vào Album Mini
-              </button>
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <input type="file" id="input-add-opening-batch" accept="image/*" multiple style="display: none;">
+                <button type="button" class="btn-picker" style="cursor: pointer; padding: 8px 14px; font-size: 0.85rem;" onclick="triggerBatchOpeningMemoryUpload()" title="Chọn một hoặc nhiều ảnh từ thiết bị để tạo các trang mới">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                  Tải Lên Nhiều Ảnh Cùng Lúc
+                </button>
+                <button type="button" id="btn-add-opening-memory" class="btn-picker" style="cursor: pointer; padding: 8px 16px; font-size: 0.85rem;" onclick="addOpeningMemory()">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  + Thêm Trang Mới
+                </button>
+                <button type="button" id="btn-clear-all-opening-memories" class="btn-picker" style="cursor: pointer; padding: 8px 12px; font-size: 0.85rem; border-color: rgba(239, 68, 68, 0.3); color: #f87171;" onclick="clearAllOpeningMemories()" title="Xóa toàn bộ các trang để thêm lại từ đầu">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                  Xóa Hết Trang
+                </button>
+              </div>
             </div>
             <p class="pane-desc" style="margin-bottom: 16px;">
               Ảnh và chú thích của từng trang cuốn sổ mini khi khách mở phong bì thư. <strong>Ảnh hoàn toàn riêng biệt</strong> với Album bên dưới, và <strong>số lượng trang của album sẽ tự động tương ứng theo số lượng ảnh</strong> bạn thêm tại đây.
@@ -2173,7 +2184,7 @@ function doPost(e) {
 
       // Tab: Sổ Lưu Bút & Lời Chúc Mừng (Tự động gộp lời chúc khách gửi vào danh sách)
       if (!Array.isArray(config.wishes)) {
-        config.wishes = JSON.parse(JSON.stringify(DEFAULT_WISHES));
+        config.wishes = [];
       }
       try {
         const rawWishes = localStorage.getItem('wedding_wishes');
@@ -3223,68 +3234,80 @@ window.WEDDING_CONFIG = getActiveWeddingConfig();
       const badge = document.getElementById('opening-memories-count-badge');
       if (!container) return;
 
-      const fallbackPhotos = [
-        'assets/images/gallery_1791131928_0.webp',
-        'assets/images/gallery_1791131928_1.webp',
-        'assets/images/gallery_1791131928_2.webp'
-      ];
-
-      if (!Array.isArray(config.openingMemories) || config.openingMemories.length === 0) {
-        config.openingMemories = [
-          { src: fallbackPhotos[0], caption: 'Ngày mình có nhau', date: 'Tháng 10 · Khởi đầu duyên nợ' },
-          { src: fallbackPhotos[1], caption: 'Thương nhau một đời', date: 'Bình yên những sớm mai' },
-          { src: fallbackPhotos[2], caption: 'Và hôm nay, chung đôi', date: 'Khoảnh khắc trọn vẹn' }
-        ];
+      if (!Array.isArray(config.openingMemories)) {
+        config.openingMemories = [];
       }
 
       const total = config.openingMemories.length;
       if (badge) badge.textContent = `${total} Trang`;
 
       container.innerHTML = '';
+      if (total === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align: center; padding: 36px 16px; border: 1.5px dashed var(--border); border-radius: var(--radius); color: var(--text-muted); background: rgba(255,255,255,0.01);">
+            <div style="font-size: 1.05rem; margin-bottom: 6px; color: var(--gold-light);">Cuốn Album Mini Hiện Chưa Có Trang Nào</div>
+            <p style="font-size: 0.85rem; margin-bottom: 14px;">Bấm nút <strong>"Tải Lên Nhiều Ảnh Cùng Lúc"</strong> hoặc <strong>"+ Thêm Trang Mới"</strong> ở trên để thêm ảnh của hai bạn vào album mở phong bì thư.</p>
+            <button type="button" class="btn-picker" onclick="triggerBatchOpeningMemoryUpload()">📷 Chọn Ảnh Từ Máy Ngay</button>
+          </div>
+        `;
+        return;
+      }
+
       config.openingMemories.forEach((item, index) => {
         const card = document.createElement('div');
         card.className = 'opening-memory-card';
         card.style.cssText = 'background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; position: relative; display: flex; flex-direction: column; gap: 12px;';
 
         const pageLabel = `Trang ${String(index + 1).padStart(2, '0')} / ${String(total).padStart(2, '0')}`;
-        const imgSrc = item.src || (config.gallery?.[index]?.src || fallbackPhotos[index % fallbackPhotos.length]);
+        const hasImg = !!(item.src && typeof item.src === 'string' && item.src.trim() !== '');
+        const imgSrc = hasImg ? item.src.trim() : '';
         const escCaption = String(item.caption ?? '').replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[c]));
         const escDate = String(item.date ?? '').replace(/[&<>'"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[c]));
 
         card.innerHTML = `
           <div style="display: flex; gap: 12px; align-items: center; justify-content: space-between;">
             <div style="display: flex; gap: 12px; align-items: center;">
-              <div style="position: relative; width: 64px; height: 64px; flex-shrink: 0; cursor: pointer; border-radius: 8px; overflow: hidden; border: 1.5px solid var(--gold);" onclick="triggerOpeningMemoryUpload(${index})" title="Nhấn để đổi ảnh trang này">
-                <img id="opening-mem-thumb-${index}" src="${imgSrc}" alt="${pageLabel}" style="width: 100%; height: 100%; object-fit: cover; display: block; background: #111;">
-                <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0'">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-                </div>
+              <div style="position: relative; width: 64px; height: 64px; flex-shrink: 0; cursor: pointer; border-radius: 8px; overflow: hidden; border: 1.5px solid ${hasImg ? 'var(--gold)' : 'var(--border)'}; background: #111;" onclick="triggerOpeningMemoryUpload(${index})" title="${hasImg ? 'Nhấn để đổi ảnh trang này' : 'Nhấn để chọn ảnh từ thiết bị'}">
+                ${hasImg ? `
+                  <img id="opening-mem-thumb-${index}" src="${imgSrc}" alt="${pageLabel}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
+                  <div style="position: absolute; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0'">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                  </div>
+                ` : `
+                  <div id="opening-mem-thumb-${index}" style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--gold-light); font-size: 0.65rem; text-align: center; padding: 4px; border: 1.5px dashed var(--gold); border-radius: 6px; box-sizing: border-box; background: rgba(212,175,55,0.06);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                    <span style="margin-top: 2px; font-size: 0.62rem; font-weight: 500;">Chọn ảnh</span>
+                  </div>
+                `}
               </div>
               <div>
                 <span class="gallery-item-badge" style="background: rgba(212, 175, 55, 0.2); color: var(--gold-light); font-weight: 600;">${pageLabel}</span>
-                <div style="margin-top: 6px; display: flex; gap: 6px;">
+                <div style="margin-top: 6px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
                   <button type="button" class="btn-picker" style="padding: 4px 10px; font-size: 0.75rem; cursor: pointer;" onclick="triggerOpeningMemoryUpload(${index})">
-                    📷 Đổi Ảnh
+                    ${hasImg ? '📷 Đổi Ảnh' : '📷 Tải Ảnh Lên'}
                   </button>
+                  ${hasImg ? `
+                  <button type="button" class="btn-picker" style="padding: 4px 8px; font-size: 0.75rem; cursor: pointer; border-color: rgba(239,68,68,0.4); color: #f87171;" onclick="clearOpeningMemoryPhoto(${index})" title="Gỡ ảnh của trang này">
+                    Gỡ ảnh
+                  </button>
+                  ` : ''}
                   <input type="file" id="input-opening-mem-${index}" accept="image/*" style="display: none;" onchange="handleOpeningMemoryUpload(event, ${index})">
                 </div>
               </div>
             </div>
-            ${total > 1 ? `
             <button type="button" onclick="deleteOpeningMemory(${index})" title="Xóa trang này" style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; border-radius: 6px; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;" onmouseenter="this.style.background='rgba(239, 68, 68, 0.3)'" onmouseleave="this.style.background='rgba(239, 68, 68, 0.15)'">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
             </button>
-            ` : ''}
           </div>
 
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label" style="font-size: 0.8rem; margin-bottom: 4px;">Dòng Chữ Tựa (Caption)</label>
-            <input type="text" id="cfg-opening-mem-${index}-caption" class="form-control" value="${escCaption}" placeholder="Ngày mình có nhau" style="font-size: 0.88rem;" oninput="updateOpeningMemoryField(${index}, 'caption', this.value)">
+            <input type="text" id="cfg-opening-mem-${index}-caption" class="form-control" value="${escCaption}" placeholder="Ví dụ: Ngày mình có nhau" style="font-size: 0.88rem;" oninput="updateOpeningMemoryField(${index}, 'caption', this.value)">
           </div>
 
           <div class="form-group" style="margin-bottom: 0;">
             <label class="form-label" style="font-size: 0.8rem; margin-bottom: 4px;">Dòng Thời Gian / Phụ (Date / Subtitle)</label>
-            <input type="text" id="cfg-opening-mem-${index}-date" class="form-control" value="${escDate}" placeholder="Tháng 10 · Khởi đầu duyên nợ" style="font-size: 0.88rem;" oninput="updateOpeningMemoryField(${index}, 'date', this.value)">
+            <input type="text" id="cfg-opening-mem-${index}-date" class="form-control" value="${escDate}" placeholder="Ví dụ: Tháng 10 · Khởi đầu duyên nợ" style="font-size: 0.88rem;" oninput="updateOpeningMemoryField(${index}, 'date', this.value)">
           </div>
         `;
 
@@ -3296,21 +3319,31 @@ window.WEDDING_CONFIG = getActiveWeddingConfig();
       document.getElementById(`input-opening-mem-${index}`)?.click();
     };
 
-    window.handleOpeningMemoryUpload = function(event, index) {
+    window.handleOpeningMemoryUpload = async function(event, index) {
       const file = event.target.files?.[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const dataUrl = e.target.result;
+      showAdminToast('Đang tối ưu ảnh từ thiết bị...');
+      try {
+        const dataUrl = await compressImageFile(file, 1600, 0.85);
         if (config.openingMemories && config.openingMemories[index]) {
           config.openingMemories[index].src = dataUrl;
-          const thumb = document.getElementById(`opening-mem-thumb-${index}`);
-          if (thumb) thumb.src = dataUrl;
+          renderOpeningMemoriesList();
           markUnsavedChanges();
           showAdminToast(`✔ Đã cập nhật ảnh Trang ${index + 1}`);
         }
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        console.error('Lỗi nén ảnh:', err);
+        showAdminToast('Không thể xử lý ảnh, vui lòng thử lại.');
+      }
+    };
+
+    window.clearOpeningMemoryPhoto = function(index) {
+      if (config.openingMemories && config.openingMemories[index]) {
+        config.openingMemories[index].src = '';
+        renderOpeningMemoriesList();
+        markUnsavedChanges();
+        showAdminToast(`Đã gỡ ảnh Trang ${index + 1}. Bạn có thể bấm "Tải Ảnh Lên" bất cứ lúc nào.`);
+      }
     };
 
     window.updateOpeningMemoryField = function(index, field, value) {
@@ -3320,54 +3353,94 @@ window.WEDDING_CONFIG = getActiveWeddingConfig();
       }
     };
 
+    function syncCurrentOpeningMemoriesFromDOM() {
+      if (!Array.isArray(config.openingMemories)) return;
+      config.openingMemories.forEach((item, i) => {
+        const cap = document.getElementById(`cfg-opening-mem-${i}-caption`)?.value;
+        const dt = document.getElementById(`cfg-opening-mem-${i}-date`)?.value;
+        if (cap !== undefined) item.caption = cap;
+        if (dt !== undefined) item.date = dt;
+      });
+    }
+
+    window.triggerBatchOpeningMemoryUpload = function() {
+      const input = document.getElementById('input-add-opening-batch');
+      if (input) {
+        input.value = '';
+        input.click();
+      }
+    };
+
+    document.getElementById('input-add-opening-batch')?.addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files || []).filter(f => f.type.startsWith('image/'));
+      if (!files.length) return;
+      syncCurrentOpeningMemoriesFromDOM();
+      if (!Array.isArray(config.openingMemories)) {
+        config.openingMemories = [];
+      }
+      showAdminToast(`Đang tải & tối ưu ${files.length} ảnh cho Album Mini...`);
+      let count = 0;
+      for (const file of files) {
+        try {
+          const dataUrl = await compressImageFile(file, 1600, 0.85);
+          config.openingMemories.push({
+            src: dataUrl,
+            caption: 'Kỷ niệm yêu thương',
+            date: 'Bình yên bên nhau'
+          });
+          count++;
+        } catch (err) {
+          console.error('Lỗi nén ảnh:', err);
+        }
+      }
+      renderOpeningMemoriesList();
+      markUnsavedChanges();
+      showAdminToast(`✔ Đã thêm thành công ${count} trang mới vào Album Mini.`);
+    });
+
     window.addOpeningMemory = function() {
+      syncCurrentOpeningMemoriesFromDOM();
       if (!Array.isArray(config.openingMemories)) {
         config.openingMemories = [];
       }
       const nextIdx = config.openingMemories.length;
-      const fallbackSrc = `assets/images/gallery_1791131928_${nextIdx % 6}.webp`;
       config.openingMemories.push({
-        src: fallbackSrc,
+        src: '',
         caption: 'Kỷ niệm yêu thương',
         date: 'Bình yên bên nhau'
       });
       renderOpeningMemoriesList();
       markUnsavedChanges();
-      showAdminToast(`✔ Đã thêm Trang ${nextIdx + 1} vào Album Mini.`);
+      showAdminToast(`✔ Đã thêm Trang ${nextIdx + 1} vào Album Mini. Bấm "Tải Ảnh Lên" để chọn ảnh.`);
     };
 
     window.deleteOpeningMemory = function(index) {
-      if (!config.openingMemories || config.openingMemories.length <= 1) {
-        alert('Album mini cần có ít nhất 1 trang.');
+      if (!config.openingMemories || config.openingMemories.length === 0) {
         return;
       }
+      syncCurrentOpeningMemoriesFromDOM();
       config.openingMemories.splice(index, 1);
       renderOpeningMemoriesList();
       markUnsavedChanges();
       showAdminToast(`✔ Đã xóa trang.`);
     };
 
+    window.clearAllOpeningMemories = function() {
+      if (!config.openingMemories || config.openingMemories.length === 0) {
+        showAdminToast('Album Mini hiện đang trống.');
+        return;
+      }
+      if (confirm('Bạn có chắc chắn muốn xóa toàn bộ các trang trong Album Mini để thêm lại từ đầu?')) {
+        config.openingMemories = [];
+        renderOpeningMemoriesList();
+        markUnsavedChanges();
+        showAdminToast('Đã xóa toàn bộ các trang trong Album Mini.');
+      }
+    };
+
     // =========================================================================
     // QUẢN LÝ SỔ LƯU BÚT & LỜI CHÚC MỪNG (GUESTBOOK)
     // =========================================================================
-    const DEFAULT_WISHES = [
-      {
-        name: 'Gia đình Bác Hùng (Hà Nội)',
-        side: 'Khách Nhà Trai',
-        text: 'Chúc mừng hai cháu Tuấn Anh và Hoàng Thúy trăm năm hạnh phúc, răng long đầu bạc, sớm sinh quý tử nhé!'
-      },
-      {
-        name: 'Cô Lan & Chú Tuấn (Thanh Hóa)',
-        side: 'Khách Nhà Gái',
-        text: 'Mừng hạnh phúc đôi bạn trẻ! Chúc hai con luôn yêu thương, nhường nhịn và đồng hành cùng nhau xây đắp tổ ấm vững bền.'
-      },
-      {
-        name: 'Minh Trí & Hội Bạn Cấp 3',
-        side: 'Bạn Cả Hai',
-        text: 'Cuối cùng ngày này cũng tới! Chúc bạn thân của tao lấy được vợ hiền, chúc cô dâu luôn xinh đẹp rạng ngời!'
-      }
-    ];
-
     function getWishBadgeClass(side) {
       switch (side) {
         case 'Khách Nhà Trai': return 'badge-role-groom';
@@ -3384,7 +3457,7 @@ window.WEDDING_CONFIG = getActiveWeddingConfig();
       if (!tbody) return;
 
       if (!Array.isArray(config.wishes)) {
-        config.wishes = JSON.parse(JSON.stringify(DEFAULT_WISHES));
+        config.wishes = [];
       }
 
       if (countBadge) {

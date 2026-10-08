@@ -721,52 +721,134 @@ async function submitRSVP(data) {
 }
 
 /* ==========================================================================
-   6. GUESTBOOK & WISHES
+   6. GUESTBOOK & WISHES (CHỈ HIỂN THỊ TỐI ĐA 3 LỜI CHÚC & XOAY VÒNG RANDOM MỖI 5S)
    ========================================================================== */
-const defaultWishes = [
-  {
-    name: 'Gia đình Bác Hùng (Hà Nội)',
-    side: 'Khách Nhà Trai',
-    text: 'Chúc mừng hai cháu Tuấn Anh và Hoàng Thúy trăm năm hạnh phúc, răng long đầu bạc, sớm sinh quý tử nhé!'
-  },
-  {
-    name: 'Cô Lan & Chú Tuấn (Thanh Hóa)',
-    side: 'Khách Nhà Gái',
-    text: 'Mừng hạnh phúc đôi bạn trẻ! Chúc hai con luôn yêu thương, nhường nhịn và đồng hành cùng nhau xây đắp tổ ấm vững bền.'
-  },
-  {
-    name: 'Minh Trí & Hội Bạn Cấp 3',
-    side: 'Bạn Cả Hai',
-    text: 'Cuối cùng ngày này cũng tới! Chúc bạn thân của tao lấy được vợ hiền, chúc cô dâu luôn xinh đẹp rạng ngời!'
+let guestbookInterval = null;
+let guestbookPool = [];
+let guestbookCurrentIndices = [];
+let isGuestbookPaused = false;
+
+function getRandomWishIndices(totalLength, count, excludeList = []) {
+  if (totalLength <= count) {
+    return Array.from({ length: totalLength }, (_, i) => i);
   }
-];
+
+  const allIndices = Array.from({ length: totalLength }, (_, i) => i);
+  let candidateIndices = allIndices.filter(idx => !excludeList.includes(idx));
+
+  // Trộn candidateIndices ngẫu nhiên (Fisher-Yates)
+  for (let i = candidateIndices.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [candidateIndices[i], candidateIndices[j]] = [candidateIndices[j], candidateIndices[i]];
+  }
+
+  // Nếu candidateIndices đủ số lượng yêu cầu
+  if (candidateIndices.length >= count) {
+    return candidateIndices.slice(0, count);
+  }
+
+  // Nếu không đủ, bổ sung thêm từ excludeList
+  const remainingNeeded = count - candidateIndices.length;
+  let excludeCandidates = [...excludeList];
+  for (let i = excludeCandidates.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [excludeCandidates[i], excludeCandidates[j]] = [excludeCandidates[j], excludeCandidates[i]];
+  }
+
+  const picked = candidateIndices.concat(excludeCandidates.slice(0, remainingNeeded));
+  // Trộn lại lần nữa để thứ tự hiển thị cũng ngẫu nhiên
+  for (let i = picked.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [picked[i], picked[j]] = [picked[j], picked[i]];
+  }
+  return picked;
+}
+
+function renderGuestbookBatch(isAnimated = false) {
+  const container = document.getElementById('wishes-container');
+  if (!container) return;
+
+  container.innerHTML = '';
+  guestbookCurrentIndices.forEach((idx, order) => {
+    const item = guestbookPool[idx];
+    if (!item) return;
+    const el = createWishElement(item.name, item.side, item.text);
+    if (isAnimated) {
+      el.classList.add('wish-fade-in');
+      el.style.animationDelay = `${order * 0.08}s`;
+    }
+    container.appendChild(el);
+  });
+}
+
+function cycleGuestbookWishes() {
+  const container = document.getElementById('wishes-container');
+  if (!container || guestbookPool.length <= 3) return;
+
+  const currentCards = container.querySelectorAll('.wish-item');
+  if (!currentCards.length) {
+    renderGuestbookBatch(false);
+    return;
+  }
+
+  // Fade out mờ dần
+  currentCards.forEach(card => card.classList.add('wish-fade-out'));
+
+  // Sau khi mờ dần 300ms, tráo 3 lời chúc ngẫu nhiên mới và Fade in
+  setTimeout(() => {
+    guestbookCurrentIndices = getRandomWishIndices(guestbookPool.length, 3, guestbookCurrentIndices);
+    renderGuestbookBatch(true);
+  }, 320);
+}
+
+function startGuestbookRotation() {
+  if (guestbookInterval) {
+    clearInterval(guestbookInterval);
+    guestbookInterval = null;
+  }
+  if (guestbookPool.length > 3) {
+    guestbookInterval = setInterval(() => {
+      if (isGuestbookPaused || document.hidden) return;
+      cycleGuestbookWishes();
+    }, 5000);
+  }
+}
 
 function initGuestbook() {
   const container = document.getElementById('wishes-container');
   if (!container) return;
 
+  if (guestbookInterval) {
+    clearInterval(guestbookInterval);
+    guestbookInterval = null;
+  }
+
   const currentConfig = (typeof window.getActiveWeddingConfig === 'function' ? window.getActiveWeddingConfig() : null) || window.WEDDING_CONFIG;
   const configWishes = Array.isArray(currentConfig?.wishes)
     ? currentConfig.wishes
-    : defaultWishes;
+    : [];
 
   const userWishes = getLocalArray('wedding_wishes') || [];
 
   // Khử trùng lặp theo tên và nội dung lời chúc
   const seen = new Set();
-  const allWishes = [];
+  guestbookPool = [];
 
   [...userWishes, ...configWishes].forEach(item => {
     if (!item || !item.name || !item.text) return;
     const key = `${item.name.trim()}:::${item.text.trim()}`;
     if (!seen.has(key)) {
       seen.add(key);
-      allWishes.push(item);
+      guestbookPool.push({
+        name: item.name.trim(),
+        side: item.side || 'Khách Mời',
+        text: item.text.trim()
+      });
     }
   });
 
   container.innerHTML = '';
-  if (allWishes.length === 0) {
+  if (guestbookPool.length === 0) {
     container.innerHTML = `
       <div class="wish-empty-state" style="text-align: center; padding: 36px 16px; color: var(--color-text-muted, #8C7E72); font-style: italic; width: 100%;">
         Chưa có lời chúc nào trong sổ lưu bút. Hãy là người đầu tiên gửi lời chúc tốt đẹp tới hai bạn nhé!
@@ -775,9 +857,30 @@ function initGuestbook() {
     return;
   }
 
-  allWishes.forEach(item => {
-    container.appendChild(createWishElement(item.name, item.side, item.text));
-  });
+  // Gắn sự kiện dừng xoay vòng khi người dùng rê chuột hoặc chạm tay để đọc
+  if (!container.dataset.hasCycleEvents) {
+    container.dataset.hasCycleEvents = 'true';
+    container.addEventListener('mouseenter', () => { isGuestbookPaused = true; });
+    container.addEventListener('mouseleave', () => { isGuestbookPaused = false; });
+    container.addEventListener('touchstart', () => { isGuestbookPaused = true; }, { passive: true });
+    container.addEventListener('touchend', () => {
+      setTimeout(() => { isGuestbookPaused = false; }, 2000);
+    }, { passive: true });
+  }
+
+  // Trường hợp <= 3 lời chúc: hiển thị tất cả, không xoay vòng
+  if (guestbookPool.length <= 3) {
+    guestbookCurrentIndices = guestbookPool.map((_, i) => i);
+    renderGuestbookBatch(false);
+    return;
+  }
+
+  // Trường hợp > 3 lời chúc: chọn ngẫu nhiên 3 lời chúc ban đầu
+  guestbookCurrentIndices = getRandomWishIndices(guestbookPool.length, 3, []);
+  renderGuestbookBatch(false);
+
+  // Bắt đầu chu kỳ xoay vòng 5s
+  startGuestbookRotation();
 }
 
 function createWishElement(name, side, text) {
@@ -794,7 +897,10 @@ function createWishElement(name, side, text) {
 }
 
 function addWishToGuestbook(name, side, text) {
-  const newWish = { name, side: side || 'Khách Mời', text, time: Date.now() };
+  const trimmedName = (name || '').trim();
+  const trimmedSide = (side || 'Khách Mời').trim();
+  const trimmedText = (text || '').trim();
+  const newWish = { name: trimmedName, side: trimmedSide, text: trimmedText, time: Date.now() };
 
   // 1. Lưu vào wedding_wishes trong localStorage
   saveLocalItem('wedding_wishes', newWish, true);
@@ -805,9 +911,9 @@ function addWishToGuestbook(name, side, text) {
       const currentCfg = window.getActiveWeddingConfig();
       if (currentCfg) {
         if (!Array.isArray(currentCfg.wishes)) currentCfg.wishes = [];
-        const exists = currentCfg.wishes.some(w => w.name === name && w.text === text);
+        const exists = currentCfg.wishes.some(w => w.name === trimmedName && w.text === trimmedText);
         if (!exists) {
-          currentCfg.wishes.unshift({ name, side: side || 'Khách Mời', text });
+          currentCfg.wishes.unshift({ name: trimmedName, side: trimmedSide, text: trimmedText });
           currentCfg.updatedAt = Date.now();
           window.saveActiveWeddingConfig(currentCfg);
         }
@@ -826,17 +932,35 @@ function addWishToGuestbook(name, side, text) {
     }).catch(() => {});
   } catch (e) {}
 
-  // 4. Hiển thị ngay lập tức lên danh sách Sổ Lưu Bút
+  // 4. Thêm vào đầu kho lời chúc
+  const existsInPool = guestbookPool.some(w => w.name === trimmedName && w.text === trimmedText);
+  if (!existsInPool) {
+    guestbookPool.unshift(newWish);
+  }
+
+  // 5. Cập nhật hiển thị ngay lập tức (ưu tiên lời chúc mới ở vị trí đầu)
+  if (guestbookPool.length <= 3) {
+    guestbookCurrentIndices = guestbookPool.map((_, i) => i);
+  } else {
+    // Đặt lời chúc mới (index 0) lên đầu và chọn 2 lời chúc ngẫu nhiên khác
+    const otherTwo = getRandomWishIndices(guestbookPool.length, 2, [0]);
+    guestbookCurrentIndices = [0, ...otherTwo];
+  }
+
+  renderGuestbookBatch(false);
+
+  // Gắn hiệu ứng sáng wish-new cho lời chúc vừa gửi
   const container = document.getElementById('wishes-container');
   if (container) {
-    const emptyState = container.querySelector('.wish-empty-state');
-    if (emptyState) emptyState.remove();
-
-    const el = createWishElement(name, side, text);
-    el.classList.add('wish-new');
-    el.addEventListener('animationend', () => el.classList.remove('wish-new'), { once: true });
-    container.insertBefore(el, container.firstChild);
+    const firstItem = container.querySelector('.wish-item');
+    if (firstItem) {
+      firstItem.classList.add('wish-new');
+      firstItem.addEventListener('animationend', () => firstItem.classList.remove('wish-new'), { once: true });
+    }
   }
+
+  // Khởi động lại đồng hồ xoay vòng 5s
+  startGuestbookRotation();
 }
 
 /* ==========================================================================

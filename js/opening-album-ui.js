@@ -19,41 +19,26 @@
   const weddingDate = `${day} . ${monthYear}`.replace(/\s+/g, ' ').trim();
   const monogram = 'assets/icons/monogram.svg';
   const ornament = 'assets/icons/ornament.svg';
-  const fallbackPhotos = Array.from(
-    { length: 6 },
-    (_, index) => `assets/images/gallery_1791131928_${index}.webp`
-  );
-  const defaultMemories = [
-    { src: 'assets/images/gallery_1791131928_0.webp', caption: 'Ngày mình có nhau', date: 'Tháng 10 · Khởi đầu duyên nợ' },
-    { src: 'assets/images/gallery_1791131928_1.webp', caption: 'Thương nhau một đời', date: 'Bình yên những sớm mai' },
-    { src: 'assets/images/gallery_1791131928_2.webp', caption: 'Và hôm nay, chung đôi', date: 'Khoảnh khắc trọn vẹn' }
-  ];
-  const rawAlbumConfig = Array.isArray(config.openingMemories) && config.openingMemories.length > 0
+  const rawAlbumConfig = Array.isArray(config.openingMemories)
     ? config.openingMemories
-    : (Array.isArray(config.openingAlbum) && config.openingAlbum.length > 0 ? config.openingAlbum : defaultMemories);
+    : (Array.isArray(config.openingAlbum) ? config.openingAlbum : []);
 
-  const memories = rawAlbumConfig.map((item, index) => {
-    const photo = escapeHtml(
-      (item && typeof item.src === 'string' && item.src.trim() !== '')
-        ? item.src.trim()
-        : (config.gallery?.[index]?.src || fallbackPhotos[index % fallbackPhotos.length])
-    );
-    const caption = (item && typeof item.caption === 'string' && item.caption.trim() !== '')
-      ? item.caption.trim()
-      : (defaultMemories[index]?.caption || `Kỷ niệm ${index + 1}`);
-    const date = (item && typeof item.date === 'string' && item.date.trim() !== '')
-      ? item.date.trim()
-      : (defaultMemories[index]?.date || 'Khoảnh khắc yêu thương');
-    return {
-      photo,
-      caption: escapeHtml(caption),
-      date: escapeHtml(date)
-    };
-  });
+  const memories = rawAlbumConfig
+    .filter(item => item && (item.src || item.caption || item.date))
+    .map((item, index) => {
+      const photo = escapeHtml((item && typeof item.src === 'string') ? item.src.trim() : '');
+      const caption = escapeHtml((item && typeof item.caption === 'string') ? item.caption.trim() : '');
+      const date = escapeHtml((item && typeof item.date === 'string') ? item.date.trim() : '');
+      return {
+        photo,
+        caption,
+        date
+      };
+    });
 
   const totalPages = memories.length;
   const totalPagesStr = String(totalPages).padStart(2, '0');
-  const cardRevealDelay = 2 + totalPages * 3 + 1.8;
+  const cardRevealDelay = totalPages > 0 ? (2 + totalPages * 3 + 1.8) : 2.5;
   const captionRetireDelay = cardRevealDelay + 0.5;
   const albumSceneFadeDelay = cardRevealDelay + 0.7;
   const dissolveVeilDelay = cardRevealDelay + 12.2;
