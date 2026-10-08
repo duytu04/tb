@@ -44,6 +44,8 @@
 .is-album-playing .album-opening {
   display: flex;
   opacity: 1;
+  z-index: 50;
+  transform: translateZ(50px);
 }
 
 /* --------------------------------------------------------------------------
@@ -81,7 +83,7 @@
 /* Album trồi lên nằm sau túi (z 6px) nhưng trước nắp đã mở */
 .is-album-opening .envelope-scene.is-letter-rising .envelope-letter {
   transform: translateY(-72%) translateZ(3px);
-  transition: transform 1s cubic-bezier(0.3, 0.7, 0.2, 1);
+  transition: transform 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
 
 .is-album-opening .envelope-scene.is-flap-open .envelope-top-flap {
@@ -105,16 +107,22 @@
 }
 
 .is-album-playing .envelope-letter {
-  animation: album-hide 0.01s both;
+  display: none !important;
 }
 
 .is-album-playing .envelope-3d-box {
   pointer-events: none;
-  animation: album-envelope-exit 1.3s 0.2s cubic-bezier(0.4, 0, 0.2, 1) both;
+  z-index: 1 !important;
+  animation: album-envelope-exit 0.85s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.is-album-playing .envelope-front-pocket,
+.is-album-playing .envelope-top-flap {
+  pointer-events: none;
 }
 
 .is-album-playing .opening-envelope-shadow {
-  animation: album-fade-out 1s 0.2s forwards;
+  animation: album-fade-out 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 /* Màn kem phủ dần — thiệp tan vào nền trang chính */
@@ -1050,14 +1058,14 @@
 /* Khởi đầu khớp kích thước & vị trí bản thu nhỏ trong phong thư */
 /* Một đoạn duy nhất: trước đây mốc 50% làm vận tốc tụt về 0 giữa chừng (khựng) */
 @keyframes album-arrival {
-  0% { transform: translate(0, var(--arrive-y)) rotateX(0deg) rotateY(0deg) scale(var(--arrive-s)); }
-  100% { transform: translate(0, 0) rotateX(12deg) rotateY(-8deg) scale(1); }
+  0% { transform: translate(0, var(--arrive-y)) translateZ(40px) rotateX(0deg) rotateY(0deg) scale(var(--arrive-s)); }
+  100% { transform: translate(0, 0) translateZ(80px) rotateX(12deg) rotateY(-8deg) scale(1); }
 }
 
 /* Lịch đứng thẳng lại, nghiêng nhẹ ra sau như đặt trên bàn */
 @keyframes album-pan {
-  from { transform: translate(0, 0) rotateX(12deg) rotateY(-8deg) scale(1); }
-  to { transform: translate(0, 0) rotateX(7deg) rotateY(0deg) scale(1); }
+  from { transform: translate(0, 0) translateZ(80px) rotateX(12deg) rotateY(-8deg) scale(1); }
+  to { transform: translate(0, 0) translateZ(60px) rotateX(7deg) rotateY(0deg) scale(1); }
 }
 
 @keyframes album-shadow-spread {
@@ -1065,7 +1073,14 @@
 }
 
 @keyframes album-envelope-exit {
-  to { opacity: 0; transform: perspective(1600px) translateY(110px) scale(0.9); }
+  0% {
+    opacity: 1;
+    transform: perspective(1600px) rotateX(0deg) rotateY(0deg) translateZ(0);
+  }
+  100% {
+    opacity: 0;
+    transform: perspective(1600px) translateY(60px) translateZ(-220px) scale(0.82);
+  }
 }
 
 /* Nhấc mép dưới về phía người xem → vượt qua gáy → rủ ra sau, lắc nhẹ rồi nằm yên */
