@@ -832,72 +832,197 @@ function initGiftModal() {
 }
 
 /* ==========================================================================
-   8. PHOTO GALLERY (HORIZONTAL SLIDER & LIGHTBOX)
+   8. PHOTO GALLERY (HORIZONTAL SLIDER & LIGHTBOX) - INFINITE SEAMLESS LOOP
    ========================================================================== */
 function initGallerySlider() {
   const slider = document.getElementById('gallery-slider');
   if (!slider) return;
-  const slides = [...slider.querySelectorAll('.gallery-slide-card')];
-  if (!slides.length) return;
+  const originalSlides = [...slider.querySelectorAll('.gallery-slide-card')];
+  const N = originalSlides.length;
+  if (!N) return;
+
   const dotsContainer = document.getElementById('gallery-dots');
-  let currentIndex = 0;
+  const caption = document.getElementById('gallery-film-caption');
+
+  // Nếu chỉ có 1 ảnh thì không cần lặp
+  if (N <= 1) {
+    if (caption) {
+      caption.textContent = originalSlides[0].querySelector('.gallery-caption')?.textContent || '';
+    }
+    return;
+  }
+
+  // --- Nhân bản để tạo vòng lặp vô tận (Infinite Seamless Loop) ---
+  // Cấu trúc DOM sau nhân bản: [Prefix Clones (0..N-1)] + [Originals (0..N-1)] + [Suffix Clones (0..N-1)]
+  const prefixClones = originalSlides.map((slide, i) => {
+    const clone = slide.cloneNode(true);
+    clone.setAttribute('data-clone', 'prefix');
+    clone.setAttribute('data-original-index', String(i));
+    clone.querySelectorAll('img').forEach(img => { img.loading = 'eager'; });
+    return clone;
+  });
+
+  const suffixClones = originalSlides.map((slide, i) => {
+    const clone = slide.cloneNode(true);
+    clone.setAttribute('data-clone', 'suffix');
+    clone.setAttribute('data-original-index', String(i));
+    clone.querySelectorAll('img').forEach(img => { img.loading = 'eager'; });
+    return clone;
+  });
+
+  slider.prepend(...prefixClones);
+  slider.append(...suffixClones);
+
+  const allSlides = [...slider.querySelectorAll('.gallery-slide-card')];
+  allSlides.forEach((slide, index) => {
+    slide.dataset.frame = String((index % N) + 1).padStart(2, '0');
+  });
+
+  let currentIndex = N; // Bắt đầu ở ảnh thật đầu tiên (index N trong allSlides)
+  let lastRealIndex = -1;
   let frame = 0;
-  const dots = slides.map((_, index) => {
+  let isAnimating = false;
+  let isJumping = false;
+  let normalizeTimeout = null;
+  let scrollSettleTimer = null;
+
+  // Render Dots (chỉ render N chấm tròn cho các ảnh thật)
+  const dots = originalSlides.map((_, index) => {
     const dot = document.createElement('button');
     dot.type = 'button';
     dot.className = 'slider-dot';
     dot.setAttribute('aria-label', `Xem ảnh ${index + 1}`);
     dot.addEventListener('click', () => {
-      goToSlide(index);
+      goToRealIndex(index);
       restartAutoPlay();
     });
     return dot;
   });
   dotsContainer?.replaceChildren(...dots);
-  const caption = document.getElementById('gallery-film-caption');
-  slides.forEach((slide, i) => { slide.dataset.frame = String(i + 1).padStart(2, '0'); });
 
-  // Cuộn phim 35mm: khung càng xa tâm càng cong ra sau, tối dần, ảnh trượt ngược chiều
+  function getLeftForIndex(index) {
+    const slide = allSlides[index];
+    if (!slide) return 0;
+    return slide.offsetLeft - (slider.clientWidth - slide.offsetWidth) / 2;
+  }
+
   function curve() {
     const center = slider.scrollLeft + slider.clientWidth / 2;
     const still = prefersReducedMotion();
-    slides.forEach((slide) => {
-      const w = slide.offsetWidth || 1;
-      const d = still ? 0 : Math.max(-3, Math.min(3, (slide.offsetLeft + w / 2 - center) / w));
-      const a = Math.abs(d);
-      slide.style.setProperty('--ry', `${d * 24}deg`);
-      slide.style.setProperty('--tz', `${-Math.pow(a, 1.25) * 70}px`);
-      slide.style.setProperty('--dim', String(1 - Math.min(a, 2) * 0.24));
-      slide.style.setProperty('--px', `${d * -12}px`);
+    allSlides.forEach((slide) => {
+      const width = slide.offsetWidth || 1;
+      const distance = still
+        ? 0
+        : Math.max(-3, Math.min(3, (slide.offsetLeft + width / 2 - center) / width));
+      const absoluteDistance = Math.abs(distance);
+      slide.style.setProperty('--ry', `${distance * 24}deg`);
+      slide.style.setProperty('--tz', `${-Math.pow(absoluteDistance, 1.25) * 70}px`);
+      slide.style.setProperty('--dim', String(1 - Math.min(absoluteDistance, 2) * 0.24));
+      slide.style.setProperty('--px', `${distance * -12}px`);
     });
   }
 
   function update(index) {
-    if (caption && (index !== currentIndex || !caption.textContent)) {
-      caption.textContent = slides[index].querySelector('.gallery-caption')?.textContent || '';
+    const realIndex = ((index % N) + N) % N;
+    if (caption && (realIndex !== lastRealIndex || !caption.textContent)) {
+      lastRealIndex = realIndex;
+      caption.textContent = originalSlides[realIndex].querySelector('.gallery-caption')?.textContent || '';
       caption.style.animation = 'none';
       void caption.offsetWidth;
       caption.style.animation = '';
     }
-    currentIndex = index;
-    slides.forEach((slide, i) => {
+    allSlides.forEach((slide, i) => {
       slide.classList.toggle('is-current', i === index);
       slide.classList.toggle('is-before', i < index);
     });
     dots.forEach((dot, i) => {
-      dot.classList.toggle('active', i === index);
-      dot.setAttribute('aria-pressed', String(i === index));
+      dot.classList.toggle('active', i === realIndex);
+      dot.setAttribute('aria-pressed', String(i === realIndex));
     });
   }
-  function goToSlide(index, instant = false) {
-    index = (index + slides.length) % slides.length;
-    const slide = slides[index];
-    const left = slide.offsetLeft - (slider.clientWidth - slide.offsetWidth) / 2;
-    slider.scrollTo({ left, behavior: instant || prefersReducedMotion() ? 'instant' : 'smooth' });
-    update(index);
+
+  // Nhảy tức thì (không animation) để đưa về dải ảnh thật
+  function jumpToIndex(targetIndex) {
+    currentIndex = targetIndex;
+    isJumping = true;
+    const targetLeft = getLeftForIndex(targetIndex);
+    const prevSnap = slider.style.scrollSnapType;
+    slider.style.scrollSnapType = 'none';
+    slider.scrollTo({ left: targetLeft, behavior: 'instant' });
+    void slider.offsetWidth;
+    slider.style.scrollSnapType = prevSnap;
+    update(targetIndex);
+    curve();
+    requestAnimationFrame(() => {
+      isJumping = false;
+    });
   }
 
-  // --- Tự động chuyển ảnh (Auto-play) ---
+  // Chuẩn hóa vị trí cuộn: Nếu rơi vào vùng clone thì âm thầm nhảy về vùng thật
+  function finishScroll() {
+    clearTimeout(normalizeTimeout);
+    isAnimating = false;
+
+    const center = slider.scrollLeft + slider.clientWidth / 2;
+    let nearest = 0;
+    let minDiff = Infinity;
+    allSlides.forEach((slide, idx) => {
+      const diff = Math.abs(slide.offsetLeft + slide.offsetWidth / 2 - center);
+      if (diff < minDiff) {
+        minDiff = diff;
+        nearest = idx;
+      }
+    });
+
+    if (nearest >= 2 * N) {
+      // Vùng suffix clone -> nhảy về ảnh thật tương ứng
+      jumpToIndex(nearest - N);
+    } else if (nearest < N) {
+      // Vùng prefix clone -> nhảy về ảnh thật tương ứng
+      jumpToIndex(nearest + N);
+    } else {
+      currentIndex = nearest;
+      update(nearest);
+    }
+  }
+
+  function goToSlide(targetIndex, instant = false) {
+    if (instant || prefersReducedMotion()) {
+      let normalized = targetIndex;
+      if (normalized >= 2 * N) normalized -= N;
+      else if (normalized < N) normalized += N;
+      jumpToIndex(normalized);
+      return;
+    }
+
+    isAnimating = true;
+    currentIndex = targetIndex;
+    const left = getLeftForIndex(targetIndex);
+    slider.scrollTo({ left, behavior: 'smooth' });
+    update(targetIndex);
+
+    clearTimeout(normalizeTimeout);
+    normalizeTimeout = setTimeout(() => {
+      finishScroll();
+    }, 420);
+  }
+
+  // Chuyển tới ảnh thật theo index (0..N-1) theo hướng gần nhất
+  function goToRealIndex(realIndex) {
+    const candidates = [realIndex, realIndex + N, realIndex + 2 * N];
+    let best = candidates[0];
+    let minDiff = Math.abs(best - currentIndex);
+    for (let i = 1; i < candidates.length; i++) {
+      const diff = Math.abs(candidates[i] - currentIndex);
+      if (diff < minDiff) {
+        minDiff = diff;
+        best = candidates[i];
+      }
+    }
+    goToSlide(best);
+  }
+
+  // --- Tự động chuyển ảnh (Auto-play 2 giây) ---
   const AUTO_PLAY_INTERVAL = 2000;
   let autoPlayTimer = null;
   let isHoveredOrTouched = false;
@@ -906,7 +1031,7 @@ function initGallerySlider() {
   function startAutoPlay() {
     stopAutoPlay();
     if (prefersReducedMotion()) return;
-    if (slides.length <= 1) return;
+    if (originalSlides.length <= 1) return;
     if (!isGalleryInView || isHoveredOrTouched || document.hidden) return;
     const modal = document.getElementById('lightbox-modal');
     if (modal && modal.classList.contains('active')) return;
@@ -956,22 +1081,45 @@ function initGallerySlider() {
   }, { passive: true });
 
   slider.addEventListener('scroll', () => {
-    if (frame) return;
-    frame = requestAnimationFrame(() => {
-      frame = 0;
-      curve();
-      const center = slider.scrollLeft + slider.clientWidth / 2;
-      let nearest = 0;
-      slides.forEach((slide, index) => {
-        const distance = Math.abs(slide.offsetLeft + slide.offsetWidth / 2 - center);
-        const previous = Math.abs(slides[nearest].offsetLeft + slides[nearest].offsetWidth / 2 - center);
-        if (distance < previous) nearest = index;
+    if (isJumping) return;
+
+    if (!frame) {
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        curve();
+        if (!isAnimating) {
+          const center = slider.scrollLeft + slider.clientWidth / 2;
+          let nearest = 0;
+          let minDiff = Infinity;
+          allSlides.forEach((slide, idx) => {
+            const diff = Math.abs(slide.offsetLeft + slide.offsetWidth / 2 - center);
+            if (diff < minDiff) {
+              minDiff = diff;
+              nearest = idx;
+            }
+          });
+          update(nearest);
+        }
       });
-      update(nearest);
-    });
+    }
+
+    if (!isAnimating) {
+      clearTimeout(scrollSettleTimer);
+      scrollSettleTimer = setTimeout(finishScroll, 160);
+    }
   }, { passive: true });
 
-  const observer = new ResizeObserver(() => { goToSlide(currentIndex, true); curve(); });
+  if ('onscrollend' in window) {
+    slider.addEventListener('scrollend', () => {
+      if (!isAnimating && !isJumping) {
+        finishScroll();
+      }
+    });
+  }
+
+  const observer = new ResizeObserver(() => {
+    jumpToIndex(currentIndex);
+  });
   observer.observe(slider);
 
   // Chỉ tự động chạy khi người dùng cuộn tới phần Album Ảnh Cưới
@@ -1015,8 +1163,8 @@ function initGallerySlider() {
     modalObserver.observe(lightboxModal, { attributes: true, attributeFilter: ['class'] });
   }
 
-  update(0);
-  curve();
+  // Thiết lập vị trí ban đầu tại ảnh thật số 1
+  jumpToIndex(N);
 }
 
 /* ===========================================================================
