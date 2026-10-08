@@ -78,18 +78,12 @@ function LeafFaces({ memory, index }: { memory: Memory; index: number }) {
                 <div className="album-segment-face album-segment-back">
                 <div className="album-leaf-back">
                   <div className="album-paper-texture" />
-                  <div className="album-page-header">
-                    <span className="album-page-label">KHOẢNH KHẮC GẮN KẾT</span>
-                    <span className="album-page-number">0{index + 1}B</span>
-                  </div>
-                  <div className="album-back-mount">
-                    <img src={memory.back} alt="" decoding="async" />
-                    <div className="album-photo-glare" />
-                    <PhotoCorners />
-                  </div>
-                  <div className="album-back-note">
-                    <span className="album-back-script">{memory.caption}</span>
-                    {memory.location && <span className="album-back-location">✦ {memory.location}</span>}
+                  <div className="album-back-clean">
+                    <div className="album-back-border">
+                      <img src="/assets/monogram-8409405d.svg" alt="" className="album-back-monogram" aria-hidden="true" />
+                      <span className="album-back-brand">Tuấn Anh &amp; Hoàng Thúy</span>
+                      <span className="album-back-quote">✦ Kỷ niệm tình yêu ✦</span>
+                    </div>
                   </div>
                   <div className="album-turn-shade" />
                 </div>

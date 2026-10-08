@@ -667,6 +667,56 @@ html.invitation-opening {
   align-items: center;
 }
 
+.album-back-clean {
+  position: absolute;
+  inset: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.album-back-border {
+  width: 100%;
+  height: 100%;
+  border: 1px solid rgba(197, 160, 89, 0.4);
+  border-radius: 6px;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.75) 0%, rgba(246, 238, 222, 0.3) 75%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: inset 0 0 20px rgba(197, 160, 89, 0.08);
+  padding: 18px;
+  box-sizing: border-box;
+}
+
+.album-back-monogram {
+  width: 38px;
+  height: 38px;
+  opacity: 0.6;
+  filter: sepia(0.6);
+}
+
+.album-back-brand {
+  font-family: var(--font-script, cursive);
+  font-size: 22px;
+  color: #8c6722;
+  opacity: 0.9;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.album-back-quote {
+  font-family: var(--font-body, sans-serif);
+  font-size: 8.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #a88949;
+  opacity: 0.8;
+  text-align: center;
+}
+
 /* Góc nẹp kim loại vàng */
 .photo-corner {
   position: absolute;

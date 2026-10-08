@@ -29,24 +29,18 @@
   const memories = [
     {
       photo: photos[0],
-      back: photos[1],
       caption: 'Ngày mình có nhau',
-      date: 'Tháng 10 · Khởi đầu duyên nợ',
-      location: 'Hà Nội'
+      date: 'Tháng 10 · Khởi đầu duyên nợ'
+    },
+    {
+      photo: photos[1],
+      caption: 'Thương nhau một đời',
+      date: 'Bình yên những sớm mai'
     },
     {
       photo: photos[2],
-      back: photos[3],
-      caption: 'Thương nhau một đời',
-      date: 'Bình yên những sớm mai',
-      location: 'Đà Lạt'
-    },
-    {
-      photo: photos[4],
-      back: photos[5],
       caption: 'Và hôm nay, chung đôi',
-      date: 'Khoảnh khắc trọn vẹn',
-      location: 'Sài Gòn'
+      date: 'Khoảnh khắc trọn vẹn'
     }
   ];
 
@@ -83,18 +77,12 @@
     <div class="album-segment-face album-segment-back">
       <div class="album-leaf-back">
         <div class="album-paper-texture"></div>
-        <div class="album-page-header">
-          <span class="album-page-label">KHOẢNH KHẮC GẮN KẾT</span>
-          <span class="album-page-number">0${index + 1}B</span>
-        </div>
-        <div class="album-back-mount">
-          <img src="${memory.back}" alt="" decoding="async">
-          <div class="album-photo-glare"></div>
-          ${photoCorners()}
-        </div>
-        <div class="album-back-note">
-          <span class="album-back-script">${memory.caption}</span>
-          <span class="album-back-location">✦ ${memory.location}</span>
+        <div class="album-back-clean">
+          <div class="album-back-border">
+            <img src="${monogram}" alt="" class="album-back-monogram" aria-hidden="true">
+            <span class="album-back-brand">${groom} &amp; ${bride}</span>
+            <span class="album-back-quote">✦ Kỷ niệm tình yêu ✦</span>
+          </div>
         </div>
         <div class="album-turn-shade"></div>
       </div>
