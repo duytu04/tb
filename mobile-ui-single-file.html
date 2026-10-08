@@ -5395,6 +5395,56 @@ html.invitation-opening {
   align-items: center;
 }
 
+.album-back-clean {
+  position: absolute;
+  inset: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.album-back-border {
+  width: 100%;
+  height: 100%;
+  border: 1px solid rgba(197, 160, 89, 0.4);
+  border-radius: 6px;
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.75) 0%, rgba(246, 238, 222, 0.3) 75%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: inset 0 0 20px rgba(197, 160, 89, 0.08);
+  padding: 18px;
+  box-sizing: border-box;
+}
+
+.album-back-monogram {
+  width: 38px;
+  height: 38px;
+  opacity: 0.6;
+  filter: sepia(0.6);
+}
+
+.album-back-brand {
+  font-family: var(--font-script, cursive);
+  font-size: 22px;
+  color: #8c6722;
+  opacity: 0.9;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.album-back-quote {
+  font-family: var(--font-body, sans-serif);
+  font-size: 8.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #a88949;
+  opacity: 0.8;
+  text-align: center;
+}
+
 /* Góc nẹp kim loại vàng */
 .photo-corner {
   position: absolute;
@@ -6676,6 +6726,22 @@ const DEFAULT_WEDDING_CONFIG = {
     }
   ],
 
+  // 7b. CHÚ THÍCH CUỐN ALBUM MINI (MÀN HÌNH MỞ PHONG BÌ)
+  openingMemories: [
+    {
+      caption: 'Ngày mình có nhau',
+      date: 'Tháng 10 · Khởi đầu duyên nợ'
+    },
+    {
+      caption: 'Thương nhau một đời',
+      date: 'Bình yên những sớm mai'
+    },
+    {
+      caption: 'Và hôm nay, chung đôi',
+      date: 'Khoảnh khắc trọn vẹn'
+    }
+  ],
+
   // 8. HỘP MỪNG CƯỚI & TÀI KHOẢN NGÂN HÀNG (VIETQR)
   banking: {
     groom: {
@@ -6709,6 +6775,23 @@ const DEFAULT_WEDDING_CONFIG = {
 
   // 10. HỆ THỐNG RSVP & SỔ LƯU BÚT
   rsvpEndpoint: '', // URL Google Apps Script Web App để nhận dữ liệu
+  wishes: [
+    {
+      name: 'Gia đình Bác Hùng (Hà Nội)',
+      side: 'Khách Nhà Trai',
+      text: 'Chúc mừng hai cháu Tuấn Anh và Hoàng Thúy trăm năm hạnh phúc, răng long đầu bạc, sớm sinh quý tử nhé!'
+    },
+    {
+      name: 'Cô Lan & Chú Tuấn (Thanh Hóa)',
+      side: 'Khách Nhà Gái',
+      text: 'Mừng hạnh phúc đôi bạn trẻ! Chúc hai con luôn yêu thương, nhường nhịn và đồng hành cùng nhau xây đắp tổ ấm vững bền.'
+    },
+    {
+      name: 'Minh Trí & Hội Bạn Cấp 3',
+      side: 'Bạn Cả Hai',
+      text: 'Cuối cùng ngày này cũng tới! Chúc bạn thân của tao lấy được vợ hiền, chúc cô dâu luôn xinh đẹp rạng ngời!'
+    }
+  ],
   adminPin: '2010', // Mã PIN truy cập trang quản trị admin.html
   updatedAt: 1791116000000 // Timestamp đồng bộ hệ thống
 };
@@ -6723,8 +6806,8 @@ function getActiveWeddingConfig() {
     const saved = localStorage.getItem('wedding_custom_config');
     if (saved) {
       const parsed = JSON.parse(saved);
-      // Nếu máy chủ có cấu hình mới hơn hoặc bằng (vừa cập nhật từ admin), ưu tiên cấu hình máy chủ
-      if (DEFAULT_WEDDING_CONFIG.updatedAt && (!parsed.updatedAt || DEFAULT_WEDDING_CONFIG.updatedAt >= parsed.updatedAt)) {
+      // Nếu máy chủ có cấu hình mới hơn hẳn cấu hình lưu trong máy, ưu tiên cấu hình máy chủ
+      if (DEFAULT_WEDDING_CONFIG.updatedAt && parsed.updatedAt && DEFAULT_WEDDING_CONFIG.updatedAt > parsed.updatedAt) {
         localStorage.removeItem('wedding_custom_config');
         return JSON.parse(JSON.stringify(DEFAULT_WEDDING_CONFIG));
       }
@@ -7842,7 +7925,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const mount = document.getElementById('opening-album-root');
   if (!mount) return;
 
-  const config = window.WEDDING_CONFIG || {};
+  const config = (typeof window.getActiveWeddingConfig === 'function' ? window.getActiveWeddingConfig() : null) || window.WEDDING_CONFIG || {};
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, character => ({
     '&': '&amp;',
     '<': '&lt;',
@@ -7865,29 +7948,29 @@ document.addEventListener('DOMContentLoaded', () => {
   const photos = fallbackPhotos.map((fallback, index) =>
     escapeHtml(config.gallery?.[index]?.src || fallback)
   );
-  const memories = [
-    {
-      photo: photos[0],
-      back: photos[1],
-      caption: 'Ngày mình có nhau',
-      date: 'Tháng 10 · Khởi đầu duyên nợ',
-      location: 'Hà Nội'
-    },
-    {
-      photo: photos[2],
-      back: photos[3],
-      caption: 'Thương nhau một đời',
-      date: 'Bình yên những sớm mai',
-      location: 'Đà Lạt'
-    },
-    {
-      photo: photos[4],
-      back: photos[5],
-      caption: 'Và hôm nay, chung đôi',
-      date: 'Khoảnh khắc trọn vẹn',
-      location: 'Sài Gòn'
-    }
+  const defaultMemories = [
+    { caption: 'Ngày mình có nhau', date: 'Tháng 10 · Khởi đầu duyên nợ' },
+    { caption: 'Thương nhau một đời', date: 'Bình yên những sớm mai' },
+    { caption: 'Và hôm nay, chung đôi', date: 'Khoảnh khắc trọn vẹn' }
   ];
+  const albumConfig = Array.isArray(config.openingMemories) && config.openingMemories.length
+    ? config.openingMemories
+    : (Array.isArray(config.openingAlbum) && config.openingAlbum.length ? config.openingAlbum : defaultMemories);
+
+  const memories = [0, 1, 2].map((index) => {
+    const item = albumConfig[index];
+    const caption = (item && typeof item.caption === 'string' && item.caption.trim() !== '')
+      ? item.caption.trim()
+      : (defaultMemories[index]?.caption || '');
+    const date = (item && typeof item.date === 'string' && item.date.trim() !== '')
+      ? item.date.trim()
+      : (defaultMemories[index]?.date || '');
+    return {
+      photo: photos[index],
+      caption: escapeHtml(caption),
+      date: escapeHtml(date)
+    };
+  });
 
   const photoCorners = () => `
     <span class="photo-corner corner-tl"></span>
@@ -7922,18 +8005,12 @@ document.addEventListener('DOMContentLoaded', () => {
     <div class="album-segment-face album-segment-back">
       <div class="album-leaf-back">
         <div class="album-paper-texture"></div>
-        <div class="album-page-header">
-          <span class="album-page-label">KHOẢNH KHẮC GẮN KẾT</span>
-          <span class="album-page-number">0${index + 1}B</span>
-        </div>
-        <div class="album-back-mount">
-          <img src="${memory.back}" alt="" decoding="async">
-          <div class="album-photo-glare"></div>
-          ${photoCorners()}
-        </div>
-        <div class="album-back-note">
-          <span class="album-back-script">${memory.caption}</span>
-          <span class="album-back-location">✦ ${memory.location}</span>
+        <div class="album-back-clean">
+          <div class="album-back-border">
+            <img src="${monogram}" alt="" class="album-back-monogram" aria-hidden="true">
+            <span class="album-back-brand">${groom} &amp; ${bride}</span>
+            <span class="album-back-quote">✦ Kỷ niệm tình yêu ✦</span>
+          </div>
         </div>
         <div class="album-turn-shade"></div>
       </div>
@@ -8478,6 +8555,17 @@ function applyDynamicContent(config) {
     pocketNames.innerHTML = `${escapeHtml(config.groom.name)} &amp; ${escapeHtml(config.bride.name)}`;
   }
 
+  // Con tem & Dấu bưu điện trên nắp phong bì
+  const stampDate = document.querySelector('.stamp-paper span');
+  if (stampDate && config.weddingDate?.day && config.weddingDate?.monthYear) {
+    const month = config.weddingDate.monthYear.split('.')[0]?.trim() || '10';
+    stampDate.textContent = `${config.weddingDate.day}·${month}`;
+  }
+  const postmarkText = document.querySelector('.stamp-postmark textPath');
+  if (postmarkText && config.weddingDate) {
+    postmarkText.textContent = `HÀ NỘI · ${config.weddingDate.day}.${(config.weddingDate.monthYear || '').replace(/\s+/g, '')} ·`;
+  }
+
   // 3. Thanh điều hướng Navbar
   const navBrandText = document.querySelector('.nav-brand-text');
   if (navBrandText && config.groom?.name && config.bride?.name) {
@@ -8979,14 +9067,14 @@ function initRSVPForm() {
       date: new Date().toLocaleString('vi-VN')
     };
 
+    // If wish exists, append to Guestbook immediately so guest sees it right away
+    if (wish) {
+      addWishToGuestbook(name, side, wish);
+    }
+
     setSubmitState(submitBtn, true);
 
     const result = await submitRSVP(rsvpData);
-
-    // If wish exists, append to Guestbook
-    if (wish && (result.sent || result.localOnly)) {
-      addWishToGuestbook(name, side, wish);
-    }
 
     setSubmitState(submitBtn, false);
     const message = result.sent
@@ -9081,10 +9169,36 @@ function initGuestbook() {
   const container = document.getElementById('wishes-container');
   if (!container) return;
 
-  const userWishes = getLocalArray('wedding_wishes');
-  const allWishes = [...userWishes, ...defaultWishes];
+  const currentConfig = (typeof window.getActiveWeddingConfig === 'function' ? window.getActiveWeddingConfig() : null) || window.WEDDING_CONFIG;
+  const configWishes = Array.isArray(currentConfig?.wishes)
+    ? currentConfig.wishes
+    : defaultWishes;
+
+  const userWishes = getLocalArray('wedding_wishes') || [];
+
+  // Khử trùng lặp theo tên và nội dung lời chúc
+  const seen = new Set();
+  const allWishes = [];
+
+  [...userWishes, ...configWishes].forEach(item => {
+    if (!item || !item.name || !item.text) return;
+    const key = `${item.name.trim()}:::${item.text.trim()}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      allWishes.push(item);
+    }
+  });
 
   container.innerHTML = '';
+  if (allWishes.length === 0) {
+    container.innerHTML = `
+      <div class="wish-empty-state" style="text-align: center; padding: 36px 16px; color: var(--color-text-muted, #8C7E72); font-style: italic; width: 100%;">
+        Chưa có lời chúc nào trong sổ lưu bút. Hãy là người đầu tiên gửi lời chúc tốt đẹp tới hai bạn nhé!
+      </div>
+    `;
+    return;
+  }
+
   allWishes.forEach(item => {
     container.appendChild(createWishElement(item.name, item.side, item.text));
   });
@@ -9104,11 +9218,44 @@ function createWishElement(name, side, text) {
 }
 
 function addWishToGuestbook(name, side, text) {
-  const newWish = { name, side, text, time: Date.now() };
+  const newWish = { name, side: side || 'Khách Mời', text, time: Date.now() };
+
+  // 1. Lưu vào wedding_wishes trong localStorage
   saveLocalItem('wedding_wishes', newWish, true);
 
+  // 2. Tự động hợp nhất vào active config để lưu lâu dài
+  try {
+    if (typeof window.getActiveWeddingConfig === 'function' && typeof window.saveActiveWeddingConfig === 'function') {
+      const currentCfg = window.getActiveWeddingConfig();
+      if (currentCfg) {
+        if (!Array.isArray(currentCfg.wishes)) currentCfg.wishes = [];
+        const exists = currentCfg.wishes.some(w => w.name === name && w.text === text);
+        if (!exists) {
+          currentCfg.wishes.unshift({ name, side: side || 'Khách Mời', text });
+          currentCfg.updatedAt = Date.now();
+          window.saveActiveWeddingConfig(currentCfg);
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Lỗi lưu lời chúc vào active config:', e);
+  }
+
+  // 3. Gửi lên API máy chủ (nếu đang chạy server) để đồng bộ cho các thiết bị khác
+  try {
+    fetch('/api/submit-wish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newWish)
+    }).catch(() => {});
+  } catch (e) {}
+
+  // 4. Hiển thị ngay lập tức lên danh sách Sổ Lưu Bút
   const container = document.getElementById('wishes-container');
   if (container) {
+    const emptyState = container.querySelector('.wish-empty-state');
+    if (emptyState) emptyState.remove();
+
     const el = createWishElement(name, side, text);
     el.classList.add('wish-new');
     el.addEventListener('animationend', () => el.classList.remove('wish-new'), { once: true });
@@ -9181,32 +9328,84 @@ function initGiftModal() {
 }
 
 /* ==========================================================================
-   8. PHOTO GALLERY (HORIZONTAL SLIDER & LIGHTBOX)
+   8. PHOTO GALLERY (HORIZONTAL SLIDER & LIGHTBOX) - INFINITE SEAMLESS LOOP
    ========================================================================== */
 function initGallerySlider() {
   const slider = document.getElementById('gallery-slider');
   if (!slider) return;
-  const slides = [...slider.querySelectorAll('.gallery-slide-card')];
-  if (!slides.length) return;
+  const originalSlides = [...slider.querySelectorAll('.gallery-slide-card')];
+  const N = originalSlides.length;
+  if (!N) return;
+
   const dotsContainer = document.getElementById('gallery-dots');
-  let currentIndex = 0;
+  const caption = document.getElementById('gallery-film-caption');
+
+  // Nếu chỉ có 1 ảnh thì không cần lặp
+  if (N <= 1) {
+    if (caption) {
+      caption.textContent = originalSlides[0].querySelector('.gallery-caption')?.textContent || '';
+    }
+    return;
+  }
+
+  // --- Nhân bản để tạo vòng lặp vô tận (Infinite Seamless Loop) ---
+  // Cấu trúc DOM sau nhân bản: [Prefix Clones (0..N-1)] + [Originals (0..N-1)] + [Suffix Clones (0..N-1)]
+  const prefixClones = originalSlides.map((slide, i) => {
+    const clone = slide.cloneNode(true);
+    clone.setAttribute('data-clone', 'prefix');
+    clone.setAttribute('data-original-index', String(i));
+    clone.querySelectorAll('img').forEach(img => { img.loading = 'eager'; });
+    return clone;
+  });
+
+  const suffixClones = originalSlides.map((slide, i) => {
+    const clone = slide.cloneNode(true);
+    clone.setAttribute('data-clone', 'suffix');
+    clone.setAttribute('data-original-index', String(i));
+    clone.querySelectorAll('img').forEach(img => { img.loading = 'eager'; });
+    return clone;
+  });
+
+  slider.prepend(...prefixClones);
+  slider.append(...suffixClones);
+
+  const allSlides = [...slider.querySelectorAll('.gallery-slide-card')];
+  allSlides.forEach((slide, index) => {
+    slide.dataset.frame = String((index % N) + 1).padStart(2, '0');
+  });
+
+  let currentIndex = N; // Bắt đầu ở ảnh thật đầu tiên (index N trong allSlides)
+  let lastRealIndex = -1;
   let frame = 0;
-  const dots = slides.map((_, index) => {
+  let isAnimating = false;
+  let isJumping = false;
+  let normalizeTimeout = null;
+  let scrollSettleTimer = null;
+
+  // Render Dots (chỉ render N chấm tròn cho các ảnh thật)
+  const dots = originalSlides.map((_, index) => {
     const dot = document.createElement('button');
     dot.type = 'button';
     dot.className = 'slider-dot';
     dot.setAttribute('aria-label', `Xem ảnh ${index + 1}`);
-    dot.addEventListener('click', () => goToSlide(index));
+    dot.addEventListener('click', () => {
+      goToRealIndex(index);
+      restartAutoPlay();
+    });
     return dot;
   });
   dotsContainer?.replaceChildren(...dots);
-  const caption = document.getElementById('gallery-film-caption');
-  slides.forEach((slide, index) => { slide.dataset.frame = String(index + 1).padStart(2, '0'); });
+
+  function getLeftForIndex(index) {
+    const slide = allSlides[index];
+    if (!slide) return 0;
+    return slide.offsetLeft - (slider.clientWidth - slide.offsetWidth) / 2;
+  }
 
   function curve() {
     const center = slider.scrollLeft + slider.clientWidth / 2;
     const still = prefersReducedMotion();
-    slides.forEach((slide) => {
+    allSlides.forEach((slide) => {
       const width = slide.offsetWidth || 1;
       const distance = still
         ? 0
@@ -9220,50 +9419,248 @@ function initGallerySlider() {
   }
 
   function update(index) {
-    if (caption && (index !== currentIndex || !caption.textContent)) {
-      caption.textContent = slides[index].querySelector('.gallery-caption')?.textContent || '';
+    const realIndex = ((index % N) + N) % N;
+    if (caption && (realIndex !== lastRealIndex || !caption.textContent)) {
+      lastRealIndex = realIndex;
+      caption.textContent = originalSlides[realIndex].querySelector('.gallery-caption')?.textContent || '';
       caption.style.animation = 'none';
       void caption.offsetWidth;
       caption.style.animation = '';
     }
-    currentIndex = index;
-    slides.forEach((slide, i) => {
+    allSlides.forEach((slide, i) => {
       slide.classList.toggle('is-current', i === index);
       slide.classList.toggle('is-before', i < index);
     });
     dots.forEach((dot, i) => {
-      dot.classList.toggle('active', i === index);
-      dot.setAttribute('aria-pressed', String(i === index));
+      dot.classList.toggle('active', i === realIndex);
+      dot.setAttribute('aria-pressed', String(i === realIndex));
     });
   }
-  function goToSlide(index, instant = false) {
-    index = (index + slides.length) % slides.length;
-    const slide = slides[index];
-    const left = slide.offsetLeft - (slider.clientWidth - slide.offsetWidth) / 2;
-    slider.scrollTo({ left, behavior: instant || prefersReducedMotion() ? 'instant' : 'smooth' });
-    update(index);
+
+  // Nhảy tức thì (không animation) để đưa về dải ảnh thật
+  function jumpToIndex(targetIndex) {
+    currentIndex = targetIndex;
+    isJumping = true;
+    const targetLeft = getLeftForIndex(targetIndex);
+    const prevSnap = slider.style.scrollSnapType;
+    slider.style.scrollSnapType = 'none';
+    slider.scrollTo({ left: targetLeft, behavior: 'instant' });
+    void slider.offsetWidth;
+    slider.style.scrollSnapType = prevSnap;
+    update(targetIndex);
+    curve();
+    requestAnimationFrame(() => {
+      isJumping = false;
+    });
   }
-  document.getElementById('gallery-prev')?.addEventListener('click', () => goToSlide(currentIndex - 1));
-  document.getElementById('gallery-next')?.addEventListener('click', () => goToSlide(currentIndex + 1));
-  slider.addEventListener('scroll', () => {
-    if (frame) return;
-    frame = requestAnimationFrame(() => {
-      frame = 0;
-      curve();
-      const center = slider.scrollLeft + slider.clientWidth / 2;
-      let nearest = 0;
-      slides.forEach((slide, index) => {
-        const distance = Math.abs(slide.offsetLeft + slide.offsetWidth / 2 - center);
-        const previous = Math.abs(slides[nearest].offsetLeft + slides[nearest].offsetWidth / 2 - center);
-        if (distance < previous) nearest = index;
-      });
+
+  // Chuẩn hóa vị trí cuộn: Nếu rơi vào vùng clone thì âm thầm nhảy về vùng thật
+  function finishScroll() {
+    clearTimeout(normalizeTimeout);
+    isAnimating = false;
+
+    const center = slider.scrollLeft + slider.clientWidth / 2;
+    let nearest = 0;
+    let minDiff = Infinity;
+    allSlides.forEach((slide, idx) => {
+      const diff = Math.abs(slide.offsetLeft + slide.offsetWidth / 2 - center);
+      if (diff < minDiff) {
+        minDiff = diff;
+        nearest = idx;
+      }
+    });
+
+    if (nearest >= 2 * N) {
+      // Vùng suffix clone -> nhảy về ảnh thật tương ứng
+      jumpToIndex(nearest - N);
+    } else if (nearest < N) {
+      // Vùng prefix clone -> nhảy về ảnh thật tương ứng
+      jumpToIndex(nearest + N);
+    } else {
+      currentIndex = nearest;
       update(nearest);
-    });
+    }
+  }
+
+  function goToSlide(targetIndex, instant = false) {
+    if (instant || prefersReducedMotion()) {
+      let normalized = targetIndex;
+      if (normalized >= 2 * N) normalized -= N;
+      else if (normalized < N) normalized += N;
+      jumpToIndex(normalized);
+      return;
+    }
+
+    isAnimating = true;
+    currentIndex = targetIndex;
+    const left = getLeftForIndex(targetIndex);
+    slider.scrollTo({ left, behavior: 'smooth' });
+    update(targetIndex);
+
+    clearTimeout(normalizeTimeout);
+    normalizeTimeout = setTimeout(() => {
+      finishScroll();
+    }, 420);
+  }
+
+  // Chuyển tới ảnh thật theo index (0..N-1) theo hướng gần nhất
+  function goToRealIndex(realIndex) {
+    const candidates = [realIndex, realIndex + N, realIndex + 2 * N];
+    let best = candidates[0];
+    let minDiff = Math.abs(best - currentIndex);
+    for (let i = 1; i < candidates.length; i++) {
+      const diff = Math.abs(candidates[i] - currentIndex);
+      if (diff < minDiff) {
+        minDiff = diff;
+        best = candidates[i];
+      }
+    }
+    goToSlide(best);
+  }
+
+  // --- Tự động chuyển ảnh (Auto-play 2 giây) ---
+  const AUTO_PLAY_INTERVAL = 2000;
+  let autoPlayTimer = null;
+  let isHoveredOrTouched = false;
+  let isGalleryInView = false;
+
+  function startAutoPlay() {
+    stopAutoPlay();
+    if (prefersReducedMotion()) return;
+    if (originalSlides.length <= 1) return;
+    if (!isGalleryInView || isHoveredOrTouched || document.hidden) return;
+    const modal = document.getElementById('lightbox-modal');
+    if (modal && modal.classList.contains('active')) return;
+
+    autoPlayTimer = setInterval(() => {
+      goToSlide(currentIndex + 1);
+    }, AUTO_PLAY_INTERVAL);
+  }
+
+  function stopAutoPlay() {
+    if (autoPlayTimer) {
+      clearInterval(autoPlayTimer);
+      autoPlayTimer = null;
+    }
+  }
+
+  function restartAutoPlay() {
+    stopAutoPlay();
+    startAutoPlay();
+  }
+
+  document.getElementById('gallery-prev')?.addEventListener('click', () => {
+    goToSlide(currentIndex - 1);
+    restartAutoPlay();
+  });
+  document.getElementById('gallery-next')?.addEventListener('click', () => {
+    goToSlide(currentIndex + 1);
+    restartAutoPlay();
+  });
+
+  // Tạm dừng khi rê chuột hoặc chạm tay vào slider
+  slider.addEventListener('mouseenter', () => {
+    isHoveredOrTouched = true;
+    stopAutoPlay();
+  });
+  slider.addEventListener('mouseleave', () => {
+    isHoveredOrTouched = false;
+    startAutoPlay();
+  });
+  slider.addEventListener('touchstart', () => {
+    isHoveredOrTouched = true;
+    stopAutoPlay();
   }, { passive: true });
-  const observer = new ResizeObserver(() => { goToSlide(currentIndex, true); curve(); });
+  slider.addEventListener('touchend', () => {
+    isHoveredOrTouched = false;
+    setTimeout(startAutoPlay, 1000);
+  }, { passive: true });
+
+  slider.addEventListener('scroll', () => {
+    if (isJumping) return;
+
+    if (!frame) {
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        curve();
+        if (!isAnimating) {
+          const center = slider.scrollLeft + slider.clientWidth / 2;
+          let nearest = 0;
+          let minDiff = Infinity;
+          allSlides.forEach((slide, idx) => {
+            const diff = Math.abs(slide.offsetLeft + slide.offsetWidth / 2 - center);
+            if (diff < minDiff) {
+              minDiff = diff;
+              nearest = idx;
+            }
+          });
+          update(nearest);
+        }
+      });
+    }
+
+    if (!isAnimating) {
+      clearTimeout(scrollSettleTimer);
+      scrollSettleTimer = setTimeout(finishScroll, 160);
+    }
+  }, { passive: true });
+
+  if ('onscrollend' in window) {
+    slider.addEventListener('scrollend', () => {
+      if (!isAnimating && !isJumping) {
+        finishScroll();
+      }
+    });
+  }
+
+  const observer = new ResizeObserver(() => {
+    jumpToIndex(currentIndex);
+  });
   observer.observe(slider);
-  update(0);
-  curve();
+
+  // Chỉ tự động chạy khi người dùng cuộn tới phần Album Ảnh Cưới
+  const gallerySection = document.getElementById('gallery');
+  if (gallerySection && 'IntersectionObserver' in window) {
+    const viewObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        isGalleryInView = entry.isIntersecting;
+        if (isGalleryInView) {
+          startAutoPlay();
+        } else {
+          stopAutoPlay();
+        }
+      });
+    }, { threshold: 0.2 });
+    viewObserver.observe(gallerySection);
+  } else {
+    isGalleryInView = true;
+    startAutoPlay();
+  }
+
+  // Tạm dừng khi chuyển tab trình duyệt
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      stopAutoPlay();
+    } else if (isGalleryInView) {
+      startAutoPlay();
+    }
+  });
+
+  // Tạm dừng khi đang mở xem ảnh phóng to (Lightbox)
+  const lightboxModal = document.getElementById('lightbox-modal');
+  if (lightboxModal && 'MutationObserver' in window) {
+    const modalObserver = new MutationObserver(() => {
+      if (lightboxModal.classList.contains('active')) {
+        stopAutoPlay();
+      } else if (isGalleryInView) {
+        startAutoPlay();
+      }
+    });
+    modalObserver.observe(lightboxModal, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  // Thiết lập vị trí ban đầu tại ảnh thật số 1
+  jumpToIndex(N);
 }
 
 /* ===========================================================================

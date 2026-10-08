@@ -131,6 +131,17 @@ function applyDynamicContent(config) {
     pocketNames.innerHTML = `${escapeHtml(config.groom.name)} &amp; ${escapeHtml(config.bride.name)}`;
   }
 
+  // Con tem & Dấu bưu điện trên nắp phong bì
+  const stampDate = document.querySelector('.stamp-paper span');
+  if (stampDate && config.weddingDate?.day && config.weddingDate?.monthYear) {
+    const month = config.weddingDate.monthYear.split('.')[0]?.trim() || '10';
+    stampDate.textContent = `${config.weddingDate.day}·${month}`;
+  }
+  const postmarkText = document.querySelector('.stamp-postmark textPath');
+  if (postmarkText && config.weddingDate) {
+    postmarkText.textContent = `HÀ NỘI · ${config.weddingDate.day}.${(config.weddingDate.monthYear || '').replace(/\s+/g, '')} ·`;
+  }
+
   // 3. Thanh điều hướng Navbar
   const navBrandText = document.querySelector('.nav-brand-text');
   if (navBrandText && config.groom?.name && config.bride?.name) {
@@ -632,14 +643,14 @@ function initRSVPForm() {
       date: new Date().toLocaleString('vi-VN')
     };
 
+    // If wish exists, append to Guestbook immediately so guest sees it right away
+    if (wish) {
+      addWishToGuestbook(name, side, wish);
+    }
+
     setSubmitState(submitBtn, true);
 
     const result = await submitRSVP(rsvpData);
-
-    // If wish exists, append to Guestbook
-    if (wish && (result.sent || result.localOnly)) {
-      addWishToGuestbook(name, side, wish);
-    }
 
     setSubmitState(submitBtn, false);
     const message = result.sent
@@ -734,10 +745,36 @@ function initGuestbook() {
   const container = document.getElementById('wishes-container');
   if (!container) return;
 
-  const userWishes = getLocalArray('wedding_wishes');
-  const allWishes = [...userWishes, ...defaultWishes];
+  const currentConfig = (typeof window.getActiveWeddingConfig === 'function' ? window.getActiveWeddingConfig() : null) || window.WEDDING_CONFIG;
+  const configWishes = Array.isArray(currentConfig?.wishes)
+    ? currentConfig.wishes
+    : defaultWishes;
+
+  const userWishes = getLocalArray('wedding_wishes') || [];
+
+  // Khử trùng lặp theo tên và nội dung lời chúc
+  const seen = new Set();
+  const allWishes = [];
+
+  [...userWishes, ...configWishes].forEach(item => {
+    if (!item || !item.name || !item.text) return;
+    const key = `${item.name.trim()}:::${item.text.trim()}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      allWishes.push(item);
+    }
+  });
 
   container.innerHTML = '';
+  if (allWishes.length === 0) {
+    container.innerHTML = `
+      <div class="wish-empty-state" style="text-align: center; padding: 36px 16px; color: var(--color-text-muted, #8C7E72); font-style: italic; width: 100%;">
+        Chưa có lời chúc nào trong sổ lưu bút. Hãy là người đầu tiên gửi lời chúc tốt đẹp tới hai bạn nhé!
+      </div>
+    `;
+    return;
+  }
+
   allWishes.forEach(item => {
     container.appendChild(createWishElement(item.name, item.side, item.text));
   });
@@ -757,11 +794,44 @@ function createWishElement(name, side, text) {
 }
 
 function addWishToGuestbook(name, side, text) {
-  const newWish = { name, side, text, time: Date.now() };
+  const newWish = { name, side: side || 'Khách Mời', text, time: Date.now() };
+
+  // 1. Lưu vào wedding_wishes trong localStorage
   saveLocalItem('wedding_wishes', newWish, true);
 
+  // 2. Tự động hợp nhất vào active config để lưu lâu dài
+  try {
+    if (typeof window.getActiveWeddingConfig === 'function' && typeof window.saveActiveWeddingConfig === 'function') {
+      const currentCfg = window.getActiveWeddingConfig();
+      if (currentCfg) {
+        if (!Array.isArray(currentCfg.wishes)) currentCfg.wishes = [];
+        const exists = currentCfg.wishes.some(w => w.name === name && w.text === text);
+        if (!exists) {
+          currentCfg.wishes.unshift({ name, side: side || 'Khách Mời', text });
+          currentCfg.updatedAt = Date.now();
+          window.saveActiveWeddingConfig(currentCfg);
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Lỗi lưu lời chúc vào active config:', e);
+  }
+
+  // 3. Gửi lên API máy chủ (nếu đang chạy server) để đồng bộ cho các thiết bị khác
+  try {
+    fetch('/api/submit-wish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newWish)
+    }).catch(() => {});
+  } catch (e) {}
+
+  // 4. Hiển thị ngay lập tức lên danh sách Sổ Lưu Bút
   const container = document.getElementById('wishes-container');
   if (container) {
+    const emptyState = container.querySelector('.wish-empty-state');
+    if (emptyState) emptyState.remove();
+
     const el = createWishElement(name, side, text);
     el.classList.add('wish-new');
     el.addEventListener('animationend', () => el.classList.remove('wish-new'), { once: true });

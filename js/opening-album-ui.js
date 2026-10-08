@@ -3,7 +3,7 @@
   const mount = document.getElementById('opening-album-root');
   if (!mount) return;
 
-  const config = window.WEDDING_CONFIG || {};
+  const config = (typeof window.getActiveWeddingConfig === 'function' ? window.getActiveWeddingConfig() : null) || window.WEDDING_CONFIG || {};
   const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, character => ({
     '&': '&amp;',
     '<': '&lt;',
@@ -26,23 +26,29 @@
   const photos = fallbackPhotos.map((fallback, index) =>
     escapeHtml(config.gallery?.[index]?.src || fallback)
   );
-  const memories = [
-    {
-      photo: photos[0],
-      caption: 'Ngày mình có nhau',
-      date: 'Tháng 10 · Khởi đầu duyên nợ'
-    },
-    {
-      photo: photos[1],
-      caption: 'Thương nhau một đời',
-      date: 'Bình yên những sớm mai'
-    },
-    {
-      photo: photos[2],
-      caption: 'Và hôm nay, chung đôi',
-      date: 'Khoảnh khắc trọn vẹn'
-    }
+  const defaultMemories = [
+    { caption: 'Ngày mình có nhau', date: 'Tháng 10 · Khởi đầu duyên nợ' },
+    { caption: 'Thương nhau một đời', date: 'Bình yên những sớm mai' },
+    { caption: 'Và hôm nay, chung đôi', date: 'Khoảnh khắc trọn vẹn' }
   ];
+  const albumConfig = Array.isArray(config.openingMemories) && config.openingMemories.length
+    ? config.openingMemories
+    : (Array.isArray(config.openingAlbum) && config.openingAlbum.length ? config.openingAlbum : defaultMemories);
+
+  const memories = [0, 1, 2].map((index) => {
+    const item = albumConfig[index];
+    const caption = (item && typeof item.caption === 'string' && item.caption.trim() !== '')
+      ? item.caption.trim()
+      : (defaultMemories[index]?.caption || '');
+    const date = (item && typeof item.date === 'string' && item.date.trim() !== '')
+      ? item.date.trim()
+      : (defaultMemories[index]?.date || '');
+    return {
+      photo: photos[index],
+      caption: escapeHtml(caption),
+      date: escapeHtml(date)
+    };
+  });
 
   const photoCorners = () => `
     <span class="photo-corner corner-tl"></span>

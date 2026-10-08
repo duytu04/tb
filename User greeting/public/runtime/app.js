@@ -1,4 +1,3 @@
-
 /**
  * Wedding Website Application Logic
  * Couple: Tuấn Anh & Hoàng Thúy
@@ -25,7 +24,7 @@ function forceScrollToTop() {
 // Reset immediately on script load
 forceScrollToTop();
 
-window.__weddingBoot = () => {
+document.addEventListener('DOMContentLoaded', () => {
   forceScrollToTop();
   if (typeof window.getActiveWeddingConfig === 'function') {
     window.WEDDING_CONFIG = window.getActiveWeddingConfig();
@@ -44,7 +43,7 @@ window.__weddingBoot = () => {
   initLightbox();
   document.documentElement.dataset.weddingReady = 'true';
   document.dispatchEvent(new Event('wedding:ready'));
-};
+});
 
 const appConfig = window.WEDDING_CONFIG || {};
 let RSVP_ENDPOINT = (appConfig.rsvpEndpoint || appConfig.RSVP_ENDPOINT || '').trim();
@@ -66,6 +65,18 @@ function applyDynamicContent(config) {
     if (pocketGuest) pocketGuest.textContent = guestName;
     const rsvpName = document.getElementById('rsvp-name');
     if (rsvpName && !rsvpName.value) rsvpName.value = guestName;
+  }
+
+  const openingCountdown = document.getElementById('opening-countdown');
+  const openingDays = document.getElementById('opening-days-left');
+  if (openingCountdown && openingDays && config.weddingDate?.targetIso) {
+    const today = new Date();
+    const weddingDay = new Date(config.weddingDate.targetIso);
+    today.setHours(0, 0, 0, 0);
+    weddingDay.setHours(0, 0, 0, 0);
+    const daysLeft = Math.ceil((weddingDay.getTime() - today.getTime()) / 86400000);
+    openingCountdown.hidden = !Number.isFinite(daysLeft) || daysLeft <= 0;
+    if (daysLeft > 0) openingDays.textContent = String(daysLeft);
   }
 
   // 1. Tiêu đề trang & Thẻ Meta SEO/Social
@@ -120,6 +131,17 @@ function applyDynamicContent(config) {
     pocketNames.innerHTML = `${escapeHtml(config.groom.name)} &amp; ${escapeHtml(config.bride.name)}`;
   }
 
+  // Con tem & Dấu bưu điện trên nắp phong bì
+  const stampDate = document.querySelector('.stamp-paper span');
+  if (stampDate && config.weddingDate?.day && config.weddingDate?.monthYear) {
+    const month = config.weddingDate.monthYear.split('.')[0]?.trim() || '10';
+    stampDate.textContent = `${config.weddingDate.day}·${month}`;
+  }
+  const postmarkText = document.querySelector('.stamp-postmark textPath');
+  if (postmarkText && config.weddingDate) {
+    postmarkText.textContent = `HÀ NỘI · ${config.weddingDate.day}.${(config.weddingDate.monthYear || '').replace(/\s+/g, '')} ·`;
+  }
+
   // 3. Thanh điều hướng Navbar
   const navBrandText = document.querySelector('.nav-brand-text');
   if (navBrandText && config.groom?.name && config.bride?.name) {
@@ -154,7 +176,7 @@ function applyDynamicContent(config) {
   const heroLunarDate = document.querySelector('.hero-lunar-date');
   if (heroLunarDate && config.weddingDate?.lunarText) heroLunarDate.textContent = config.weddingDate.lunarText;
 
-  const heroCoverSrc = config.couple?.ogImage || config.gallery?.[0]?.src || '/assets/a-1638929a.webp';
+  const heroCoverSrc = config.couple?.ogImage || config.gallery?.[0]?.src || 'assets/images/hero_1791131600.webp';
   if (heroCoverSrc) {
     const heroImg = document.querySelector('.hero-photo-inner img');
     if (heroImg) {
@@ -180,7 +202,7 @@ function applyDynamicContent(config) {
         gParents.innerHTML = `<div>${escapeHtml(config.family.groom.father)}</div><div>${escapeHtml(config.family.groom.mother)}</div>`;
       }
       const gAddr = familyCards[0].querySelector('.family-address');
-      if (gAddr) gAddr.innerHTML = config.family.groom.address;
+      if (gAddr) gAddr.innerHTML = stripPresentationIcon(config.family.groom.address);
     }
     // Card 1: Nhà Gái
     if (config.family.bride) {
@@ -191,7 +213,7 @@ function applyDynamicContent(config) {
         bParents.innerHTML = `<div>${escapeHtml(config.family.bride.father)}</div><div>${escapeHtml(config.family.bride.mother)}</div>`;
       }
       const bAddr = familyCards[1].querySelector('.family-address');
-      if (bAddr) bAddr.innerHTML = config.family.bride.address;
+      if (bAddr) bAddr.innerHTML = stripPresentationIcon(config.family.bride.address);
     }
   }
 
@@ -216,7 +238,7 @@ function applyDynamicContent(config) {
       if (lunar && ev.lunarDate) lunar.textContent = ev.lunarDate;
 
       const locName = card.querySelector('.location-name');
-      if (locName && ev.venueName) locName.textContent = ev.venueName;
+      if (locName && ev.venueName) locName.textContent = stripPresentationIcon(ev.venueName);
       const locAddr = card.querySelector('.location-address');
       if (locAddr && ev.address) locAddr.textContent = ev.address;
 
@@ -380,9 +402,9 @@ function applyDynamicContent(config) {
       if (info) {
         info.innerHTML = `
           <div class="map-modal-event">${escapeHtml(groomEv.title)}</div>
-          <div class="map-modal-venue">${escapeHtml(groomEv.venueName)}</div>
-          <div class="map-modal-addr">${escapeHtml(groomEv.address)}</div>
-          <div class="map-modal-time">${escapeHtml(groomEv.time)} • ${escapeHtml(groomEv.date)}</div>
+          <div class="map-modal-venue">${escapeHtml(stripPresentationIcon(groomEv.venueName))}</div>
+          <div class="map-modal-addr">${escapeHtml(stripPresentationIcon(groomEv.address))}</div>
+          <div class="map-modal-time">${escapeHtml(stripPresentationIcon(groomEv.time))} • ${escapeHtml(groomEv.date)}</div>
         `;
       }
       const iframe = modalGroom.querySelector('iframe');
@@ -397,9 +419,9 @@ function applyDynamicContent(config) {
       if (info) {
         info.innerHTML = `
           <div class="map-modal-event">${escapeHtml(brideEv.title)}</div>
-          <div class="map-modal-venue">${escapeHtml(brideEv.venueName)}</div>
-          <div class="map-modal-addr">${escapeHtml(brideEv.address)}</div>
-          <div class="map-modal-time">${escapeHtml(brideEv.time)} • ${escapeHtml(brideEv.date)}</div>
+          <div class="map-modal-venue">${escapeHtml(stripPresentationIcon(brideEv.venueName))}</div>
+          <div class="map-modal-addr">${escapeHtml(stripPresentationIcon(brideEv.address))}</div>
+          <div class="map-modal-time">${escapeHtml(stripPresentationIcon(brideEv.time))} • ${escapeHtml(brideEv.date)}</div>
         `;
       }
       const iframe = modalBride.querySelector('iframe');
@@ -595,15 +617,6 @@ function initRSVPForm() {
   const form = document.getElementById('rsvp-form');
   if (!form) return;
 
-  // Ẩn số người tham dự khi khách chọn không thể đến
-  const guestsGroup = document.getElementById('rsvp-guests')?.closest('.form-group');
-  const syncAttending = () => {
-    const declined = form.elements['guest-attending'].value === 'Rất tiếc không thể đến';
-    if (guestsGroup) guestsGroup.hidden = declined;
-  };
-  form.querySelectorAll('input[name="guest-attending"]').forEach((r) => r.addEventListener('change', syncAttending));
-  syncAttending();
-
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const submitBtn = form.querySelector('button[type="submit"]');
@@ -634,8 +647,8 @@ function initRSVPForm() {
 
     const result = await submitRSVP(rsvpData);
 
-    // If wish exists, append to Guestbook
-    if (wish && (result.sent || result.localOnly)) {
+    // If wish exists, append to Guestbook immediately
+    if (wish) {
       addWishToGuestbook(name, side, wish);
     }
 
@@ -732,10 +745,36 @@ function initGuestbook() {
   const container = document.getElementById('wishes-container');
   if (!container) return;
 
-  const userWishes = getLocalArray('wedding_wishes');
-  const allWishes = [...userWishes, ...defaultWishes];
+  const currentConfig = (typeof window.getActiveWeddingConfig === 'function' ? window.getActiveWeddingConfig() : null) || window.WEDDING_CONFIG;
+  const configWishes = Array.isArray(currentConfig?.wishes)
+    ? currentConfig.wishes
+    : defaultWishes;
+
+  const userWishes = getLocalArray('wedding_wishes') || [];
+
+  // Khử trùng lặp theo tên và nội dung lời chúc
+  const seen = new Set();
+  const allWishes = [];
+
+  [...userWishes, ...configWishes].forEach(item => {
+    if (!item || !item.name || !item.text) return;
+    const key = `${item.name.trim()}:::${item.text.trim()}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      allWishes.push(item);
+    }
+  });
 
   container.innerHTML = '';
+  if (allWishes.length === 0) {
+    container.innerHTML = `
+      <div class="wish-empty-state" style="text-align: center; padding: 36px 16px; color: var(--color-text-muted, #8C7E72); font-style: italic; width: 100%;">
+        Chưa có lời chúc nào trong sổ lưu bút. Hãy là người đầu tiên gửi lời chúc tốt đẹp tới hai bạn nhé!
+      </div>
+    `;
+    return;
+  }
+
   allWishes.forEach(item => {
     container.appendChild(createWishElement(item.name, item.side, item.text));
   });
@@ -755,11 +794,44 @@ function createWishElement(name, side, text) {
 }
 
 function addWishToGuestbook(name, side, text) {
-  const newWish = { name, side, text, time: Date.now() };
+  const newWish = { name, side: side || 'Khách Mời', text, time: Date.now() };
+
+  // 1. Lưu vào wedding_wishes trong localStorage
   saveLocalItem('wedding_wishes', newWish, true);
 
+  // 2. Tự động hợp nhất vào active config để lưu lâu dài
+  try {
+    if (typeof window.getActiveWeddingConfig === 'function' && typeof window.saveActiveWeddingConfig === 'function') {
+      const currentCfg = window.getActiveWeddingConfig();
+      if (currentCfg) {
+        if (!Array.isArray(currentCfg.wishes)) currentCfg.wishes = [];
+        const exists = currentCfg.wishes.some(w => w.name === name && w.text === text);
+        if (!exists) {
+          currentCfg.wishes.unshift({ name, side: side || 'Khách Mời', text });
+          currentCfg.updatedAt = Date.now();
+          window.saveActiveWeddingConfig(currentCfg);
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Lỗi lưu lời chúc vào active config:', e);
+  }
+
+  // 3. Gửi lên API máy chủ (nếu đang chạy server) để đồng bộ cho các thiết bị khác
+  try {
+    fetch('/api/submit-wish', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newWish)
+    }).catch(() => {});
+  } catch (e) {}
+
+  // 4. Hiển thị ngay lập tức lên danh sách Sổ Lưu Bút
   const container = document.getElementById('wishes-container');
   if (container) {
+    const emptyState = container.querySelector('.wish-empty-state');
+    if (emptyState) emptyState.remove();
+
     const el = createWishElement(name, side, text);
     el.classList.add('wish-new');
     el.addEventListener('animationend', () => el.classList.remove('wish-new'), { once: true });
@@ -1375,10 +1447,14 @@ function showToast(message) {
   toast.innerText = message;
   toast.classList.add('show');
 
-  clearTimeout(showToast._t);
-  showToast._t = setTimeout(() => {
+  clearTimeout(showToast._timeout);
+  showToast._timeout = setTimeout(() => {
     toast.classList.remove('show');
   }, 3500);
+}
+
+function stripPresentationIcon(value) {
+  return String(value ?? '').replace(/^\s*(?:📍|🏛️?|⏰)\s*/u, '');
 }
 
 function escapeHtml(str) {
@@ -1424,6 +1500,20 @@ function saveLocalItem(key, item, prepend = false) {
 
 let activeModal = null;
 let previousFocus = null;
+let modalBackgroundState = [];
+
+function setModalBackgroundInert(modal, inert) {
+  if (inert) {
+    modalBackgroundState = [...document.body.children]
+      .filter(element => element !== modal && !['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(element.tagName))
+      .map(element => ({ element, wasInert: element.inert }));
+    modalBackgroundState.forEach(({ element }) => { element.inert = true; });
+    return;
+  }
+
+  modalBackgroundState.forEach(({ element, wasInert }) => { element.inert = wasInert; });
+  modalBackgroundState = [];
+}
 
 function openModal(modal, focusTarget) {
   if (!modal) return;
@@ -1432,9 +1522,19 @@ function openModal(modal, focusTarget) {
   modal.classList.add('active');
   modal.setAttribute('aria-hidden', 'false');
   document.body.classList.add('modal-open');
+  setModalBackgroundInert(modal, true);
 
   const target = focusTarget || getFocusableElements(modal)[0] || modal;
-  setTimeout(() => target.focus?.(), 0);
+  const focusInsideModal = () => {
+    if (activeModal !== modal) return;
+    target.focus?.({ preventScroll: true });
+    if (!modal.contains(document.activeElement)) {
+      (getFocusableElements(modal)[0] || modal).focus?.({ preventScroll: true });
+    }
+  };
+  focusInsideModal();
+  requestAnimationFrame(focusInsideModal);
+  setTimeout(focusInsideModal, 50);
 }
 
 function closeModal(modal) {
@@ -1442,6 +1542,7 @@ function closeModal(modal) {
   modal.classList.remove('active');
   modal.setAttribute('aria-hidden', 'true');
   document.body.classList.remove('modal-open');
+  setModalBackgroundInert(modal, false);
 
   if (activeModal === modal) {
     activeModal = null;
@@ -1476,7 +1577,10 @@ document.addEventListener('keydown', (event) => {
   const first = focusable[0];
   const last = focusable[focusable.length - 1];
 
-  if (event.shiftKey && document.activeElement === first) {
+  if (!activeModal.contains(document.activeElement)) {
+    event.preventDefault();
+    (event.shiftKey ? last : first).focus();
+  } else if (event.shiftKey && document.activeElement === first) {
     event.preventDefault();
     last.focus();
   } else if (!event.shiftKey && document.activeElement === last) {
@@ -1490,4 +1594,3 @@ window.addToCalendar = function(title, location, startDate, endDate, description
   const googleCalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${startDate}/${endDate}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}&ctz=Asia/Ho_Chi_Minh`;
   window.open(googleCalUrl, '_blank');
 };
-

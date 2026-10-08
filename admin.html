@@ -1105,6 +1105,11 @@
           Google Sheets RSVP
         </button>
 
+        <button class="nav-tab-btn" data-tab="tab-wishes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          Sổ Lưu Bút &amp; Lời Chúc
+        </button>
+
         <button class="nav-tab-btn" data-tab="tab-links">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
           Tạo Link Khách Mời
@@ -1599,6 +1604,77 @@
             </div>
           </div>
 
+          <!-- Card: 3 Dòng Chú Thích Cuốn Album Mini (Màn Hình Mở Phong Bì) -->
+          <div class="card-block">
+            <div class="card-block-title">📖 3 Dòng Chú Thích Cuốn Album Mini (Màn Hình Mở Phong Bì)</div>
+            <p class="pane-desc" style="margin-bottom: 16px;">
+              Khi khách mời mở phong bì thư, cuốn sổ ảnh nhỏ xòe ra sẽ tự động lấy 3 bức ảnh đầu tiên từ Album cưới bên dưới. Tùy chỉnh 3 dòng chữ tựa (Caption) và mốc thời gian (Subtitle) đi kèm cho từng trang ảnh:
+            </p>
+
+            <div class="opening-memories-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 16px;">
+              <!-- Trang 1 -->
+              <div class="opening-memory-card" style="background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px;">
+                <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+                  <img id="opening-mem-thumb-0" src="assets/images/gallery_1791131928_0.webp" alt="Ảnh 1" style="width: 54px; height: 54px; border-radius: 8px; object-fit: cover; border: 1.5px solid var(--gold); background: #111; flex-shrink: 0;">
+                  <div>
+                    <span class="gallery-item-badge" style="background: rgba(212, 175, 55, 0.2); color: var(--gold-light);">Trang 01 / 03</span>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Đi kèm Ảnh #1 trong Album</div>
+                  </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                  <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">Dòng Chữ Tựa (Caption)</label>
+                  <input type="text" id="cfg-opening-mem-0-caption" class="form-control" placeholder="Ngày mình có nhau" style="font-size: 0.88rem;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">Dòng Thời Gian / Phụ (Date / Subtitle)</label>
+                  <input type="text" id="cfg-opening-mem-0-date" class="form-control" placeholder="Tháng 10 · Khởi đầu duyên nợ" style="font-size: 0.88rem;">
+                </div>
+              </div>
+
+              <!-- Trang 2 -->
+              <div class="opening-memory-card" style="background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px;">
+                <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+                  <img id="opening-mem-thumb-1" src="assets/images/gallery_1791131928_1.webp" alt="Ảnh 2" style="width: 54px; height: 54px; border-radius: 8px; object-fit: cover; border: 1.5px solid var(--gold); background: #111; flex-shrink: 0;">
+                  <div>
+                    <span class="gallery-item-badge" style="background: rgba(212, 175, 55, 0.2); color: var(--gold-light);">Trang 02 / 03</span>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Đi kèm Ảnh #2 trong Album</div>
+                  </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                  <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">Dòng Chữ Tựa (Caption)</label>
+                  <input type="text" id="cfg-opening-mem-1-caption" class="form-control" placeholder="Thương nhau một đời" style="font-size: 0.88rem;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">Dòng Thời Gian / Phụ (Date / Subtitle)</label>
+                  <input type="text" id="cfg-opening-mem-1-date" class="form-control" placeholder="Bình yên những sớm mai" style="font-size: 0.88rem;">
+                </div>
+              </div>
+
+              <!-- Trang 3 -->
+              <div class="opening-memory-card" style="background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px;">
+                <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+                  <img id="opening-mem-thumb-2" src="assets/images/gallery_1791131928_2.webp" alt="Ảnh 3" style="width: 54px; height: 54px; border-radius: 8px; object-fit: cover; border: 1.5px solid var(--gold); background: #111; flex-shrink: 0;">
+                  <div>
+                    <span class="gallery-item-badge" style="background: rgba(212, 175, 55, 0.2); color: var(--gold-light);">Trang 03 / 03</span>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Đi kèm Ảnh #3 trong Album</div>
+                  </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 10px;">
+                  <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">Dòng Chữ Tựa (Caption)</label>
+                  <input type="text" id="cfg-opening-mem-2-caption" class="form-control" placeholder="Và hôm nay, chung đôi" style="font-size: 0.88rem;">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" style="font-size: 0.82rem; margin-bottom: 4px;">Dòng Thời Gian / Phụ (Date / Subtitle)</label>
+                  <input type="text" id="cfg-opening-mem-2-date" class="form-control" placeholder="Khoảnh khắc trọn vẹn" style="font-size: 0.88rem;">
+                </div>
+              </div>
+            </div>
+
+            <p style="font-size: 0.78rem; color: var(--gold-light); opacity: 0.85; margin: 0;">
+              ✨ Lưu ý: Khi bạn tải lên ảnh mới hoặc thay đổi thứ tự ảnh trong Album bên dưới, 3 ảnh bìa mini này sẽ tự động gắn liền với 3 ảnh đầu tiên.
+            </p>
+          </div>
+
           <div class="card-block">
             <div class="card-block-title">📸 Danh Sách Ảnh Album Cưới (Gallery Slider)</div>
 
@@ -1693,6 +1769,90 @@ function doPost(e) {
   }
 }
               </textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===================================================================
+             TAB: SỔ LƯU BÚT & LỜI CHÚC MỪNG (GUESTBOOK & WISHES)
+             =================================================================== -->
+        <div class="tab-pane" id="tab-wishes">
+          <div class="pane-header">
+            <h2 class="pane-title">Quản Lý Sổ Lưu Bút &amp; Lời Chúc Mừng Cưới</h2>
+            <p class="pane-desc">Xem, chỉnh sửa và quản lý toàn bộ lời chúc hiển thị trên trang thiệp cưới. Tất cả lời chúc được gửi tới đều tự động hiển thị trực tiếp lên thiệp mà không cần duyệt trước.</p>
+          </div>
+
+          <!-- Quick Actions & Stats Bar -->
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+              <span id="wishes-count-badge" class="gallery-item-badge" style="background: rgba(212, 175, 55, 0.15); color: var(--gold-light); font-size: 0.86rem; padding: 6px 14px; border: 1px solid var(--border);">
+                Đang hiển thị: 3 lời chúc
+              </span>
+            </div>
+          </div>
+
+          <!-- Khung Form Thêm / Sửa Lời Chúc -->
+          <div id="wish-edit-card" style="display: none; background: var(--bg-card); border: 1.5px solid var(--gold); border-radius: var(--radius); padding: 22px; margin-bottom: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+            <div style="font-weight: 600; color: var(--gold-light); margin-bottom: 14px; font-size: 1rem; display: flex; justify-content: space-between; align-items: center;">
+              <span id="wish-form-title">Thêm Lời Chúc Mới Vào Thiệp</span>
+              <button type="button" id="btn-close-wish-form" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.3rem; line-height: 1;" title="Đóng">✕</button>
+            </div>
+            <input type="hidden" id="edit-wish-index" value="-1">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 14px;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Tên Người Chúc / Đại Diện Gia Đình</label>
+                <input type="text" id="input-wish-name" class="form-control" placeholder="Ví dụ: Bác Ba & Cô Bảy (Sài Gòn)">
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Phân Loại / Phía Khách</label>
+                <select id="input-wish-side" class="form-control">
+                  <option value="Khách Nhà Trai">Khách Nhà Trai</option>
+                  <option value="Khách Nhà Gái">Khách Nhà Gái</option>
+                  <option value="Bạn Cả Hai">Bạn Cả Hai</option>
+                  <option value="Khách Mời">Khách Mời</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom: 16px;">
+              <label class="form-label">Nội Dung Lời Chúc Mừng Cưới</label>
+              <textarea id="input-wish-text" class="form-control" rows="3" placeholder="Nhập lời chúc tốt đẹp gửi đến hai bạn..."></textarea>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 10px;">
+              <button type="button" id="btn-cancel-wish" class="btn-picker" style="padding: 8px 18px; cursor: pointer;">Hủy Bỏ</button>
+              <button type="button" id="btn-save-wish" class="btn-picker" style="background: var(--gold); color: #110E0B; font-weight: 600; padding: 8px 22px; cursor: pointer; border-color: var(--gold);">Lưu Lời Chúc</button>
+            </div>
+          </div>
+
+          <!-- Bảng: Lời chúc hiển thị trên thiệp -->
+          <div class="card-block">
+            <div class="card-block-title">💌 Danh Sách Lời Chúc Mừng &amp; Sổ Lưu Bút Trực Tuyến</div>
+            <p class="pane-desc" style="margin-bottom: 14px;">
+              Tất cả lời chúc do khách gửi tới qua thiệp cưới hoặc do bạn thêm đều được hiển thị trực tiếp lên website thiệp cưới ngay lập tức mà không cần duyệt. Bạn có thể thêm mới, chỉnh sửa hoặc bấm biểu tượng <strong>Xóa</strong> để loại bỏ lời chúc không phù hợp bất cứ lúc nào:
+            </p>
+
+            <div class="guest-table-wrap">
+              <table class="guest-table">
+                <thead>
+                  <tr>
+                    <th style="width: 50px; text-align: center;">STT</th>
+                    <th style="width: 230px;">Người Chúc</th>
+                    <th style="width: 140px;">Phân Loại</th>
+                    <th>Nội Dung Lời Chúc</th>
+                    <th style="width: 110px; text-align: center;">Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody id="wishes-table-body">
+                  <!-- Rendered dynamically by JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(212, 175, 55, 0.2); display: flex; justify-content: flex-end; align-items: center; gap: 12px; flex-wrap: wrap;">
+              <span style="font-size: 0.82rem; color: var(--text-muted);">Thay đổi lời chúc sẽ được đồng bộ ngay vào thiệp cưới:</span>
+              <button type="button" class="btn-action btn-save" onclick="document.getElementById('btn-save-all').click()" style="padding: 11px 24px; font-size: 0.95rem; cursor: pointer;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                Lưu Thay Đổi Sổ Lưu Bút
+              </button>
             </div>
           </div>
         </div>
@@ -1895,6 +2055,7 @@ function doPost(e) {
 
     // Read config
     let config = window.getActiveWeddingConfig ? window.getActiveWeddingConfig() : window.DEFAULT_WEDDING_CONFIG;
+    const GUEST_STORAGE_KEY = 'wedding_guest_links';
 
     function checkAuth() {
       if (sessionStorage.getItem('wedding_admin_authed') === 'true') {
@@ -2045,10 +2206,53 @@ function doPost(e) {
       updateVideoPreviews();
       renderGalleryItems();
 
+      // Tab 7: Cuốn Album Mini mở phong bì
+      const defaultOM = [
+        { caption: 'Ngày mình có nhau', date: 'Tháng 10 · Khởi đầu duyên nợ' },
+        { caption: 'Thương nhau một đời', date: 'Bình yên những sớm mai' },
+        { caption: 'Và hôm nay, chung đôi', date: 'Khoảnh khắc trọn vẹn' }
+      ];
+      const om = Array.isArray(config.openingMemories) && config.openingMemories.length
+        ? config.openingMemories
+        : defaultOM;
+      for (let i = 0; i < 3; i++) {
+        const capEl = document.getElementById(`cfg-opening-mem-${i}-caption`);
+        const dateEl = document.getElementById(`cfg-opening-mem-${i}-date`);
+        if (capEl) capEl.value = om[i]?.caption ?? defaultOM[i].caption;
+        if (dateEl) dateEl.value = om[i]?.date ?? defaultOM[i].date;
+      }
+      updateOpeningMemoriesThumbnails();
+
       // Tab 8: RSVP
       document.getElementById('cfg-rsvp-endpoint').value = config.rsvpEndpoint || '';
 
-      // Tab 9: Link Generator base url & Render Guest Table
+      // Tab: Sổ Lưu Bút & Lời Chúc Mừng (Tự động gộp lời chúc khách gửi vào danh sách)
+      if (!Array.isArray(config.wishes)) {
+        config.wishes = JSON.parse(JSON.stringify(DEFAULT_WISHES));
+      }
+      try {
+        const rawWishes = localStorage.getItem('wedding_wishes');
+        if (rawWishes) {
+          const listWishes = JSON.parse(rawWishes);
+          if (Array.isArray(listWishes)) {
+            listWishes.forEach(lw => {
+              if (lw && lw.name && lw.text) {
+                const exists = config.wishes.some(w => w.name === lw.name && w.text === lw.text);
+                if (!exists) {
+                  config.wishes.push({
+                    name: lw.name,
+                    side: lw.side || 'Khách Mời',
+                    text: lw.text
+                  });
+                }
+              }
+            });
+          }
+        }
+      } catch (e) {}
+      renderWishesTable();
+
+      // Tab: Link Generator base url & Render Guest Table
       const currentOrigin = window.location.origin + window.location.pathname.replace('admin.html', 'index.html');
       const baseUrlInput = document.getElementById('gen-base-url');
       if (baseUrlInput) baseUrlInput.value = currentOrigin;
@@ -2323,6 +2527,7 @@ function doPost(e) {
         `;
         container.appendChild(div);
       });
+      updateOpeningMemoriesThumbnails();
     }
 
     window.removeGalleryItem = function(index) {
@@ -2535,6 +2740,10 @@ function doPost(e) {
           videoSrc: document.getElementById('cfg-video-src').value.trim(),
           posterSrc: document.getElementById('cfg-video-poster').value.trim()
         },
+        openingMemories: [0, 1, 2].map(i => ({
+          caption: document.getElementById(`cfg-opening-mem-${i}-caption`)?.value.trim() ?? '',
+          date: document.getElementById(`cfg-opening-mem-${i}-date`)?.value.trim() ?? ''
+        })),
         gallery: newGallery,
         banking: {
           groom: {
@@ -2557,7 +2766,9 @@ function doPost(e) {
         music: config.music || { songTitle: '"I Do" - 911 x Đức Phúc', audioSrc: 'assets/audio/i-do.mp3' },
         footer: config.footer || {},
         rsvpEndpoint: document.getElementById('cfg-rsvp-endpoint').value.trim(),
-        adminPin: config.adminPin || '2010'
+        wishes: Array.isArray(config.wishes) ? config.wishes : [],
+        adminPin: config.adminPin || '2010',
+        updatedAt: Date.now()
       };
     }
 
@@ -2598,6 +2809,8 @@ function doPost(e) {
             }
             renderGalleryItems();
             updateVideoPreviews();
+            renderWishesTable();
+            updateOpeningMemoriesThumbnails();
             document.getElementById('header-couple-names').textContent = `${config.groom.name} & ${config.bride.name} • ${config.weddingDate.day}.${config.weddingDate.monthYear.replace(/\s+/g, '')}`;
 
             if (saveBtn) {
@@ -2618,6 +2831,8 @@ function doPost(e) {
         if (window.saveActiveWeddingConfig) {
           const ok = window.saveActiveWeddingConfig(updatedConfig);
           config = updatedConfig;
+          renderWishesTable();
+          updateOpeningMemoriesThumbnails();
           if (ok) {
             if (saveBtn) {
               saveBtn.style.background = '#15803D';
@@ -2728,8 +2943,6 @@ window.WEDDING_CONFIG = getActiveWeddingConfig();
     // =========================================================================
     // 10. QUẢN LÝ DANH SÁCH KHÁCH MỜI, TÌM KIẾM & TẠO LINK CÁ NHÂN HÓA
     // =========================================================================
-    const GUEST_STORAGE_KEY = 'wedding_guest_links';
-
     // Dữ liệu danh sách khách mời (mặc định trống, thêm khách thật)
     const DEFAULT_GUEST_LIST = [];
 
@@ -3049,6 +3262,199 @@ window.WEDDING_CONFIG = getActiveWeddingConfig();
         showAdminToast('Đã xóa toàn bộ danh sách khách mời!');
       }
     });
+
+    // =========================================================================
+    // QUẢN LÝ CUỐN ALBUM MINI (MÀN HÌNH MỞ PHONG BÌ)
+    // =========================================================================
+    function updateOpeningMemoriesThumbnails() {
+      const fallbackPhotos = [
+        'assets/images/gallery_1791131928_0.webp',
+        'assets/images/gallery_1791131928_1.webp',
+        'assets/images/gallery_1791131928_2.webp'
+      ];
+      for (let i = 0; i < 3; i++) {
+        const thumbEl = document.getElementById(`opening-mem-thumb-${i}`);
+        if (thumbEl) {
+          thumbEl.src = config.gallery?.[i]?.src || fallbackPhotos[i];
+        }
+      }
+    }
+
+    // =========================================================================
+    // QUẢN LÝ SỔ LƯU BÚT & LỜI CHÚC MỪNG (GUESTBOOK)
+    // =========================================================================
+    const DEFAULT_WISHES = [
+      {
+        name: 'Gia đình Bác Hùng (Hà Nội)',
+        side: 'Khách Nhà Trai',
+        text: 'Chúc mừng hai cháu Tuấn Anh và Hoàng Thúy trăm năm hạnh phúc, răng long đầu bạc, sớm sinh quý tử nhé!'
+      },
+      {
+        name: 'Cô Lan & Chú Tuấn (Thanh Hóa)',
+        side: 'Khách Nhà Gái',
+        text: 'Mừng hạnh phúc đôi bạn trẻ! Chúc hai con luôn yêu thương, nhường nhịn và đồng hành cùng nhau xây đắp tổ ấm vững bền.'
+      },
+      {
+        name: 'Minh Trí & Hội Bạn Cấp 3',
+        side: 'Bạn Cả Hai',
+        text: 'Cuối cùng ngày này cũng tới! Chúc bạn thân của tao lấy được vợ hiền, chúc cô dâu luôn xinh đẹp rạng ngời!'
+      }
+    ];
+
+    function getWishBadgeClass(side) {
+      switch (side) {
+        case 'Khách Nhà Trai': return 'badge-role-groom';
+        case 'Khách Nhà Gái': return 'badge-role-bride';
+        case 'Bạn Cả Hai': return 'badge-role-friends';
+        case 'Đồng Nghiệp': return 'badge-role-colleague';
+        default: return 'badge-role-other';
+      }
+    }
+
+    function renderWishesTable() {
+      const tbody = document.getElementById('wishes-table-body');
+      const countBadge = document.getElementById('wishes-count-badge');
+      if (!tbody) return;
+
+      if (!Array.isArray(config.wishes)) {
+        config.wishes = JSON.parse(JSON.stringify(DEFAULT_WISHES));
+      }
+
+      if (countBadge) {
+        countBadge.textContent = `Đang hiển thị: ${config.wishes.length} lời chúc`;
+      }
+
+      if (config.wishes.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" style="text-align: center; padding: 36px 15px; color: var(--text-muted); background: rgba(255,255,255,0.01);">
+              <div style="font-size: 1.05rem; margin-bottom: 6px; color: var(--gold-light);">Chưa có lời chúc nào trong danh sách hiển thị</div>
+              <p style="font-size: 0.85rem; margin-bottom: 0;">Toàn bộ lời chúc do khách gửi tới qua website thiệp cưới sẽ tự động xuất hiện tại đây.</p>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = '';
+      config.wishes.forEach((wish, idx) => {
+        const badgeClass = getWishBadgeClass(wish.side);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="text-align: center; font-weight: 600; color: var(--gold-light);">${idx + 1}</td>
+          <td>
+            <div style="font-weight: 600; color: var(--text);">${escapeHtml(wish.name || 'Ẩn danh')}</div>
+          </td>
+          <td>
+            <span class="badge-role ${badgeClass}">${escapeHtml(wish.side || 'Khách Mời')}</span>
+          </td>
+          <td>
+            <div style="color: var(--text); line-height: 1.5; font-style: italic; max-width: 520px;">“${escapeHtml(wish.text || '')}”</div>
+          </td>
+          <td style="text-align: center;">
+            <div class="table-actions" style="justify-content: center;">
+              <button type="button" class="btn-tbl-action" onclick="openEditWishModal(${idx})" title="Chỉnh sửa lời chúc này">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+              </button>
+              <button type="button" class="btn-tbl-action btn-tbl-delete" onclick="deleteWish(${idx})" title="Xóa lời chúc khỏi danh sách">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    window.deleteWish = function(idx) {
+      const wish = config.wishes?.[idx];
+      if (!wish) return;
+      if (confirm(`Bạn có chắc chắn muốn xóa lời chúc của "${wish.name}" khỏi danh sách hiển thị trên thiệp?`)) {
+        try {
+          const raw = localStorage.getItem('wedding_wishes');
+          if (raw) {
+            let list = JSON.parse(raw);
+            if (Array.isArray(list)) {
+              list = list.filter(w => !(w.name === wish.name && w.text === wish.text));
+              localStorage.setItem('wedding_wishes', JSON.stringify(list));
+            }
+          }
+        } catch (e) {}
+
+        config.wishes.splice(idx, 1);
+        renderWishesTable();
+        showAdminToast(`Đã xóa lời chúc của ${wish.name}! Bấm "Lưu Thay Đổi Sổ Lưu Bút" để đồng bộ lên máy chủ.`);
+      }
+    };
+
+    window.openEditWishModal = function(idx) {
+      const editCard = document.getElementById('wish-edit-card');
+      const formTitle = document.getElementById('wish-form-title');
+      const idxInput = document.getElementById('edit-wish-index');
+      const nameInput = document.getElementById('input-wish-name');
+      const sideInput = document.getElementById('input-wish-side');
+      const textInput = document.getElementById('input-wish-text');
+      if (!editCard) return;
+
+      idxInput.value = idx;
+      if (idx >= 0 && config.wishes?.[idx]) {
+        const item = config.wishes[idx];
+        formTitle.textContent = `Chỉnh Sửa Lời Chúc #${idx + 1}`;
+        nameInput.value = item.name || '';
+        sideInput.value = item.side || 'Khách Nhà Trai';
+        textInput.value = item.text || '';
+      } else {
+        formTitle.textContent = 'Thêm Lời Chúc Mới Vào Thiệp';
+        nameInput.value = '';
+        sideInput.value = 'Khách Nhà Trai';
+        textInput.value = '';
+      }
+      editCard.style.display = 'block';
+      editCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      nameInput.focus();
+    };
+
+    function saveWishFromForm() {
+      const idx = parseInt(document.getElementById('edit-wish-index').value, 10);
+      const name = document.getElementById('input-wish-name').value.trim();
+      const side = document.getElementById('input-wish-side').value;
+      const text = document.getElementById('input-wish-text').value.trim();
+
+      if (!name) {
+        alert('Vui lòng nhập tên người gửi lời chúc!');
+        document.getElementById('input-wish-name')?.focus();
+        return;
+      }
+      if (!text) {
+        alert('Vui lòng nhập nội dung lời chúc!');
+        document.getElementById('input-wish-text')?.focus();
+        return;
+      }
+
+      if (!Array.isArray(config.wishes)) config.wishes = [];
+
+      if (idx >= 0 && idx < config.wishes.length) {
+        config.wishes[idx] = { name, side, text };
+        showAdminToast(`Đã cập nhật lời chúc của ${name}! Bấm Lưu Thay Đổi để lưu lên máy chủ.`);
+      } else {
+        config.wishes.push({ name, side, text });
+        showAdminToast(`Đã thêm lời chúc của ${name}! Bấm Lưu Thay Đổi để lưu lên máy chủ.`);
+      }
+
+      document.getElementById('wish-edit-card').style.display = 'none';
+      renderWishesTable();
+    }
+
+    // Event listeners cho Quản lý Lời chúc
+    document.getElementById('btn-close-wish-form')?.addEventListener('click', () => {
+      const card = document.getElementById('wish-edit-card');
+      if (card) card.style.display = 'none';
+    });
+    document.getElementById('btn-cancel-wish')?.addEventListener('click', () => {
+      const card = document.getElementById('wish-edit-card');
+      if (card) card.style.display = 'none';
+    });
+    document.getElementById('btn-save-wish')?.addEventListener('click', saveWishFromForm);
 
     // Toast helper
     let toastTimer = null;

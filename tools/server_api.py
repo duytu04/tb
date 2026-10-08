@@ -165,7 +165,7 @@ class WeddingHandler(BaseHTTPRequestHandler):
                             processed_images += 1
 
                 # Timestamp metadata
-                config['updatedAt'] = timestamp
+                config['updatedAt'] = int(time.time() * 1000)
                 log(f"Saved {processed_images} uploaded images to {IMAGES_DIR}. Writing config.js...")
 
                 # 4. Generate clean config.js
@@ -186,7 +186,7 @@ function getActiveWeddingConfig() {{
     const savedStr = localStorage.getItem('wedding_custom_config');
     if (savedStr) {{
       const saved = JSON.parse(savedStr);
-      if (DEFAULT_WEDDING_CONFIG.updatedAt && (!saved.updatedAt || DEFAULT_WEDDING_CONFIG.updatedAt >= saved.updatedAt)) {{
+      if (DEFAULT_WEDDING_CONFIG.updatedAt && saved.updatedAt && DEFAULT_WEDDING_CONFIG.updatedAt > saved.updatedAt) {{
         localStorage.removeItem('wedding_custom_config');
         return JSON.parse(JSON.stringify(DEFAULT_WEDDING_CONFIG));
       }}
@@ -291,6 +291,141 @@ window.WEDDING_CONFIG = getActiveWeddingConfig();
 
             except Exception as e:
                 log(f"Error processing save-config: {e}")
+                resp = json.dumps({'success': False, 'error': str(e)}).encode('utf-8')
+                self.send_response(500)
+                self._send_cors_headers()
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(resp)))
+                self.end_headers()
+                self.wfile.write(resp)
+        elif self.path == '/api/submit-wish':
+            content_length = int(self.headers.get('Content-Length', 0))
+            if content_length <= 0:
+                self.send_response(400)
+                self.end_headers()
+                return
+
+            body = self.rfile.read(content_length)
+            try:
+                data = json.loads(body.decode('utf-8'))
+                wish_name = str(data.get('name', '')).strip()
+                wish_side = str(data.get('side', 'Khách Mời')).strip()
+                wish_text = str(data.get('text', '')).strip()
+
+                if not wish_name or not wish_text:
+                    self.send_response(400)
+                    self.end_headers()
+                    return
+
+                with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
+                    cfg_text = f.read()
+
+                m = re.search(r'const DEFAULT_WEDDING_CONFIG = ({.*?});\s*\n\s*function getActiveWeddingConfig', cfg_text, re.DOTALL)
+                if m:
+                    config = json.loads(m.group(1))
+                    if 'wishes' not in config or not isinstance(config['wishes'], list):
+                        config['wishes'] = []
+
+                    exists = any(w.get('name') == wish_name and w.get('text') == wish_text for w in config['wishes'])
+                    if not exists:
+                        config['wishes'].insert(0, {'name': wish_name, 'side': wish_side, 'text': wish_text})
+                        config['updatedAt'] = int(time.time() * 1000)
+
+                        groom_name = config.get('groom', {}).get('name', 'Tuấn Anh')
+                        bride_name = config.get('bride', {}).get('name', 'Hoàng Thúy')
+                        update_str = time.strftime('%Y-%m-%d %H:%M:%S')
+
+                        file_content = f"""/**
+ * WEDDING CONFIGURATION STORE (Đồng bộ trực tiếp từ Admin Máy Chủ)
+ * Cặp đôi: {groom_name} & {bride_name}
+ * Cập nhật: {update_str}
+ */
+
+const DEFAULT_WEDDING_CONFIG = {json.dumps(config, ensure_ascii=False, indent=2)};
+
+function getActiveWeddingConfig() {{
+  try {{
+    const savedStr = localStorage.getItem('wedding_custom_config');
+    if (savedStr) {{
+      const saved = JSON.parse(savedStr);
+      if (DEFAULT_WEDDING_CONFIG.updatedAt && saved.updatedAt && DEFAULT_WEDDING_CONFIG.updatedAt > saved.updatedAt) {{
+        localStorage.removeItem('wedding_custom_config');
+        return JSON.parse(JSON.stringify(DEFAULT_WEDDING_CONFIG));
+      }}
+      return deepMerge(DEFAULT_WEDDING_CONFIG, saved);
+    }}
+  }} catch (e) {{
+    console.warn('Lỗi đọc cấu hình localStorage:', e);
+  }}
+  return JSON.parse(JSON.stringify(DEFAULT_WEDDING_CONFIG));
+}}
+
+function deepMerge(target, source) {{
+  const output = Object.assign({{}}, target);
+  if (isObject(target) && isObject(source)) {{
+    Object.keys(source).forEach(key => {{
+      if (isObject(source[key])) {{
+        if (!(key in target)) Object.assign(output, {{ [key]: source[key] }});
+        else output[key] = deepMerge(target[key], source[key]);
+      }} else {{
+        output[key] = source[key];
+      }}
+    }});
+  }}
+  return output;
+}}
+
+function isObject(item) {{
+  return item && typeof item === 'object' && !Array.isArray(item);
+}}
+
+function saveActiveWeddingConfig(cfg) {{
+  try {{
+    localStorage.setItem('wedding_custom_config', JSON.stringify(cfg));
+    return true;
+  }} catch (e) {{
+    console.error('Lỗi lưu cấu hình localStorage:', e);
+    return false;
+  }}
+}}
+
+function resetActiveWeddingConfig() {{
+  localStorage.removeItem('wedding_custom_config');
+}}
+
+function generateVietQRUrl(bankCode, accountNo, accountName, memo, template = 'compact2') {{
+  if (!bankCode || !accountNo) return '';
+  return `https://img.vietqr.io/image/${{bankCode}}-${{accountNo}}-${{template}}.png?accountName=${{encodeURIComponent(accountName || '')}}&addInfo=${{encodeURIComponent(memo || '')}}`;
+}}
+
+window.DEFAULT_WEDDING_CONFIG = DEFAULT_WEDDING_CONFIG;
+window.getActiveWeddingConfig = getActiveWeddingConfig;
+window.saveActiveWeddingConfig = saveActiveWeddingConfig;
+window.resetActiveWeddingConfig = resetActiveWeddingConfig;
+window.generateVietQRUrl = generateVietQRUrl;
+window.WEDDING_CONFIG = getActiveWeddingConfig();
+"""
+                        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
+                            f.write(file_content)
+
+                        if os.path.isdir(BACKUP_ROOT):
+                            try:
+                                backup_config = os.path.join(BACKUP_ROOT, 'js', 'config.js')
+                                os.makedirs(os.path.dirname(backup_config), exist_ok=True)
+                                with open(backup_config, 'w', encoding='utf-8') as f:
+                                    f.write(file_content)
+                            except Exception:
+                                pass
+
+                resp = json.dumps({'success': True, 'message': 'Đã ghi nhận lời chúc!'}).encode('utf-8')
+                self.send_response(200)
+                self._send_cors_headers()
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Length', str(len(resp)))
+                self.end_headers()
+                self.wfile.write(resp)
+            except Exception as e:
+                log(f"Error processing submit-wish: {e}")
                 resp = json.dumps({'success': False, 'error': str(e)}).encode('utf-8')
                 self.send_response(500)
                 self._send_cors_headers()
