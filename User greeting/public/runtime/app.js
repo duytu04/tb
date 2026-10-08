@@ -847,7 +847,10 @@ function initGallerySlider() {
     dot.type = 'button';
     dot.className = 'slider-dot';
     dot.setAttribute('aria-label', `Xem ảnh ${index + 1}`);
-    dot.addEventListener('click', () => goToSlide(index));
+    dot.addEventListener('click', () => {
+      goToSlide(index);
+      restartAutoPlay();
+    });
     return dot;
   });
   dotsContainer?.replaceChildren(...dots);
@@ -893,8 +896,65 @@ function initGallerySlider() {
     slider.scrollTo({ left, behavior: instant || prefersReducedMotion() ? 'instant' : 'smooth' });
     update(index);
   }
-  document.getElementById('gallery-prev')?.addEventListener('click', () => goToSlide(currentIndex - 1));
-  document.getElementById('gallery-next')?.addEventListener('click', () => goToSlide(currentIndex + 1));
+
+  // --- Tự động chuyển ảnh (Auto-play) ---
+  const AUTO_PLAY_INTERVAL = 2000;
+  let autoPlayTimer = null;
+  let isHoveredOrTouched = false;
+  let isGalleryInView = false;
+
+  function startAutoPlay() {
+    stopAutoPlay();
+    if (prefersReducedMotion()) return;
+    if (slides.length <= 1) return;
+    if (!isGalleryInView || isHoveredOrTouched || document.hidden) return;
+    const modal = document.getElementById('lightbox-modal');
+    if (modal && modal.classList.contains('active')) return;
+
+    autoPlayTimer = setInterval(() => {
+      goToSlide(currentIndex + 1);
+    }, AUTO_PLAY_INTERVAL);
+  }
+
+  function stopAutoPlay() {
+    if (autoPlayTimer) {
+      clearInterval(autoPlayTimer);
+      autoPlayTimer = null;
+    }
+  }
+
+  function restartAutoPlay() {
+    stopAutoPlay();
+    startAutoPlay();
+  }
+
+  document.getElementById('gallery-prev')?.addEventListener('click', () => {
+    goToSlide(currentIndex - 1);
+    restartAutoPlay();
+  });
+  document.getElementById('gallery-next')?.addEventListener('click', () => {
+    goToSlide(currentIndex + 1);
+    restartAutoPlay();
+  });
+
+  // Tạm dừng khi rê chuột hoặc chạm tay vào slider
+  slider.addEventListener('mouseenter', () => {
+    isHoveredOrTouched = true;
+    stopAutoPlay();
+  });
+  slider.addEventListener('mouseleave', () => {
+    isHoveredOrTouched = false;
+    startAutoPlay();
+  });
+  slider.addEventListener('touchstart', () => {
+    isHoveredOrTouched = true;
+    stopAutoPlay();
+  }, { passive: true });
+  slider.addEventListener('touchend', () => {
+    isHoveredOrTouched = false;
+    setTimeout(startAutoPlay, 1000);
+  }, { passive: true });
+
   slider.addEventListener('scroll', () => {
     if (frame) return;
     frame = requestAnimationFrame(() => {
@@ -910,8 +970,51 @@ function initGallerySlider() {
       update(nearest);
     });
   }, { passive: true });
+
   const observer = new ResizeObserver(() => { goToSlide(currentIndex, true); curve(); });
   observer.observe(slider);
+
+  // Chỉ tự động chạy khi người dùng cuộn tới phần Album Ảnh Cưới
+  const gallerySection = document.getElementById('gallery');
+  if (gallerySection && 'IntersectionObserver' in window) {
+    const viewObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        isGalleryInView = entry.isIntersecting;
+        if (isGalleryInView) {
+          startAutoPlay();
+        } else {
+          stopAutoPlay();
+        }
+      });
+    }, { threshold: 0.2 });
+    viewObserver.observe(gallerySection);
+  } else {
+    isGalleryInView = true;
+    startAutoPlay();
+  }
+
+  // Tạm dừng khi chuyển tab trình duyệt
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      stopAutoPlay();
+    } else if (isGalleryInView) {
+      startAutoPlay();
+    }
+  });
+
+  // Tạm dừng khi đang mở xem ảnh phóng to (Lightbox)
+  const lightboxModal = document.getElementById('lightbox-modal');
+  if (lightboxModal && 'MutationObserver' in window) {
+    const modalObserver = new MutationObserver(() => {
+      if (lightboxModal.classList.contains('active')) {
+        stopAutoPlay();
+      } else if (isGalleryInView) {
+        startAutoPlay();
+      }
+    });
+    modalObserver.observe(lightboxModal, { attributes: true, attributeFilter: ['class'] });
+  }
+
   update(0);
   curve();
 }
