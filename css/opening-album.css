@@ -169,6 +169,11 @@ html.invitation-opening {
   animation: album-copy-in 0.9s 1.2s both, album-fade-out 0.8s var(--caption-retire-delay, 13.3s) forwards;
 }
 
+.album-caption-wrap {
+  margin-top: 24px;
+  gap: 8px;
+}
+
 .album-badge-pill {
   font-family: var(--font-body, sans-serif);
   font-size: 9px;
@@ -217,6 +222,7 @@ html.invitation-opening {
   width: var(--page-w);
   height: var(--page-h);
   margin-top: 10px;
+  margin-bottom: 8px;
   flex-shrink: 0;
 }
 
@@ -661,10 +667,7 @@ html.invitation-opening {
 }
 
 .album-filigree {
-  position: relative;
-  color: #c7a767;
-  font-size: 11px;
-  line-height: 1;
+  display: none !important;
 }
 
 .album-back-mount {

@@ -647,10 +647,7 @@
 }
 
 .album-filigree {
-  position: relative;
-  color: #c7a767;
-  font-size: 11px;
-  line-height: 1;
+  display: none !important;
 }
 
 .album-back-mount {

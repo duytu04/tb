@@ -71,7 +71,6 @@
             <span class="album-caption-meta">${memory.date}</span>
           </figcaption>
         </figure>
-        <span class="album-filigree">❦</span>
         <div class="album-under-shade" style="--under-delay: ${2 + index * 3}s;"></div>
         <div class="album-turn-shade"></div>
       </div>
