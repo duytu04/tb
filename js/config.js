@@ -193,7 +193,7 @@ const DEFAULT_WEDDING_CONFIG = {
   },
 
   // 10. HỆ THỐNG RSVP & SỔ LƯU BÚT
-  rsvpEndpoint: '', // URL Google Apps Script Web App để nhận dữ liệu
+  rsvpEndpoint: 'https://script.google.com/macros/s/AKfycbwZk2RdeZLkZ7f1uaOMT1l-U2GsdbyBav2f5kJMcliGeCF9MwSJne6dGOXdVRwgfThBAw/exec', // URL Google Apps Script Web App để nhận dữ liệu
   wishes: [], // Danh sách lời chúc hiển thị trên thiệp (do khách gửi hoặc Admin quản lý)
   adminPin: '2010', // Mã PIN truy cập trang quản trị admin.html
   updatedAt: 1791116000000 // Timestamp đồng bộ hệ thống
