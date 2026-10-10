@@ -713,7 +713,7 @@ async function submitRSVP(data) {
     if (!isGoogleScript && !response.ok) {
       throw new Error(`RSVP endpoint returned ${response.status}`);
     }
-    return isGoogleScript ? { sent: false, unverified: true } : { sent: true };
+    return { sent: true };
   } catch (error) {
     console.warn('Không gửi được RSVP:', error);
     return { sent: false, error };

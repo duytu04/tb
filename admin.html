@@ -1708,26 +1708,40 @@
 
             <div style="margin-top: 15px;">
               <label class="form-label">Đoạn Mã Google Apps Script (Bấm sao chép và dán vào Apps Script):</label>
-              <textarea class="form-control" rows="8" readonly id="gas-script-code" style="font-family: monospace; font-size: 0.82rem; background: #110E0B;">
+              <textarea class="form-control" rows="12" readonly id="gas-script-code" style="font-family: monospace; font-size: 0.82rem; background: #110E0B;">
 function doPost(e) {
   try {
     var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    var data = JSON.parse(e.postData.contents);
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(["Thời Gian Gửi", "Họ và Tên", "Số Điện Thoại", "Khách Của", "Số Người", "Tham Dự", "Lời Chúc", "Thiết Bị"]);
+      var header = sheet.getRange(1, 1, 1, 8);
+      header.setFontWeight("bold").setBackground("#F3DFAB").setFontColor("#1A140B").setHorizontalAlignment("center");
+      sheet.setFrozenRows(1);
+    }
+    var data = {};
+    if (e && e.postData && e.postData.contents) {
+      data = JSON.parse(e.postData.contents);
+    } else if (e && e.parameter) {
+      data = e.parameter;
+    }
+    var time = Utilities.formatDate(new Date(), "Asia/Ho_Chi_Minh", "dd/MM/yyyy HH:mm:ss");
     sheet.appendRow([
-      new Date().toLocaleString('vi-VN'),
-      data.name || '',
-      data.phone || '',
-      data.side || '',
-      data.guests || '',
-      data.attending || '',
-      data.wish || ''
+      time,
+      (data.name || '').trim(),
+      (data.phone || '').trim(),
+      (data.side || '').trim(),
+      (data.guests || '').trim(),
+      (data.attending || '').trim(),
+      (data.wish || '').trim(),
+      (data.userAgent || '').trim()
     ]);
-    return ContentService.createTextOutput(JSON.stringify({ status: 'success' }))
-      .setMimeType(ContentService.MimeType.JSON);
-  } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({ status: 'error', error: error.toString() }))
-      .setMimeType(ContentService.MimeType.JSON);
+    return ContentService.createTextOutput(JSON.stringify({ result: 'success' })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ result: 'error', message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
   }
+}
+function doGet(e) {
+  return ContentService.createTextOutput("Wedding RSVP API Active").setMimeType(ContentService.MimeType.TEXT);
 }
               </textarea>
             </div>
