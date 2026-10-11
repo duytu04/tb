@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
-  <script src="js/config.js?v=36"></script>
+  <script src="js/config.js"></script>
   <style>
     :root {
       --bg: #14120E;
@@ -934,6 +934,12 @@
       background: rgba(212, 175, 55, 0.25);
       border-color: var(--gold);
       color: var(--gold-light);
+    }
+
+    .btn-tbl-edit:hover {
+      background: rgba(59, 130, 246, 0.25);
+      border-color: #3B82F6;
+      color: #93C5FD;
     }
 
     .btn-tbl-delete:hover {
@@ -2020,6 +2026,49 @@ function doGet(e) {
     <span id="toast-text">Đã lưu thay đổi thành công!</span>
   </div>
 
+  <!-- Modal Sửa Thông Tin Khách Mời -->
+  <div id="modal-edit-guest" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.78); backdrop-filter: blur(5px); z-index: 10000; align-items: center; justify-content: center; padding: 20px;">
+    <div style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; width: 100%; max-width: 480px; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8); overflow: hidden;">
+      <div style="padding: 18px 24px; border-bottom: 1px solid rgba(212, 175, 55, 0.2); display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="color: var(--gold-light); font-size: 1.1rem; font-weight: 600; margin: 0; display: flex; align-items: center; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+          Sửa Thông Tin Khách Mời
+        </h3>
+        <button type="button" onclick="closeEditGuestModal()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.4rem; line-height: 1;">&times;</button>
+      </div>
+      <div style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <input type="hidden" id="edit-guest-id">
+        <div>
+          <label class="form-label" style="font-size: 0.85rem; margin-bottom: 6px; display: block;">Tên hoặc Danh Xưng Khách Mời *</label>
+          <input type="text" id="edit-guest-name" class="form-control" placeholder="Ví dụ: Anh Hoàng Nam, Chị Mai Lan...">
+        </div>
+        <div>
+          <label class="form-label" style="font-size: 0.85rem; margin-bottom: 6px; display: block;">Phân Loại Khách</label>
+          <select id="edit-guest-role" class="form-control">
+            <option value="Bạn Chú Rể">Bạn Chú Rể</option>
+            <option value="Bạn Cô Dâu">Bạn Cô Dâu</option>
+            <option value="Họ Hàng Nhà Trai">Họ Hàng Nhà Trai</option>
+            <option value="Họ Hàng Nhà Gái">Họ Hàng Nhà Gái</option>
+            <option value="Đồng Nghiệp">Đồng Nghiệp</option>
+            <option value="Bạn Cấp 3 / Đại Học">Bạn Cấp 3 / Đại Học</option>
+            <option value="Khách Mời Chung">Khách Mời Chung</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label" style="font-size: 0.85rem; margin-bottom: 6px; display: block;">Trạng Thái Thiệp</label>
+          <select id="edit-guest-status" class="form-control">
+            <option value="pending">🟡 Chưa gửi thiệp</option>
+            <option value="sent">🟢 Đã gửi thiệp</option>
+          </select>
+        </div>
+      </div>
+      <div style="padding: 16px 24px; background: rgba(0, 0, 0, 0.25); border-top: 1px solid rgba(212, 175, 55, 0.15); display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn-action" onclick="closeEditGuestModal()" style="background: #2D2721; color: var(--text-muted); border: 1px solid rgba(255, 255, 255, 0.1);">Hủy</button>
+        <button type="button" class="btn-action btn-save" onclick="saveEditedGuest()">Lưu Thay Đổi</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Admin Logic Script -->
   <script>
     // 1. PIN Lock Screen Authentication
@@ -2033,11 +2082,18 @@ function doGet(e) {
     window.config = config;
     const GUEST_STORAGE_KEY = 'wedding_guest_links';
 
+    let autoSaveTimer = null;
     function markUnsavedChanges() {
       const saveBtn = document.getElementById('btn-save-all');
       if (saveBtn) {
         saveBtn.style.boxShadow = '0 0 10px rgba(212, 175, 55, 0.5)';
       }
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(() => {
+        if (typeof window.triggerServerSave === 'function') {
+          window.triggerServerSave('✔ Đã tự động lưu thay đổi lên máy chủ!');
+        }
+      }, 3500);
     }
 
     function checkAuth() {
@@ -2066,6 +2122,16 @@ function doGet(e) {
     });
 
     checkAuth();
+
+    // Tự động phát hiện chỉnh sửa biểu mẫu và kích hoạt lưu ngầm
+    document.getElementById('admin-app')?.addEventListener('input', (e) => {
+      if (e.target.id === 'search-guest-input' || e.target.id === 'filter-guest-role' || e.target.id === 'filter-guest-status') return;
+      markUnsavedChanges();
+    });
+    document.getElementById('admin-app')?.addEventListener('change', (e) => {
+      if (e.target.id === 'filter-guest-role' || e.target.id === 'filter-guest-status') return;
+      markUnsavedChanges();
+    });
 
     // 2. Navigation Tabs
     const tabBtns = document.querySelectorAll('.nav-tab-btn');
@@ -2226,6 +2292,16 @@ function doGet(e) {
       const currentOrigin = window.location.origin + window.location.pathname.replace('admin.html', 'index.html');
       const baseUrlInput = document.getElementById('gen-base-url');
       if (baseUrlInput) baseUrlInput.value = currentOrigin;
+
+      // Luôn đồng bộ danh sách khách mời từ máy chủ xuống bộ nhớ máy này
+      if (Array.isArray(config.guestList)) {
+        if (typeof syncGuestListFromServer === 'function') {
+          syncGuestListFromServer(config.guestList);
+        } else {
+          saveGuestList(config.guestList, true);
+        }
+      }
+
       if (typeof renderGuestTable === 'function') {
         renderGuestTable();
       }
@@ -2233,13 +2309,23 @@ function doGet(e) {
 
     async function fetchServerConfig() {
       try {
-        const resp = await fetch('/api/get-config');
+        const resp = await fetch('/api/get-config?t=' + Date.now(), {
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache'
+          }
+        });
         if (resp.ok) {
           const data = await resp.json();
           if (data.success && data.config) {
             config = data.config;
+            window.config = config;
             if (window.saveActiveWeddingConfig) {
               window.saveActiveWeddingConfig(config);
+            }
+            if (Array.isArray(config.guestList) && typeof syncGuestListFromServer === 'function') {
+              syncGuestListFromServer(config.guestList);
             }
             populateAdminForm();
           }
@@ -2401,7 +2487,9 @@ function doGet(e) {
         }
       }
       renderGalleryItems();
-      showAdminToast(`Đã thêm thành công ${successCount} ảnh vào Album! Nhớ bấm 'Lưu Cấu Hình'.`);
+      if (typeof window.triggerServerSave === 'function') {
+        window.triggerServerSave(`✔ Đã lưu thành công ${successCount} ảnh Album lên máy chủ!`);
+      }
     }
 
     window.replaceGalleryItemPhoto = async function(index, file) {
@@ -2412,7 +2500,9 @@ function doGet(e) {
         if (config.gallery && config.gallery[index]) {
           config.gallery[index].src = dataUrl;
           renderGalleryItems();
-          showAdminToast('Đã đổi ảnh thành công!');
+          if (typeof window.triggerServerSave === 'function') {
+            window.triggerServerSave('✔ Đã đổi ảnh Album và lưu lên máy chủ!');
+          }
         }
       } catch (err) {
         showAdminToast('Không thể xử lý ảnh này, vui lòng thử ảnh khác.');
@@ -2425,6 +2515,9 @@ function doGet(e) {
       const [movedItem] = config.gallery.splice(index, 1);
       config.gallery.splice(newIndex, 0, movedItem);
       renderGalleryItems();
+      if (typeof window.triggerServerSave === 'function') {
+        window.triggerServerSave('✔ Đã lưu thứ tự Album ảnh lên máy chủ!');
+      }
     };
 
 
@@ -2519,6 +2612,9 @@ function doGet(e) {
     window.removeGalleryItem = function(index) {
       config.gallery.splice(index, 1);
       renderGalleryItems();
+      if (typeof window.triggerServerSave === 'function') {
+        window.triggerServerSave('✔ Đã xóa ảnh và cập nhật Album lên máy chủ!');
+      }
     };
 
     // Event listeners for Media & Gallery pickers
@@ -2754,13 +2850,14 @@ function doGet(e) {
         footer: config.footer || {},
         rsvpEndpoint: document.getElementById('cfg-rsvp-endpoint').value.trim(),
         wishes: Array.isArray(config.wishes) ? config.wishes : [],
+        guestList: typeof getGuestList === 'function' ? getGuestList() : (config.guestList || []),
         adminPin: config.adminPin || '2010',
         updatedAt: Date.now()
       };
     }
 
     // 7. Save Actions (Đồng bộ vĩnh viễn trực tiếp lên máy chủ)
-    document.getElementById('btn-save-all').addEventListener('click', async () => {
+    window.triggerServerSave = async function(customToastMsg = null) {
       const saveBtn = document.getElementById('btn-save-all');
       const originalHtml = saveBtn ? saveBtn.innerHTML : '';
 
@@ -2775,7 +2872,7 @@ function doGet(e) {
           Đang Lưu Lên Máy Chủ...
         `;
       }
-      showAdminToast('Đang xử lý ảnh và đồng bộ lên máy chủ...');
+      showAdminToast('Đang xử lý và đồng bộ lên máy chủ...');
 
       const updatedConfig = collectFormData();
 
@@ -2809,8 +2906,8 @@ function doGet(e) {
                 ✓ Đã Lưu Máy Chủ!
               `;
             }
-            showAdminToast('✔ Đã lưu vĩnh viễn lên máy chủ! Mọi thiết bị & khách mời đều thấy ngay.');
-            return;
+            showAdminToast(customToastMsg || '✔ Đã lưu vĩnh viễn lên máy chủ! Mọi thiết bị & khách mời đều thấy ngay.');
+            return true;
           }
         }
         throw new Error('API server returned status: ' + resp.status);
@@ -2847,6 +2944,11 @@ function doGet(e) {
           }, 2800);
         }
       }
+      return false;
+    };
+
+    document.getElementById('btn-save-all').addEventListener('click', () => {
+      window.triggerServerSave();
     });
 
     // 8. Export config.js
@@ -2936,23 +3038,81 @@ window.WEDDING_CONFIG = getActiveWeddingConfig();
     const DEFAULT_GUEST_LIST = [];
 
     function getGuestList() {
+      // 1. Ưu tiên dữ liệu sống từ config (được máy chủ đồng bộ)
+      if (Array.isArray(config?.guestList) && config.guestList.length > 0) {
+        return config.guestList;
+      }
+      // 2. Dự phòng đọc từ localStorage nếu đang tải hoặc offline
       try {
         const raw = localStorage.getItem(GUEST_STORAGE_KEY);
         if (raw) {
           const list = JSON.parse(raw);
-          if (Array.isArray(list)) return list;
+          if (Array.isArray(list) && list.length > 0) {
+            if (config) config.guestList = list;
+            return list;
+          }
         }
       } catch (e) {
-        console.warn('Lỗi đọc danh sách khách:', e);
+        console.warn('Lỗi đọc danh sách khách từ localStorage:', e);
       }
       return [];
     }
 
-    function saveGuestList(list) {
+    window.syncGuestListFromServer = function(serverList) {
+      if (!Array.isArray(serverList)) return;
+      let localList = [];
+      try {
+        const raw = localStorage.getItem(GUEST_STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) localList = parsed;
+        }
+      } catch (e) {}
+
+      // Giữ toàn bộ từ máy chủ + gộp thêm bất kỳ khách nào chỉ có ở máy này
+      const map = new Map();
+      serverList.forEach(g => { if (g && g.id) map.set(g.id, g); });
+      localList.forEach(g => {
+        if (g && g.id && !map.has(g.id)) {
+          map.set(g.id, g);
+        }
+      });
+
+      const merged = Array.from(map.values());
+      saveGuestList(merged, true);
+      if (typeof renderGuestTable === 'function') {
+        renderGuestTable();
+      }
+    };
+
+    let guestAutoSaveTimer = null;
+    function scheduleAutoSaveGuestList() {
+      clearTimeout(guestAutoSaveTimer);
+      guestAutoSaveTimer = setTimeout(async () => {
+        try {
+          if (typeof collectFormData === 'function') {
+            const updatedConfig = collectFormData();
+            await fetch('/api/save-config', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ config: updatedConfig })
+            });
+          }
+        } catch (e) {}
+      }, 1200);
+    }
+
+    function saveGuestList(list, skipAutoSave = false) {
       try {
         localStorage.setItem(GUEST_STORAGE_KEY, JSON.stringify(list));
       } catch (e) {
-        console.error('Lỗi lưu danh sách khách:', e);
+        console.error('Lỗi lưu danh sách khách vào localStorage:', e);
+      }
+      if (config) {
+        config.guestList = list;
+      }
+      if (!skipAutoSave) {
+        scheduleAutoSaveGuestList();
       }
     }
 
@@ -3077,11 +3237,11 @@ window.WEDDING_CONFIG = getActiveWeddingConfig();
           </td>
           <td style="text-align: right;">
             <div class="table-actions" style="justify-content: flex-end;">
-              <button type="button" class="btn-tbl-action" onclick="copyGuestLink('${escapeHtml(guestUrl)}')" title="Sao chép Link mời">
+              <button type="button" class="btn-tbl-action" onclick="copyGuestLinkById('${guest.id}')" title="Sao chép Link mời">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
               </button>
-              <button type="button" class="btn-tbl-action" onclick="copyGuestInviteMessage('${escapeHtml(guest.name)}', '${escapeHtml(guestUrl)}')" title="Sao chép Lời Mời Zalo">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+              <button type="button" class="btn-tbl-action btn-tbl-edit" onclick="openEditGuestModal('${guest.id}')" title="Sửa thông tin khách">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
               </button>
               <a href="${escapeHtml(guestUrl)}" target="_blank" class="btn-tbl-action" title="Mở xem thử">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
@@ -3120,19 +3280,139 @@ window.WEDDING_CONFIG = getActiveWeddingConfig();
       }
     };
 
-    // Sao chép link mời
-    window.copyGuestLink = function(url) {
-      navigator.clipboard.writeText(url).then(() => {
-        showAdminToast('Đã sao chép link mời riêng!');
-      });
+    // Mở popup sửa khách mời
+    window.openEditGuestModal = function(id) {
+      const list = getGuestList();
+      const guest = list.find(g => g.id === id);
+      if (!guest) return;
+
+      document.getElementById('edit-guest-id').value = guest.id;
+      document.getElementById('edit-guest-name').value = guest.name || '';
+      document.getElementById('edit-guest-role').value = guest.role || 'Khách Mời Chung';
+      document.getElementById('edit-guest-status').value = guest.status || 'pending';
+
+      const modal = document.getElementById('modal-edit-guest');
+      if (modal) {
+        modal.style.display = 'flex';
+        setTimeout(() => document.getElementById('edit-guest-name')?.focus(), 80);
+      }
     };
 
-    // Sao chép tin nhắn Zalo kèm link
+    window.closeEditGuestModal = function() {
+      const modal = document.getElementById('modal-edit-guest');
+      if (modal) modal.style.display = 'none';
+    };
+
+    window.saveEditedGuest = function() {
+      const id = document.getElementById('edit-guest-id')?.value;
+      const newName = document.getElementById('edit-guest-name')?.value.trim();
+      const newRole = document.getElementById('edit-guest-role')?.value || 'Khách Mời Chung';
+      const newStatus = document.getElementById('edit-guest-status')?.value || 'pending';
+
+      if (!newName) {
+        alert('Vui lòng nhập tên hoặc danh xưng khách mời!');
+        document.getElementById('edit-guest-name')?.focus();
+        return;
+      }
+
+      const list = getGuestList();
+      const target = list.find(g => g.id === id);
+      if (target) {
+        target.name = newName;
+        target.role = newRole;
+        target.status = newStatus;
+
+        saveGuestList(list);
+        renderGuestTable();
+        closeEditGuestModal();
+        showAdminToast(`Đã cập nhật thông tin khách: ${newName}!`);
+      }
+    };
+
+    document.getElementById('modal-edit-guest')?.addEventListener('click', (e) => {
+      if (e.target.id === 'modal-edit-guest') closeEditGuestModal();
+    });
+
+    document.getElementById('edit-guest-name')?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        saveEditedGuest();
+      }
+    });
+
+    // Helper sao chép an toàn (tương thích cả HTTPS lẫn HTTP qua IP)
+    function copyTextToClipboard(text, successMsg) {
+      if (!text) return;
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(() => {
+          showAdminToast(successMsg || 'Đã sao chép vào bộ nhớ tạm!');
+        }).catch(() => {
+          fallbackCopyText(text, successMsg);
+        });
+      } else {
+        fallbackCopyText(text, successMsg);
+      }
+    }
+
+    function fallbackCopyText(text, successMsg) {
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.top = '0';
+        textArea.style.left = '0';
+        textArea.style.width = '2em';
+        textArea.style.height = '2em';
+        textArea.style.padding = '0';
+        textArea.style.border = 'none';
+        textArea.style.outline = 'none';
+        textArea.style.boxShadow = 'none';
+        textArea.style.background = 'transparent';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        if (successful) {
+          showAdminToast(successMsg || 'Đã sao chép vào bộ nhớ tạm!');
+        } else {
+          prompt('Vui lòng nhấn Ctrl+C để sao chép:', text);
+        }
+      } catch (err) {
+        prompt('Vui lòng nhấn Ctrl+C để sao chép:', text);
+      }
+    }
+
+    // Sao chép link mời theo ID khách
+    window.copyGuestLinkById = function(id) {
+      const list = getGuestList();
+      const target = list.find(g => g.id === id);
+      if (target) {
+        const url = buildGuestUrl(target.name);
+        copyTextToClipboard(url, `Đã sao chép link mời cho: ${target.name}`);
+      }
+    };
+
+    // Sao chép tin nhắn Zalo kèm link theo ID khách
+    window.copyGuestMsgById = function(id) {
+      const list = getGuestList();
+      const target = list.find(g => g.id === id);
+      if (target) {
+        const url = buildGuestUrl(target.name);
+        const msg = buildZaloMessage(target.name, url);
+        copyTextToClipboard(msg, `Đã sao chép tin nhắn mời gửi cho: ${target.name}`);
+      }
+    };
+
+    // Sao chép link mời trực tiếp từ URL
+    window.copyGuestLink = function(url) {
+      copyTextToClipboard(url, 'Đã sao chép link mời riêng!');
+    };
+
+    // Sao chép tin nhắn Zalo kèm link trực tiếp
     window.copyGuestInviteMessage = function(name, url) {
       const msg = buildZaloMessage(name, url);
-      navigator.clipboard.writeText(msg).then(() => {
-        showAdminToast(`Đã sao chép tin nhắn mời gửi cho: ${name}`);
-      });
+      copyTextToClipboard(msg, `Đã sao chép tin nhắn mời gửi cho: ${name}`);
     };
 
     // Tìm kiếm thời gian thực & Lọc
@@ -3181,6 +3461,29 @@ window.WEDDING_CONFIG = getActiveWeddingConfig();
       document.getElementById('gen-guest-name').value = '';
       renderGuestTable();
       showAdminToast(`Đã thêm khách: ${name}!`);
+    });
+
+    // Sự kiện sao chép từ khung kết quả tạo link đơn lẻ
+    document.getElementById('btn-copy-url')?.addEventListener('click', () => {
+      const url = document.getElementById('gen-output-url')?.value;
+      if (url) {
+        copyTextToClipboard(url, 'Đã sao chép link mời riêng!');
+      }
+    });
+
+    document.getElementById('btn-copy-msg')?.addEventListener('click', () => {
+      const msg = document.getElementById('gen-output-msg')?.value;
+      if (msg) {
+        copyTextToClipboard(msg, 'Đã sao chép toàn bộ tin nhắn mời Zalo!');
+      }
+    });
+
+    // Click vào input tự động bôi đen toàn bộ để tiện copy
+    document.getElementById('gen-output-url')?.addEventListener('click', function() {
+      this.select();
+    });
+    document.getElementById('gen-output-msg')?.addEventListener('click', function() {
+      this.select();
     });
 
     // Thêm hàng loạt nhiều khách
@@ -3553,7 +3856,7 @@ window.WEDDING_CONFIG = getActiveWeddingConfig();
 
         config.wishes.splice(idx, 1);
         renderWishesTable();
-        showAdminToast(`Đã xóa lời chúc của ${wish.name}! Bấm "Lưu Thay Đổi Sổ Lưu Bút" để đồng bộ lên máy chủ.`);
+        window.triggerServerSave(`✔ Đã xóa lời chúc của ${wish.name} khỏi máy chủ!`);
       }
     };
 
@@ -3605,14 +3908,15 @@ window.WEDDING_CONFIG = getActiveWeddingConfig();
 
       if (idx >= 0 && idx < config.wishes.length) {
         config.wishes[idx] = { name, side, text };
-        showAdminToast(`Đã cập nhật lời chúc của ${name}! Bấm Lưu Thay Đổi để lưu lên máy chủ.`);
+        document.getElementById('wish-edit-card').style.display = 'none';
+        renderWishesTable();
+        window.triggerServerSave(`✔ Đã cập nhật lời chúc của ${name} lên máy chủ!`);
       } else {
         config.wishes.push({ name, side, text });
-        showAdminToast(`Đã thêm lời chúc của ${name}! Bấm Lưu Thay Đổi để lưu lên máy chủ.`);
+        document.getElementById('wish-edit-card').style.display = 'none';
+        renderWishesTable();
+        window.triggerServerSave(`✔ Đã thêm lời chúc của ${name} lên máy chủ!`);
       }
-
-      document.getElementById('wish-edit-card').style.display = 'none';
-      renderWishesTable();
     }
 
     // Event listeners cho Quản lý Lời chúc

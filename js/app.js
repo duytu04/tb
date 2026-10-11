@@ -1048,14 +1048,35 @@ function initGiftModal() {
     btn.addEventListener('click', () => {
       const acc = btn.dataset.account;
       if (acc) {
-        navigator.clipboard.writeText(acc).then(() => {
-          showToast(`Đã sao chép STK: ${acc}`);
-        }).catch(() => {
-          showToast(`STK: ${acc}`);
-        });
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(acc).then(() => {
+            showToast(`Đã sao chép STK: ${acc}`);
+          }).catch(() => {
+            fallbackCopySTK(acc);
+          });
+        } else {
+          fallbackCopySTK(acc);
+        }
       }
     });
   });
+
+  function fallbackCopySTK(text) {
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast(`Đã sao chép STK: ${text}`);
+    } catch (e) {
+      showToast(`STK: ${text}`);
+    }
+  }
 }
 
 /* ==========================================================================

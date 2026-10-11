@@ -56,7 +56,7 @@ class WeddingHandler(BaseHTTPRequestHandler):
             self.send_header('Content-Length', str(len(resp)))
             self.end_headers()
             self.wfile.write(resp)
-        elif self.path == '/api/get-config':
+        elif self.path.startswith('/api/get-config'):
             try:
                 with open(CONFIG_PATH, 'r', encoding='utf-8') as f:
                     content = f.read()
@@ -75,6 +75,9 @@ class WeddingHandler(BaseHTTPRequestHandler):
             self.send_response(200)
             self._send_cors_headers()
             self.send_header('Content-Type', 'application/json')
+            self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+            self.send_header('Pragma', 'no-cache')
+            self.send_header('Expires', '0')
             self.send_header('Content-Length', str(len(resp)))
             self.end_headers()
             self.wfile.write(resp)
