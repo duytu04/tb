@@ -857,33 +857,18 @@
         </p>
       </div>
 
-      <!-- Tab Buttons -->
-      <div class="gift-tabs" role="tablist">
-        <button class="gift-tab-btn active" role="tab" data-tab="tab-groom" aria-controls="tab-groom"
-          aria-selected="true">Mừng Chú Rể (Tuấn Anh)</button>
-        <button class="gift-tab-btn" role="tab" data-tab="tab-bride" aria-controls="tab-bride"
-          aria-selected="false">Mừng Cô Dâu (Hoàng Thúy)</button>
+      <!-- Tab Buttons (Tự động ẩn khi dùng 1 tài khoản) -->
+      <div class="gift-tabs" role="tablist" style="display: none;">
+        <button class="gift-tab-btn active" role="tab" data-tab="tab-bride" aria-controls="tab-bride"
+          aria-selected="true">Mừng Cô Dâu (Hoàng Thúy)</button>
       </div>
 
-      <!-- Tab 1: Groom -->
-      <div id="tab-groom" class="gift-tab-content active" role="tabpanel">
-        <img src="assets/images/qr-groom.svg" alt="QR Mừng Chú Rể Tuấn Anh" class="qr-image-display">
-        <div class="bank-info-box">
-          <div style="font-size: 0.85rem; color: var(--color-text-muted);">Ngân hàng Vietcombank (CN Thăng Long)</div>
-          <div class="bank-account-num">1023 888 999</div>
-          <div style="font-weight: 600; color: var(--color-text-main);">NGUYỄN TUẤN ANH</div>
-        </div>
-        <button class="btn-copy-account" data-account="1023888999">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-          </svg>
-          Sao Chép Số Tài Khoản
-        </button>
+      <!-- Tab 1: Groom (Ẩn khi chỉ có 1 tài khoản) -->
+      <div id="tab-groom" class="gift-tab-content" role="tabpanel" style="display: none;">
       </div>
 
-      <!-- Tab 2: Bride -->
-      <div id="tab-bride" class="gift-tab-content" role="tabpanel">
+      <!-- Tab 2: Bride (Tài khoản mừng cưới duy nhất) -->
+      <div id="tab-bride" class="gift-tab-content active" role="tabpanel" style="display: block; margin-top: 15px;">
         <img src="assets/images/qr-bride.svg" alt="QR Mừng Cô Dâu Hoàng Thúy" class="qr-image-display">
         <div class="bank-info-box">
           <div style="font-size: 0.85rem; color: var(--color-text-muted);">Ngân hàng Techcombank (CN Hà Nội)</div>

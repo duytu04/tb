@@ -2162,17 +2162,17 @@ function doGet(e) {
 
       // Tab 5: Banking & VietQR
       if (config.banking) {
-        document.getElementById('cfg-bank-groom-code').value = config.banking.groom.bankCode || 'VCB';
-        document.getElementById('cfg-bank-groom-name').value = config.banking.groom.bankName || '';
-        document.getElementById('cfg-bank-groom-acc').value = config.banking.groom.accountNumber || '';
-        document.getElementById('cfg-bank-groom-holder').value = config.banking.groom.accountHolder || '';
-        document.getElementById('cfg-bank-groom-memo').value = config.banking.groom.transferMemo || '';
+        document.getElementById('cfg-bank-groom-code').value = config.banking.groom?.bankCode || 'VCB';
+        document.getElementById('cfg-bank-groom-name').value = config.banking.groom?.bankName || '';
+        document.getElementById('cfg-bank-groom-acc').value = config.banking.groom?.accountNumber || '';
+        document.getElementById('cfg-bank-groom-holder').value = config.banking.groom?.accountHolder || '';
+        document.getElementById('cfg-bank-groom-memo').value = config.banking.groom?.transferMemo || '';
 
-        document.getElementById('cfg-bank-bride-code').value = config.banking.bride.bankCode || 'TCB';
-        document.getElementById('cfg-bank-bride-name').value = config.banking.bride.bankName || '';
-        document.getElementById('cfg-bank-bride-acc').value = config.banking.bride.accountNumber || '';
-        document.getElementById('cfg-bank-bride-holder').value = config.banking.bride.accountHolder || '';
-        document.getElementById('cfg-bank-bride-memo').value = config.banking.bride.transferMemo || '';
+        document.getElementById('cfg-bank-bride-code').value = config.banking.bride?.bankCode || 'TCB';
+        document.getElementById('cfg-bank-bride-name').value = config.banking.bride?.bankName || '';
+        document.getElementById('cfg-bank-bride-acc').value = config.banking.bride?.accountNumber || '';
+        document.getElementById('cfg-bank-bride-holder').value = config.banking.bride?.accountHolder || '';
+        document.getElementById('cfg-bank-bride-memo').value = config.banking.bride?.transferMemo || '';
 
         updateQRPreviews();
       }
@@ -2257,21 +2257,37 @@ function doGet(e) {
 
     // Live VietQR Previews
     function updateQRPreviews() {
-      const gCode = document.getElementById('cfg-bank-groom-code').value;
-      const gAcc = document.getElementById('cfg-bank-groom-acc').value;
-      const gName = document.getElementById('cfg-bank-groom-holder').value;
-      const gMemo = document.getElementById('cfg-bank-groom-memo').value;
-      document.getElementById('qr-preview-groom').src = window.generateVietQRUrl
-        ? window.generateVietQRUrl(gCode, gAcc, gName, gMemo)
-        : `https://img.vietqr.io/image/${gCode}-${gAcc}-compact2.png?accountName=${encodeURIComponent(gName)}&addInfo=${encodeURIComponent(gMemo)}`;
+      const gCode = document.getElementById('cfg-bank-groom-code')?.value;
+      const gAcc = document.getElementById('cfg-bank-groom-acc')?.value?.trim();
+      const gName = document.getElementById('cfg-bank-groom-holder')?.value;
+      const gMemo = document.getElementById('cfg-bank-groom-memo')?.value;
+      const qrGroom = document.getElementById('qr-preview-groom');
+      if (qrGroom) {
+        if (gAcc) {
+          qrGroom.style.display = 'block';
+          qrGroom.src = window.generateVietQRUrl
+            ? window.generateVietQRUrl(gCode, gAcc, gName, gMemo)
+            : `https://img.vietqr.io/image/${gCode}-${gAcc}-compact2.png?accountName=${encodeURIComponent(gName)}&addInfo=${encodeURIComponent(gMemo)}`;
+        } else {
+          qrGroom.style.display = 'none';
+        }
+      }
 
-      const bCode = document.getElementById('cfg-bank-bride-code').value;
-      const bAcc = document.getElementById('cfg-bank-bride-acc').value;
-      const bName = document.getElementById('cfg-bank-bride-holder').value;
-      const bMemo = document.getElementById('cfg-bank-bride-memo').value;
-      document.getElementById('qr-preview-bride').src = window.generateVietQRUrl
-        ? window.generateVietQRUrl(bCode, bAcc, bName, bMemo)
-        : `https://img.vietqr.io/image/${bCode}-${bAcc}-compact2.png?accountName=${encodeURIComponent(bName)}&addInfo=${encodeURIComponent(bMemo)}`;
+      const bCode = document.getElementById('cfg-bank-bride-code')?.value;
+      const bAcc = document.getElementById('cfg-bank-bride-acc')?.value?.trim();
+      const bName = document.getElementById('cfg-bank-bride-holder')?.value;
+      const bMemo = document.getElementById('cfg-bank-bride-memo')?.value;
+      const qrBride = document.getElementById('qr-preview-bride');
+      if (qrBride) {
+        if (bAcc) {
+          qrBride.style.display = 'block';
+          qrBride.src = window.generateVietQRUrl
+            ? window.generateVietQRUrl(bCode, bAcc, bName, bMemo)
+            : `https://img.vietqr.io/image/${bCode}-${bAcc}-compact2.png?accountName=${encodeURIComponent(bName)}&addInfo=${encodeURIComponent(bMemo)}`;
+        } else {
+          qrBride.style.display = 'none';
+        }
+      }
     }
 
     ['cfg-bank-groom-code', 'cfg-bank-groom-acc', 'cfg-bank-groom-holder', 'cfg-bank-groom-memo',

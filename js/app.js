@@ -340,9 +340,41 @@ function applyDynamicContent(config) {
 
   // 10. Hộp mừng cưới & Mã VietQR tự động
   if (config.banking) {
-    // Chú rể
     const tabGroom = document.getElementById('tab-groom');
-    if (tabGroom && config.banking.groom) {
+    const tabBride = document.getElementById('tab-bride');
+    const giftTabs = document.querySelector('.gift-tabs');
+    const hasGroom = Boolean(config.banking.groom && config.banking.groom.accountNumber && config.banking.groom.accountNumber.trim());
+    const hasBride = Boolean(config.banking.bride && config.banking.bride.accountNumber && config.banking.bride.accountNumber.trim());
+
+    // Khi chỉ có 1 tài khoản (ví dụ chỉ có Cô dâu), tự động ẩn thanh chuyển Tab và hiển thị trực tiếp tài khoản đó
+    if (giftTabs) {
+      if (hasBride && !hasGroom) {
+        giftTabs.style.display = 'none';
+        if (tabGroom) {
+          tabGroom.style.display = 'none';
+          tabGroom.classList.remove('active');
+        }
+        if (tabBride) {
+          tabBride.style.display = 'block';
+          tabBride.classList.add('active');
+        }
+      } else if (hasGroom && !hasBride) {
+        giftTabs.style.display = 'none';
+        if (tabBride) {
+          tabBride.style.display = 'none';
+          tabBride.classList.remove('active');
+        }
+        if (tabGroom) {
+          tabGroom.style.display = 'block';
+          tabGroom.classList.add('active');
+        }
+      } else {
+        giftTabs.style.display = '';
+      }
+    }
+
+    // Chú rể
+    if (tabGroom && config.banking.groom && hasGroom) {
       const g = config.banking.groom;
       const bankInfo = tabGroom.querySelector('.bank-info-box');
       if (bankInfo) {
@@ -366,8 +398,7 @@ function applyDynamicContent(config) {
     }
 
     // Cô dâu
-    const tabBride = document.getElementById('tab-bride');
-    if (tabBride && config.banking.bride) {
+    if (tabBride && config.banking.bride && (hasBride || !hasGroom)) {
       const b = config.banking.bride;
       const bankInfo = tabBride.querySelector('.bank-info-box');
       if (bankInfo) {

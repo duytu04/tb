@@ -162,14 +162,15 @@ const DEFAULT_WEDDING_CONFIG = {
   openingMemories: [],
 
   // 8. HỘP MỪNG CƯỚI & TÀI KHOẢN NGÂN HÀNG (VIETQR)
+  // Chỉ sử dụng 1 tài khoản duy nhất của Cô dâu (Hoàng Thúy)
   banking: {
     groom: {
       bankCode: 'VCB', // Mã VietQR: VCB, TCB, MB, ACB, BIDV, VPB, TPB, CTG...
-      bankName: 'Ngân hàng Vietcombank (CN Thăng Long)',
-      accountNumber: '1023888999',
-      accountNumberDisplay: '1023 888 999',
-      accountHolder: 'NGUYỄN TUẤN ANH',
-      transferMemo: 'Mung cuoi Tuan Anh'
+      bankName: '',
+      accountNumber: '',
+      accountNumberDisplay: '',
+      accountHolder: '',
+      transferMemo: ''
     },
     bride: {
       bankCode: 'TCB',
@@ -196,7 +197,7 @@ const DEFAULT_WEDDING_CONFIG = {
   rsvpEndpoint: 'https://script.google.com/macros/s/AKfycbwZk2RdeZLkZ7f1uaOMT1l-U2GsdbyBav2f5kJMcliGeCF9MwSJne6dGOXdVRwgfThBAw/exec', // URL Google Apps Script Web App để nhận dữ liệu
   wishes: [], // Danh sách lời chúc hiển thị trên thiệp (do khách gửi hoặc Admin quản lý)
   adminPin: '2010', // Mã PIN truy cập trang quản trị admin.html
-  updatedAt: 1791116000000 // Timestamp đồng bộ hệ thống
+  updatedAt: 1791136000000 // Timestamp đồng bộ hệ thống (đã cập nhật sang 1 tài khoản)
 };
 
 /**
